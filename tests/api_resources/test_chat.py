@@ -45,7 +45,6 @@ class TestChat:
             max_tokens=100,
             max_turns=5,
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
-            messages=[{"foo": "bar"}],
             model="gpt-4",
             model_attributes={
                 "claude-3-5-sonnet": {
@@ -137,7 +136,6 @@ class TestAsyncChat:
             max_tokens=100,
             max_turns=5,
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
-            messages=[{"foo": "bar"}],
             model="gpt-4",
             model_attributes={
                 "claude-3-5-sonnet": {
