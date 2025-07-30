@@ -7,9 +7,9 @@ import pytest
 import pydantic
 from pydantic import Field
 
-from dedalus_sdk._utils import PropertyInfo
-from dedalus_sdk._compat import PYDANTIC_V2, parse_obj, model_dump, model_json
-from dedalus_sdk._models import BaseModel, construct_type
+from dedalus_labs._utils import PropertyInfo
+from dedalus_labs._compat import PYDANTIC_V2, parse_obj, model_dump, model_json
+from dedalus_labs._models import BaseModel, construct_type
 
 
 class BasicModel(BaseModel):

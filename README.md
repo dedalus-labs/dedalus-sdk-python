@@ -1,9 +1,9 @@
-# Dedalus SDK Python API library
+# Dedalus Python API library
 
 <!-- prettier-ignore -->
-[![PyPI version](https://img.shields.io/pypi/v/dedalus_sdk.svg?label=pypi%20(stable))](https://pypi.org/project/dedalus_sdk/)
+[![PyPI version](https://img.shields.io/pypi/v/dedalus_labs.svg?label=pypi%20(stable))](https://pypi.org/project/dedalus_labs/)
 
-The Dedalus SDK Python library provides convenient access to the Dedalus SDK REST API from any Python 3.8+
+The Dedalus Python library provides convenient access to the Dedalus REST API from any Python 3.8+
 application. The library includes type definitions for all request params and response fields,
 and offers both synchronous and asynchronous clients powered by [httpx](https://github.com/encode/httpx).
 
@@ -16,12 +16,9 @@ The full API of this library can be found in [api.md](api.md).
 ## Installation
 
 ```sh
-# install from this staging repo
-pip install git+ssh://git@github.com/stainless-sdks/dedalus-sdk-python.git
+# install from PyPI
+pip install --pre dedalus_labs
 ```
-
-> [!NOTE]
-> Once this package is [published to PyPI](https://www.stainless.com/docs/guides/publish), this will become: `pip install --pre dedalus_sdk`
 
 ## Usage
 
@@ -29,42 +26,54 @@ The full API of this library can be found in [api.md](api.md).
 
 ```python
 import os
-from dedalus_sdk import DedalusSDK
+from dedalus_labs import Dedalus
 
-client = DedalusSDK(
-    bearer_token=os.environ.get(
-        "DEDALUS_SDK_BEARER_TOKEN"
-    ),  # This is the default and can be omitted
+client = Dedalus(
+    api_key=os.environ.get("DEDALUS_API_KEY"),  # This is the default and can be omitted
 )
 
-response = client.health.check()
-print(response.status)
+completion = client.chat.create(
+    messages=[
+        {
+            "role": "user",
+            "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+        }
+    ],
+    model="gpt-4o-mini",
+)
+print(completion.id)
 ```
 
-While you can provide a `bearer_token` keyword argument,
+While you can provide an `api_key` keyword argument,
 we recommend using [python-dotenv](https://pypi.org/project/python-dotenv/)
-to add `DEDALUS_SDK_BEARER_TOKEN="My Bearer Token"` to your `.env` file
-so that your Bearer Token is not stored in source control.
+to add `DEDALUS_API_KEY="My API Key"` to your `.env` file
+so that your API Key is not stored in source control.
 
 ## Async usage
 
-Simply import `AsyncDedalusSDK` instead of `DedalusSDK` and use `await` with each API call:
+Simply import `AsyncDedalus` instead of `Dedalus` and use `await` with each API call:
 
 ```python
 import os
 import asyncio
-from dedalus_sdk import AsyncDedalusSDK
+from dedalus_labs import AsyncDedalus
 
-client = AsyncDedalusSDK(
-    bearer_token=os.environ.get(
-        "DEDALUS_SDK_BEARER_TOKEN"
-    ),  # This is the default and can be omitted
+client = AsyncDedalus(
+    api_key=os.environ.get("DEDALUS_API_KEY"),  # This is the default and can be omitted
 )
 
 
 async def main() -> None:
-    response = await client.health.check()
-    print(response.status)
+    completion = await client.chat.create(
+        messages=[
+            {
+                "role": "user",
+                "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+            }
+        ],
+        model="gpt-4o-mini",
+    )
+    print(completion.id)
 
 
 asyncio.run(main())
@@ -79,25 +88,33 @@ By default, the async client uses `httpx` for HTTP requests. However, for improv
 You can enable this by installing `aiohttp`:
 
 ```sh
-# install from this staging repo
-pip install 'dedalus_sdk[aiohttp] @ git+ssh://git@github.com/stainless-sdks/dedalus-sdk-python.git'
+# install from PyPI
+pip install --pre dedalus_labs[aiohttp]
 ```
 
 Then you can enable it by instantiating the client with `http_client=DefaultAioHttpClient()`:
 
 ```python
 import asyncio
-from dedalus_sdk import DefaultAioHttpClient
-from dedalus_sdk import AsyncDedalusSDK
+from dedalus_labs import DefaultAioHttpClient
+from dedalus_labs import AsyncDedalus
 
 
 async def main() -> None:
-    async with AsyncDedalusSDK(
-        bearer_token="My Bearer Token",
+    async with AsyncDedalus(
+        api_key="My API Key",
         http_client=DefaultAioHttpClient(),
     ) as client:
-        response = await client.health.check()
-        print(response.status)
+        completion = await client.chat.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+                }
+            ],
+            model="gpt-4o-mini",
+        )
+        print(completion.id)
 
 
 asyncio.run(main())
@@ -114,27 +131,27 @@ Typed requests and responses provide autocomplete and documentation within your 
 
 ## Handling errors
 
-When the library is unable to connect to the API (for example, due to network connection problems or a timeout), a subclass of `dedalus_sdk.APIConnectionError` is raised.
+When the library is unable to connect to the API (for example, due to network connection problems or a timeout), a subclass of `dedalus_labs.APIConnectionError` is raised.
 
 When the API returns a non-success status code (that is, 4xx or 5xx
-response), a subclass of `dedalus_sdk.APIStatusError` is raised, containing `status_code` and `response` properties.
+response), a subclass of `dedalus_labs.APIStatusError` is raised, containing `status_code` and `response` properties.
 
-All errors inherit from `dedalus_sdk.APIError`.
+All errors inherit from `dedalus_labs.APIError`.
 
 ```python
-import dedalus_sdk
-from dedalus_sdk import DedalusSDK
+import dedalus_labs
+from dedalus_labs import Dedalus
 
-client = DedalusSDK()
+client = Dedalus()
 
 try:
     client.health.check()
-except dedalus_sdk.APIConnectionError as e:
+except dedalus_labs.APIConnectionError as e:
     print("The server could not be reached")
     print(e.__cause__)  # an underlying Exception, likely raised within httpx.
-except dedalus_sdk.RateLimitError as e:
+except dedalus_labs.RateLimitError as e:
     print("A 429 status code was received; we should back off a bit.")
-except dedalus_sdk.APIStatusError as e:
+except dedalus_labs.APIStatusError as e:
     print("Another non-200-range status code was received")
     print(e.status_code)
     print(e.response)
@@ -162,10 +179,10 @@ Connection errors (for example, due to a network connectivity problem), 408 Requ
 You can use the `max_retries` option to configure or disable retry settings:
 
 ```python
-from dedalus_sdk import DedalusSDK
+from dedalus_labs import Dedalus
 
 # Configure the default for all requests:
-client = DedalusSDK(
+client = Dedalus(
     # default is 2
     max_retries=0,
 )
@@ -180,16 +197,16 @@ By default requests time out after 1 minute. You can configure this with a `time
 which accepts a float or an [`httpx.Timeout`](https://www.python-httpx.org/advanced/timeouts/#fine-tuning-the-configuration) object:
 
 ```python
-from dedalus_sdk import DedalusSDK
+from dedalus_labs import Dedalus
 
 # Configure the default for all requests:
-client = DedalusSDK(
+client = Dedalus(
     # 20 seconds (default is 1 minute)
     timeout=20.0,
 )
 
 # More granular control:
-client = DedalusSDK(
+client = Dedalus(
     timeout=httpx.Timeout(60.0, read=5.0, write=10.0, connect=2.0),
 )
 
@@ -207,10 +224,10 @@ Note that requests that time out are [retried twice by default](#retries).
 
 We use the standard library [`logging`](https://docs.python.org/3/library/logging.html) module.
 
-You can enable logging by setting the environment variable `DEDALUS_SDK_LOG` to `info`.
+You can enable logging by setting the environment variable `DEDALUS_LOG` to `info`.
 
 ```shell
-$ export DEDALUS_SDK_LOG=info
+$ export DEDALUS_LOG=info
 ```
 
 Or to `debug` for more verbose logging.
@@ -232,9 +249,9 @@ if response.my_field is None:
 The "raw" Response object can be accessed by prefixing `.with_raw_response.` to any HTTP method call, e.g.,
 
 ```py
-from dedalus_sdk import DedalusSDK
+from dedalus_labs import Dedalus
 
-client = DedalusSDK()
+client = Dedalus()
 response = client.health.with_raw_response.check()
 print(response.headers.get('X-My-Header'))
 
@@ -242,9 +259,9 @@ health = response.parse()  # get the object that `health.check()` would have ret
 print(health.status)
 ```
 
-These methods return an [`APIResponse`](https://github.com/stainless-sdks/dedalus-sdk-python/tree/main/src/dedalus_sdk/_response.py) object.
+These methods return an [`APIResponse`](https://github.com/dedalus-labs/dedalus-sdk-python/tree/main/src/dedalus_labs/_response.py) object.
 
-The async client returns an [`AsyncAPIResponse`](https://github.com/stainless-sdks/dedalus-sdk-python/tree/main/src/dedalus_sdk/_response.py) with the same structure, the only difference being `await`able methods for reading the response content.
+The async client returns an [`AsyncAPIResponse`](https://github.com/dedalus-labs/dedalus-sdk-python/tree/main/src/dedalus_labs/_response.py) with the same structure, the only difference being `await`able methods for reading the response content.
 
 #### `.with_streaming_response`
 
@@ -306,10 +323,10 @@ You can directly override the [httpx client](https://www.python-httpx.org/api/#c
 
 ```python
 import httpx
-from dedalus_sdk import DedalusSDK, DefaultHttpxClient
+from dedalus_labs import Dedalus, DefaultHttpxClient
 
-client = DedalusSDK(
-    # Or use the `DEDALUS_SDK_BASE_URL` env var
+client = Dedalus(
+    # Or use the `DEDALUS_BASE_URL` env var
     base_url="http://my.test.server.example.com:8083",
     http_client=DefaultHttpxClient(
         proxy="http://my.test.proxy.example.com",
@@ -329,9 +346,9 @@ client.with_options(http_client=DefaultHttpxClient(...))
 By default the library closes underlying HTTP connections whenever the client is [garbage collected](https://docs.python.org/3/reference/datamodel.html#object.__del__). You can manually close the client using the `.close()` method if desired, or with a context manager that closes when exiting.
 
 ```py
-from dedalus_sdk import DedalusSDK
+from dedalus_labs import Dedalus
 
-with DedalusSDK() as client:
+with Dedalus() as client:
   # make requests here
   ...
 
@@ -348,7 +365,7 @@ This package generally follows [SemVer](https://semver.org/spec/v2.0.0.html) con
 
 We take backwards-compatibility seriously and work hard to ensure you can rely on a smooth upgrade experience.
 
-We are keen for your feedback; please open an [issue](https://www.github.com/stainless-sdks/dedalus-sdk-python/issues) with questions, bugs, or suggestions.
+We are keen for your feedback; please open an [issue](https://www.github.com/dedalus-labs/dedalus-sdk-python/issues) with questions, bugs, or suggestions.
 
 ### Determining the installed version
 
@@ -357,8 +374,8 @@ If you've upgraded to the latest version but aren't seeing any new features you 
 You can determine the version that is being used at runtime with:
 
 ```py
-import dedalus_sdk
-print(dedalus_sdk.__version__)
+import dedalus_labs
+print(dedalus_labs.__version__)
 ```
 
 ## Requirements

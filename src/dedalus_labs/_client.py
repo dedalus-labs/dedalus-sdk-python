@@ -12,10 +12,7 @@ from . import _exceptions
 from ._qs import Querystring
 from ._types import (
     NOT_GIVEN,
-    Body,
     Omit,
-    Query,
-    Headers,
     Timeout,
     NotGiven,
     Transport,
@@ -24,49 +21,33 @@ from ._types import (
 )
 from ._utils import is_given, get_async_library
 from ._version import __version__
-from ._response import (
-    to_raw_response_wrapper,
-    to_streamed_response_wrapper,
-    async_to_raw_response_wrapper,
-    async_to_streamed_response_wrapper,
-)
-from .resources import chat, health, models
+from .resources import chat, root, health, models
 from ._streaming import Stream as Stream, AsyncStream as AsyncStream
-from ._exceptions import APIStatusError, DedalusSDKError
+from ._exceptions import DedalusError, APIStatusError
 from ._base_client import (
     DEFAULT_MAX_RETRIES,
     SyncAPIClient,
     AsyncAPIClient,
-    make_request_options,
 )
-from .types.get_root_response import GetRootResponse
 
-__all__ = [
-    "Timeout",
-    "Transport",
-    "ProxiesTypes",
-    "RequestOptions",
-    "DedalusSDK",
-    "AsyncDedalusSDK",
-    "Client",
-    "AsyncClient",
-]
+__all__ = ["Timeout", "Transport", "ProxiesTypes", "RequestOptions", "Dedalus", "AsyncDedalus", "Client", "AsyncClient"]
 
 
-class DedalusSDK(SyncAPIClient):
+class Dedalus(SyncAPIClient):
+    root: root.RootResource
     health: health.HealthResource
     models: models.ModelsResource
     chat: chat.ChatResource
-    with_raw_response: DedalusSDKWithRawResponse
-    with_streaming_response: DedalusSDKWithStreamedResponse
+    with_raw_response: DedalusWithRawResponse
+    with_streaming_response: DedalusWithStreamedResponse
 
     # client options
-    bearer_token: str
+    api_key: str
 
     def __init__(
         self,
         *,
-        bearer_token: str | None = None,
+        api_key: str | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: Union[float, Timeout, None, NotGiven] = NOT_GIVEN,
         max_retries: int = DEFAULT_MAX_RETRIES,
@@ -86,22 +67,22 @@ class DedalusSDK(SyncAPIClient):
         # part of our public interface in the future.
         _strict_response_validation: bool = False,
     ) -> None:
-        """Construct a new synchronous DedalusSDK client instance.
+        """Construct a new synchronous Dedalus client instance.
 
-        This automatically infers the `bearer_token` argument from the `DEDALUS_SDK_BEARER_TOKEN` environment variable if it is not provided.
+        This automatically infers the `api_key` argument from the `DEDALUS_API_KEY` environment variable if it is not provided.
         """
-        if bearer_token is None:
-            bearer_token = os.environ.get("DEDALUS_SDK_BEARER_TOKEN")
-        if bearer_token is None:
-            raise DedalusSDKError(
-                "The bearer_token client option must be set either by passing bearer_token to the client or by setting the DEDALUS_SDK_BEARER_TOKEN environment variable"
+        if api_key is None:
+            api_key = os.environ.get("DEDALUS_API_KEY")
+        if api_key is None:
+            raise DedalusError(
+                "The api_key client option must be set either by passing api_key to the client or by setting the DEDALUS_API_KEY environment variable"
             )
-        self.bearer_token = bearer_token
+        self.api_key = api_key
 
         if base_url is None:
-            base_url = os.environ.get("DEDALUS_SDK_BASE_URL")
+            base_url = os.environ.get("DEDALUS_BASE_URL")
         if base_url is None:
-            base_url = f"https://api.example.com"
+            base_url = f"https://api.dedaluslabs.ai"
 
         super().__init__(
             version=__version__,
@@ -114,11 +95,12 @@ class DedalusSDK(SyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
+        self.root = root.RootResource(self)
         self.health = health.HealthResource(self)
         self.models = models.ModelsResource(self)
         self.chat = chat.ChatResource(self)
-        self.with_raw_response = DedalusSDKWithRawResponse(self)
-        self.with_streaming_response = DedalusSDKWithStreamedResponse(self)
+        self.with_raw_response = DedalusWithRawResponse(self)
+        self.with_streaming_response = DedalusWithStreamedResponse(self)
 
     @property
     @override
@@ -128,8 +110,8 @@ class DedalusSDK(SyncAPIClient):
     @property
     @override
     def auth_headers(self) -> dict[str, str]:
-        bearer_token = self.bearer_token
-        return {"Authorization": f"Bearer {bearer_token}"}
+        api_key = self.api_key
+        return {"Authorization": f"Bearer {api_key}"}
 
     @property
     @override
@@ -143,7 +125,7 @@ class DedalusSDK(SyncAPIClient):
     def copy(
         self,
         *,
-        bearer_token: str | None = None,
+        api_key: str | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: float | Timeout | None | NotGiven = NOT_GIVEN,
         http_client: httpx.Client | None = None,
@@ -177,7 +159,7 @@ class DedalusSDK(SyncAPIClient):
 
         http_client = http_client or self._client
         return self.__class__(
-            bearer_token=bearer_token or self.bearer_token,
+            api_key=api_key or self.api_key,
             base_url=base_url or self.base_url,
             timeout=self.timeout if isinstance(timeout, NotGiven) else timeout,
             http_client=http_client,
@@ -190,25 +172,6 @@ class DedalusSDK(SyncAPIClient):
     # Alias for `copy` for nicer inline usage, e.g.
     # client.with_options(timeout=10).foo.create(...)
     with_options = copy
-
-    def get_root(
-        self,
-        *,
-        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
-        # The extra values given here take precedence over values defined on the client or passed to this method.
-        extra_headers: Headers | None = None,
-        extra_query: Query | None = None,
-        extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> GetRootResponse:
-        """Root"""
-        return self.get(
-            "/",
-            options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
-            ),
-            cast_to=GetRootResponse,
-        )
 
     @override
     def _make_status_error(
@@ -244,20 +207,21 @@ class DedalusSDK(SyncAPIClient):
         return APIStatusError(err_msg, response=response, body=body)
 
 
-class AsyncDedalusSDK(AsyncAPIClient):
+class AsyncDedalus(AsyncAPIClient):
+    root: root.AsyncRootResource
     health: health.AsyncHealthResource
     models: models.AsyncModelsResource
     chat: chat.AsyncChatResource
-    with_raw_response: AsyncDedalusSDKWithRawResponse
-    with_streaming_response: AsyncDedalusSDKWithStreamedResponse
+    with_raw_response: AsyncDedalusWithRawResponse
+    with_streaming_response: AsyncDedalusWithStreamedResponse
 
     # client options
-    bearer_token: str
+    api_key: str
 
     def __init__(
         self,
         *,
-        bearer_token: str | None = None,
+        api_key: str | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: Union[float, Timeout, None, NotGiven] = NOT_GIVEN,
         max_retries: int = DEFAULT_MAX_RETRIES,
@@ -277,22 +241,22 @@ class AsyncDedalusSDK(AsyncAPIClient):
         # part of our public interface in the future.
         _strict_response_validation: bool = False,
     ) -> None:
-        """Construct a new async AsyncDedalusSDK client instance.
+        """Construct a new async AsyncDedalus client instance.
 
-        This automatically infers the `bearer_token` argument from the `DEDALUS_SDK_BEARER_TOKEN` environment variable if it is not provided.
+        This automatically infers the `api_key` argument from the `DEDALUS_API_KEY` environment variable if it is not provided.
         """
-        if bearer_token is None:
-            bearer_token = os.environ.get("DEDALUS_SDK_BEARER_TOKEN")
-        if bearer_token is None:
-            raise DedalusSDKError(
-                "The bearer_token client option must be set either by passing bearer_token to the client or by setting the DEDALUS_SDK_BEARER_TOKEN environment variable"
+        if api_key is None:
+            api_key = os.environ.get("DEDALUS_API_KEY")
+        if api_key is None:
+            raise DedalusError(
+                "The api_key client option must be set either by passing api_key to the client or by setting the DEDALUS_API_KEY environment variable"
             )
-        self.bearer_token = bearer_token
+        self.api_key = api_key
 
         if base_url is None:
-            base_url = os.environ.get("DEDALUS_SDK_BASE_URL")
+            base_url = os.environ.get("DEDALUS_BASE_URL")
         if base_url is None:
-            base_url = f"https://api.example.com"
+            base_url = f"https://api.dedaluslabs.ai"
 
         super().__init__(
             version=__version__,
@@ -305,11 +269,12 @@ class AsyncDedalusSDK(AsyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
+        self.root = root.AsyncRootResource(self)
         self.health = health.AsyncHealthResource(self)
         self.models = models.AsyncModelsResource(self)
         self.chat = chat.AsyncChatResource(self)
-        self.with_raw_response = AsyncDedalusSDKWithRawResponse(self)
-        self.with_streaming_response = AsyncDedalusSDKWithStreamedResponse(self)
+        self.with_raw_response = AsyncDedalusWithRawResponse(self)
+        self.with_streaming_response = AsyncDedalusWithStreamedResponse(self)
 
     @property
     @override
@@ -319,8 +284,8 @@ class AsyncDedalusSDK(AsyncAPIClient):
     @property
     @override
     def auth_headers(self) -> dict[str, str]:
-        bearer_token = self.bearer_token
-        return {"Authorization": f"Bearer {bearer_token}"}
+        api_key = self.api_key
+        return {"Authorization": f"Bearer {api_key}"}
 
     @property
     @override
@@ -334,7 +299,7 @@ class AsyncDedalusSDK(AsyncAPIClient):
     def copy(
         self,
         *,
-        bearer_token: str | None = None,
+        api_key: str | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: float | Timeout | None | NotGiven = NOT_GIVEN,
         http_client: httpx.AsyncClient | None = None,
@@ -368,7 +333,7 @@ class AsyncDedalusSDK(AsyncAPIClient):
 
         http_client = http_client or self._client
         return self.__class__(
-            bearer_token=bearer_token or self.bearer_token,
+            api_key=api_key or self.api_key,
             base_url=base_url or self.base_url,
             timeout=self.timeout if isinstance(timeout, NotGiven) else timeout,
             http_client=http_client,
@@ -381,25 +346,6 @@ class AsyncDedalusSDK(AsyncAPIClient):
     # Alias for `copy` for nicer inline usage, e.g.
     # client.with_options(timeout=10).foo.create(...)
     with_options = copy
-
-    async def get_root(
-        self,
-        *,
-        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
-        # The extra values given here take precedence over values defined on the client or passed to this method.
-        extra_headers: Headers | None = None,
-        extra_query: Query | None = None,
-        extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> GetRootResponse:
-        """Root"""
-        return await self.get(
-            "/",
-            options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
-            ),
-            cast_to=GetRootResponse,
-        )
 
     @override
     def _make_status_error(
@@ -435,50 +381,38 @@ class AsyncDedalusSDK(AsyncAPIClient):
         return APIStatusError(err_msg, response=response, body=body)
 
 
-class DedalusSDKWithRawResponse:
-    def __init__(self, client: DedalusSDK) -> None:
+class DedalusWithRawResponse:
+    def __init__(self, client: Dedalus) -> None:
+        self.root = root.RootResourceWithRawResponse(client.root)
         self.health = health.HealthResourceWithRawResponse(client.health)
         self.models = models.ModelsResourceWithRawResponse(client.models)
         self.chat = chat.ChatResourceWithRawResponse(client.chat)
 
-        self.get_root = to_raw_response_wrapper(
-            client.get_root,
-        )
 
-
-class AsyncDedalusSDKWithRawResponse:
-    def __init__(self, client: AsyncDedalusSDK) -> None:
+class AsyncDedalusWithRawResponse:
+    def __init__(self, client: AsyncDedalus) -> None:
+        self.root = root.AsyncRootResourceWithRawResponse(client.root)
         self.health = health.AsyncHealthResourceWithRawResponse(client.health)
         self.models = models.AsyncModelsResourceWithRawResponse(client.models)
         self.chat = chat.AsyncChatResourceWithRawResponse(client.chat)
 
-        self.get_root = async_to_raw_response_wrapper(
-            client.get_root,
-        )
 
-
-class DedalusSDKWithStreamedResponse:
-    def __init__(self, client: DedalusSDK) -> None:
+class DedalusWithStreamedResponse:
+    def __init__(self, client: Dedalus) -> None:
+        self.root = root.RootResourceWithStreamingResponse(client.root)
         self.health = health.HealthResourceWithStreamingResponse(client.health)
         self.models = models.ModelsResourceWithStreamingResponse(client.models)
         self.chat = chat.ChatResourceWithStreamingResponse(client.chat)
 
-        self.get_root = to_streamed_response_wrapper(
-            client.get_root,
-        )
 
-
-class AsyncDedalusSDKWithStreamedResponse:
-    def __init__(self, client: AsyncDedalusSDK) -> None:
+class AsyncDedalusWithStreamedResponse:
+    def __init__(self, client: AsyncDedalus) -> None:
+        self.root = root.AsyncRootResourceWithStreamingResponse(client.root)
         self.health = health.AsyncHealthResourceWithStreamingResponse(client.health)
         self.models = models.AsyncModelsResourceWithStreamingResponse(client.models)
         self.chat = chat.AsyncChatResourceWithStreamingResponse(client.chat)
 
-        self.get_root = async_to_streamed_response_wrapper(
-            client.get_root,
-        )
 
+Client = Dedalus
 
-Client = DedalusSDK
-
-AsyncClient = AsyncDedalusSDK
+AsyncClient = AsyncDedalus
