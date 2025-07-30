@@ -1,11 +1,11 @@
 [project]
-name = "dedalus_sdk"
+name = "dedalus_labs"
 version = "0.0.1-alpha.0"
-description = "The official Python library for the dedalus-sdk API"
+description = "The official Python library for the dedalus API"
 dynamic = ["readme"]
-license = "Apache-2.0"
+license = "MIT"
 authors = [
-{ name = "Dedalus SDK", email = "" },
+{ name = "Dedalus", email = "founders@dedaluslabs.ai" },
 ]
 dependencies = [
     "httpx>=0.23.0, <1",
@@ -31,12 +31,12 @@ classifiers = [
   "Operating System :: POSIX :: Linux",
   "Operating System :: Microsoft :: Windows",
   "Topic :: Software Development :: Libraries :: Python Modules",
-  "License :: OSI Approved :: Apache Software License"
+  "License :: OSI Approved :: MIT License"
 ]
 
 [project.urls]
-Homepage = "https://github.com/stainless-sdks/dedalus-sdk-python"
-Repository = "https://github.com/stainless-sdks/dedalus-sdk-python"
+Homepage = "https://github.com/dedalus-labs/dedalus-sdk-python"
+Repository = "https://github.com/dedalus-labs/dedalus-sdk-python"
 
 [project.optional-dependencies]
 aiohttp = ["aiohttp", "httpx_aiohttp>=0.1.8"]
@@ -79,14 +79,14 @@ format = { chain = [
 "check:ruff" = "ruff check ."
 "fix:ruff" = "ruff check --fix ."
 
-"check:importable" = "python -c 'import dedalus_sdk'"
+"check:importable" = "python -c 'import dedalus_labs'"
 
 typecheck = { chain = [
   "typecheck:pyright",
   "typecheck:mypy"
 ]}
 "typecheck:pyright" = "pyright"
-"typecheck:verify-types" = "pyright --verifytypes dedalus_sdk --ignoreexternal"
+"typecheck:verify-types" = "pyright --verifytypes dedalus_labs --ignoreexternal"
 "typecheck:mypy" = "mypy ."
 
 [build-system]
@@ -99,7 +99,7 @@ include = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/dedalus_sdk"]
+packages = ["src/dedalus_labs"]
 
 [tool.hatch.build.targets.sdist]
 # Basically everything except hidden files/directories (such as .github, .devcontainers, .python-version, etc)
@@ -125,7 +125,7 @@ path = "README.md"
 [[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
 # replace relative links with absolute links
 pattern = '\[(.+?)\]\(((?!https?://)\S+?)\)'
-replacement = '[\1](https://github.com/stainless-sdks/dedalus-sdk-python/tree/main/\g<2>)'
+replacement = '[\1](https://github.com/dedalus-labs/dedalus-sdk-python/tree/main/\g<2>)'
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -202,7 +202,7 @@ length-sort = true
 length-sort-straight = true
 combine-as-imports = true
 extra-standard-library = ["typing_extensions"]
-known-first-party = ["dedalus_sdk", "tests"]
+known-first-party = ["dedalus_labs", "tests"]
 
 [tool.ruff.lint.per-file-ignores]
 "bin/**.py" = ["T201", "T203"]

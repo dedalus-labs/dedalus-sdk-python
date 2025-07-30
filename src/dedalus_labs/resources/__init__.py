@@ -8,6 +8,14 @@ from .chat import (
     ChatResourceWithStreamingResponse,
     AsyncChatResourceWithStreamingResponse,
 )
+from .root import (
+    RootResource,
+    AsyncRootResource,
+    RootResourceWithRawResponse,
+    AsyncRootResourceWithRawResponse,
+    RootResourceWithStreamingResponse,
+    AsyncRootResourceWithStreamingResponse,
+)
 from .health import (
     HealthResource,
     AsyncHealthResource,
@@ -26,6 +34,12 @@ from .models import (
 )
 
 __all__ = [
+    "RootResource",
+    "AsyncRootResource",
+    "RootResourceWithRawResponse",
+    "AsyncRootResourceWithRawResponse",
+    "RootResourceWithStreamingResponse",
+    "AsyncRootResourceWithStreamingResponse",
     "HealthResource",
     "AsyncHealthResource",
     "HealthResourceWithRawResponse",

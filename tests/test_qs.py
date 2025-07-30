@@ -4,7 +4,7 @@ from urllib.parse import unquote
 
 import pytest
 
-from dedalus_sdk._qs import Querystring, stringify
+from dedalus_labs._qs import Querystring, stringify
 
 
 def test_empty() -> None:

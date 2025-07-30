@@ -7,10 +7,9 @@ from typing_extensions import Literal
 from pydantic import Field as FieldInfo
 
 from .._models import BaseModel
-from .chat_completion_token_logprob import ChatCompletionTokenLogprob
 
 __all__ = [
-    "ChatCreateResponse",
+    "Completion",
     "Choice",
     "ChoiceMessage",
     "ChoiceMessageAnnotation",
@@ -20,6 +19,10 @@ __all__ = [
     "ChoiceMessageToolCall",
     "ChoiceMessageToolCallFunction",
     "ChoiceLogprobs",
+    "ChoiceLogprobsContent",
+    "ChoiceLogprobsContentTopLogprob",
+    "ChoiceLogprobsRefusal",
+    "ChoiceLogprobsRefusalTopLogprob",
     "Usage",
     "UsageCompletionTokensDetails",
     "UsagePromptTokensDetails",
@@ -137,10 +140,74 @@ class ChoiceMessage(BaseModel):
         def __getattr__(self, attr: str) -> object: ...
 
 
-class ChoiceLogprobs(BaseModel):
-    content: Optional[List[ChatCompletionTokenLogprob]] = None
+class ChoiceLogprobsContentTopLogprob(BaseModel):
+    token: str
 
-    refusal: Optional[List[ChatCompletionTokenLogprob]] = None
+    logprob: float
+
+    bytes: Optional[List[int]] = None
+
+    __pydantic_extra__: Dict[str, object] = FieldInfo(init=False)  # pyright: ignore[reportIncompatibleVariableOverride]
+    if TYPE_CHECKING:
+        # Stub to indicate that arbitrary properties are accepted.
+        # To access properties that are not valid identifiers you can use `getattr`, e.g.
+        # `getattr(obj, '$type')`
+        def __getattr__(self, attr: str) -> object: ...
+
+
+class ChoiceLogprobsContent(BaseModel):
+    token: str
+
+    logprob: float
+
+    top_logprobs: List[ChoiceLogprobsContentTopLogprob]
+
+    bytes: Optional[List[int]] = None
+
+    __pydantic_extra__: Dict[str, object] = FieldInfo(init=False)  # pyright: ignore[reportIncompatibleVariableOverride]
+    if TYPE_CHECKING:
+        # Stub to indicate that arbitrary properties are accepted.
+        # To access properties that are not valid identifiers you can use `getattr`, e.g.
+        # `getattr(obj, '$type')`
+        def __getattr__(self, attr: str) -> object: ...
+
+
+class ChoiceLogprobsRefusalTopLogprob(BaseModel):
+    token: str
+
+    logprob: float
+
+    bytes: Optional[List[int]] = None
+
+    __pydantic_extra__: Dict[str, object] = FieldInfo(init=False)  # pyright: ignore[reportIncompatibleVariableOverride]
+    if TYPE_CHECKING:
+        # Stub to indicate that arbitrary properties are accepted.
+        # To access properties that are not valid identifiers you can use `getattr`, e.g.
+        # `getattr(obj, '$type')`
+        def __getattr__(self, attr: str) -> object: ...
+
+
+class ChoiceLogprobsRefusal(BaseModel):
+    token: str
+
+    logprob: float
+
+    top_logprobs: List[ChoiceLogprobsRefusalTopLogprob]
+
+    bytes: Optional[List[int]] = None
+
+    __pydantic_extra__: Dict[str, object] = FieldInfo(init=False)  # pyright: ignore[reportIncompatibleVariableOverride]
+    if TYPE_CHECKING:
+        # Stub to indicate that arbitrary properties are accepted.
+        # To access properties that are not valid identifiers you can use `getattr`, e.g.
+        # `getattr(obj, '$type')`
+        def __getattr__(self, attr: str) -> object: ...
+
+
+class ChoiceLogprobs(BaseModel):
+    content: Optional[List[ChoiceLogprobsContent]] = None
+
+    refusal: Optional[List[ChoiceLogprobsRefusal]] = None
 
     __pydantic_extra__: Dict[str, object] = FieldInfo(init=False)  # pyright: ignore[reportIncompatibleVariableOverride]
     if TYPE_CHECKING:
@@ -216,7 +283,7 @@ class Usage(BaseModel):
         def __getattr__(self, attr: str) -> object: ...
 
 
-class ChatCreateResponse(BaseModel):
+class Completion(BaseModel):
     id: str
 
     choices: List[Choice]

@@ -8,13 +8,13 @@ from typing import TYPE_CHECKING
 import anyio
 
 if TYPE_CHECKING:
-    from ._client import DedalusSDK, AsyncDedalusSDK
+    from ._client import Dedalus, AsyncDedalus
 
 
 class SyncAPIResource:
-    _client: DedalusSDK
+    _client: Dedalus
 
-    def __init__(self, client: DedalusSDK) -> None:
+    def __init__(self, client: Dedalus) -> None:
         self._client = client
         self._get = client.get
         self._post = client.post
@@ -28,9 +28,9 @@ class SyncAPIResource:
 
 
 class AsyncAPIResource:
-    _client: AsyncDedalusSDK
+    _client: AsyncDedalus
 
-    def __init__(self, client: AsyncDedalusSDK) -> None:
+    def __init__(self, client: AsyncDedalus) -> None:
         self._client = client
         self._get = client.get
         self._post = client.post
