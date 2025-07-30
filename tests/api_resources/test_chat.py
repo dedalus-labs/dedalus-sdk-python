@@ -7,9 +7,9 @@ from typing import Any, cast
 
 import pytest
 
-from dedalus_sdk import DedalusSDK, AsyncDedalusSDK
 from tests.utils import assert_matches_type
-from dedalus_sdk.types import ChatCreateResponse
+from dedalus_labs import Dedalus, AsyncDedalus
+from dedalus_labs.types import Completion
 
 base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 
@@ -19,13 +19,13 @@ class TestChat:
 
     @pytest.mark.skip()
     @parametrize
-    def test_method_create(self, client: DedalusSDK) -> None:
+    def test_method_create(self, client: Dedalus) -> None:
         chat = client.chat.create()
-        assert_matches_type(ChatCreateResponse, chat, path=["response"])
+        assert_matches_type(Completion, chat, path=["response"])
 
     @pytest.mark.skip()
     @parametrize
-    def test_method_create_with_all_params(self, client: DedalusSDK) -> None:
+    def test_method_create_with_all_params(self, client: Dedalus) -> None:
         chat = client.chat.create(
             agent_attributes={
                 "accuracy": 0.9,
@@ -79,27 +79,27 @@ class TestChat:
             top_p=0.1,
             user="user-123",
         )
-        assert_matches_type(ChatCreateResponse, chat, path=["response"])
+        assert_matches_type(Completion, chat, path=["response"])
 
     @pytest.mark.skip()
     @parametrize
-    def test_raw_response_create(self, client: DedalusSDK) -> None:
+    def test_raw_response_create(self, client: Dedalus) -> None:
         response = client.chat.with_raw_response.create()
 
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
         chat = response.parse()
-        assert_matches_type(ChatCreateResponse, chat, path=["response"])
+        assert_matches_type(Completion, chat, path=["response"])
 
     @pytest.mark.skip()
     @parametrize
-    def test_streaming_response_create(self, client: DedalusSDK) -> None:
+    def test_streaming_response_create(self, client: Dedalus) -> None:
         with client.chat.with_streaming_response.create() as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
             chat = response.parse()
-            assert_matches_type(ChatCreateResponse, chat, path=["response"])
+            assert_matches_type(Completion, chat, path=["response"])
 
         assert cast(Any, response.is_closed) is True
 
@@ -111,13 +111,13 @@ class TestAsyncChat:
 
     @pytest.mark.skip()
     @parametrize
-    async def test_method_create(self, async_client: AsyncDedalusSDK) -> None:
+    async def test_method_create(self, async_client: AsyncDedalus) -> None:
         chat = await async_client.chat.create()
-        assert_matches_type(ChatCreateResponse, chat, path=["response"])
+        assert_matches_type(Completion, chat, path=["response"])
 
     @pytest.mark.skip()
     @parametrize
-    async def test_method_create_with_all_params(self, async_client: AsyncDedalusSDK) -> None:
+    async def test_method_create_with_all_params(self, async_client: AsyncDedalus) -> None:
         chat = await async_client.chat.create(
             agent_attributes={
                 "accuracy": 0.9,
@@ -171,26 +171,26 @@ class TestAsyncChat:
             top_p=0.1,
             user="user-123",
         )
-        assert_matches_type(ChatCreateResponse, chat, path=["response"])
+        assert_matches_type(Completion, chat, path=["response"])
 
     @pytest.mark.skip()
     @parametrize
-    async def test_raw_response_create(self, async_client: AsyncDedalusSDK) -> None:
+    async def test_raw_response_create(self, async_client: AsyncDedalus) -> None:
         response = await async_client.chat.with_raw_response.create()
 
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
         chat = await response.parse()
-        assert_matches_type(ChatCreateResponse, chat, path=["response"])
+        assert_matches_type(Completion, chat, path=["response"])
 
     @pytest.mark.skip()
     @parametrize
-    async def test_streaming_response_create(self, async_client: AsyncDedalusSDK) -> None:
+    async def test_streaming_response_create(self, async_client: AsyncDedalus) -> None:
         async with async_client.chat.with_streaming_response.create() as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
             chat = await response.parse()
-            assert_matches_type(ChatCreateResponse, chat, path=["response"])
+            assert_matches_type(Completion, chat, path=["response"])
 
         assert cast(Any, response.is_closed) is True

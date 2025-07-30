@@ -18,11 +18,11 @@ __all__ = [
 ]
 
 
-class DedalusSDKError(Exception):
+class DedalusError(Exception):
     pass
 
 
-class APIError(DedalusSDKError):
+class APIError(DedalusError):
     message: str
     request: httpx.Request
 
