@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0-alpha.3 (2025-07-31)
+
+Full Changelog: [v0.1.0-alpha.2...v0.1.0-alpha.3](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.2...v0.1.0-alpha.3)
+
+### Features
+
+* **client:** support file upload requests ([caadecd](https://github.com/dedalus-labs/dedalus-sdk-python/commit/caadecdf5c75297819cd41fe3adcc5f7af3de772))
+
 ## 0.1.0-alpha.2 (2025-07-30)
 
 Full Changelog: [v0.1.0-alpha.1...v0.1.0-alpha.2](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.1...v0.1.0-alpha.2)
