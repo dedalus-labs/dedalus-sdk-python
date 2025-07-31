@@ -55,7 +55,6 @@ class ChatResource(SyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
-        messages: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
         model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
@@ -108,9 +107,7 @@ class ChatResource(SyncAPIResource):
 
             completion = client.chat.create(
                 model="gpt-4",
-                input=[
-                    {"role": "user", "content": "Hello, how are you?"}
-                ]
+                input=[{"role": "user", "content": "Hello, how are you?"}],
             )
 
             print(completion.choices[0].message.content)
@@ -120,19 +117,17 @@ class ChatResource(SyncAPIResource):
             ```python
             completion = client.chat.create(
                 model="gpt-4",
-                input=[
-                    {"role": "user", "content": "Search for recent AI news"}
-                ],
+                input=[{"role": "user", "content": "Search for recent AI news"}],
                 tools=[
                     {
                         "type": "function",
                         "function": {
                             "name": "search_web",
-                            "description": "Search the web for information"
-                        }
+                            "description": "Search the web for information",
+                        },
                     }
                 ],
-                mcp_servers=["dedalus-labs/brave-search"]
+                mcp_servers=["dedalus-labs/brave-search"],
             )
             ```
 
@@ -148,7 +143,9 @@ class ChatResource(SyncAPIResource):
             Streaming response:
             ```python
             stream = client.chat.create(
-                model="gpt-4", input=[{"role": "user", "content": "Tell me a story"}], stream=True
+                model="gpt-4",
+                input=[{"role": "user", "content": "Tell me a story"}],
+                stream=True,
             )
 
             for chunk in stream:
@@ -252,7 +249,6 @@ class ChatResource(SyncAPIResource):
                     "max_tokens": max_tokens,
                     "max_turns": max_turns,
                     "mcp_servers": mcp_servers,
-                    "messages": messages,
                     "model": model,
                     "model_attributes": model_attributes,
                     "n": n,
@@ -306,7 +302,6 @@ class AsyncChatResource(AsyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
-        messages: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
         model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
@@ -359,9 +354,7 @@ class AsyncChatResource(AsyncAPIResource):
 
             completion = client.chat.create(
                 model="gpt-4",
-                input=[
-                    {"role": "user", "content": "Hello, how are you?"}
-                ]
+                input=[{"role": "user", "content": "Hello, how are you?"}],
             )
 
             print(completion.choices[0].message.content)
@@ -371,19 +364,17 @@ class AsyncChatResource(AsyncAPIResource):
             ```python
             completion = client.chat.create(
                 model="gpt-4",
-                input=[
-                    {"role": "user", "content": "Search for recent AI news"}
-                ],
+                input=[{"role": "user", "content": "Search for recent AI news"}],
                 tools=[
                     {
                         "type": "function",
                         "function": {
                             "name": "search_web",
-                            "description": "Search the web for information"
-                        }
+                            "description": "Search the web for information",
+                        },
                     }
                 ],
-                mcp_servers=["dedalus-labs/brave-search"]
+                mcp_servers=["dedalus-labs/brave-search"],
             )
             ```
 
@@ -399,7 +390,9 @@ class AsyncChatResource(AsyncAPIResource):
             Streaming response:
             ```python
             stream = client.chat.create(
-                model="gpt-4", input=[{"role": "user", "content": "Tell me a story"}], stream=True
+                model="gpt-4",
+                input=[{"role": "user", "content": "Tell me a story"}],
+                stream=True,
             )
 
             for chunk in stream:
@@ -503,7 +496,6 @@ class AsyncChatResource(AsyncAPIResource):
                     "max_tokens": max_tokens,
                     "max_turns": max_turns,
                     "mcp_servers": mcp_servers,
-                    "messages": messages,
                     "model": model,
                     "model_attributes": model_attributes,
                     "n": n,

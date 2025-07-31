@@ -33,12 +33,6 @@ client = Dedalus(
 )
 
 completion = client.chat.create(
-    messages=[
-        {
-            "role": "user",
-            "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
-        }
-    ],
     model="gpt-4o-mini",
 )
 print(completion.id)
@@ -65,12 +59,6 @@ client = AsyncDedalus(
 
 async def main() -> None:
     completion = await client.chat.create(
-        messages=[
-            {
-                "role": "user",
-                "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
-            }
-        ],
         model="gpt-4o-mini",
     )
     print(completion.id)
@@ -106,12 +94,6 @@ async def main() -> None:
         http_client=DefaultAioHttpClient(),
     ) as client:
         completion = await client.chat.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
-                }
-            ],
             model="gpt-4o-mini",
         )
         print(completion.id)

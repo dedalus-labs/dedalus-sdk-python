@@ -71,8 +71,6 @@ class ChatCreateParams(TypedDict, total=False):
     separately.
     """
 
-    messages: Optional[Iterable[Dict[str, object]]]
-
     model: Union[str, List[str], None]
     """Model(s) to use for completion.
 
