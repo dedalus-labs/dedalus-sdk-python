@@ -9,7 +9,7 @@ authors = [
 ]
 dependencies = [
     "httpx>=0.23.0, <1",
-    "pydantic>=1.9.0, <3",
+    "pydantic>=2.0.0, <3",
     "typing-extensions>=4.10, <5",
     "anyio>=3.5.0, <5",
     "distro>=1.7.0, <2",
@@ -40,6 +40,7 @@ Repository = "https://github.com/dedalus-labs/dedalus-sdk-python"
 
 [project.optional-dependencies]
 aiohttp = ["aiohttp", "httpx_aiohttp>=0.1.8"]
+beta = ["openai>=1.0.0"]
 
 [tool.rye]
 managed = true

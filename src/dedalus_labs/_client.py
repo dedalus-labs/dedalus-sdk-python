@@ -22,6 +22,13 @@ from ._types import (
 from ._utils import is_given, get_async_library
 from ._version import __version__
 from .resources import chat, root, health, models
+
+# Import OpenAI realtime for beta features
+try:
+    from openai.resources.beta.realtime import Realtime, AsyncRealtime
+    REALTIME_AVAILABLE = True
+except ImportError:
+    REALTIME_AVAILABLE = False
 from ._streaming import Stream as Stream, AsyncStream as AsyncStream
 from ._exceptions import DedalusError, APIStatusError
 from ._base_client import (
@@ -99,6 +106,8 @@ class Dedalus(SyncAPIClient):
         self.health = health.HealthResource(self)
         self.models = models.ModelsResource(self)
         self.chat = chat.ChatResource(self)
+        if REALTIME_AVAILABLE:
+            self.realtime = Realtime(self)
         self.with_raw_response = DedalusWithRawResponse(self)
         self.with_streaming_response = DedalusWithStreamedResponse(self)
 
@@ -273,6 +282,8 @@ class AsyncDedalus(AsyncAPIClient):
         self.health = health.AsyncHealthResource(self)
         self.models = models.AsyncModelsResource(self)
         self.chat = chat.AsyncChatResource(self)
+        if REALTIME_AVAILABLE:
+            self.realtime = AsyncRealtime(self)
         self.with_raw_response = AsyncDedalusWithRawResponse(self)
         self.with_streaming_response = AsyncDedalusWithStreamedResponse(self)
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Dict, List, Union, Iterable, Optional
+from typing_extensions import overload
 
 import httpx
 
@@ -19,6 +20,8 @@ from .._response import (
 )
 from .._base_client import make_request_options
 from ..types.completion import Completion
+from .._streaming import Stream, AsyncStream
+from openai.types.chat import ChatCompletionChunk
 
 __all__ = ["ChatResource", "AsyncChatResource"]
 
@@ -42,6 +45,68 @@ class ChatResource(SyncAPIResource):
         For more information, see https://www.github.com/dedalus-labs/dedalus-sdk-python#with_streaming_response
         """
         return ChatResourceWithStreamingResponse(self)
+
+    @overload
+    def create(
+        self,
+        *,
+        agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
+        frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
+        guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
+        input: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        logit_bias: Optional[Dict[str, int]] | NotGiven = NOT_GIVEN,
+        max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
+        max_turns: Optional[int] | NotGiven = NOT_GIVEN,
+        mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
+        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
+        n: Optional[int] | NotGiven = NOT_GIVEN,
+        presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
+        stop: Optional[List[str]] | NotGiven = NOT_GIVEN,
+        stream: bool = False,
+        temperature: Optional[float] | NotGiven = NOT_GIVEN,
+        tool_choice: Union[str, Dict[str, object], None] | NotGiven = NOT_GIVEN,
+        tools: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        top_p: Optional[float] | NotGiven = NOT_GIVEN,
+        user: Optional[str] | NotGiven = NOT_GIVEN,
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+    ) -> Completion:
+        ...
+
+    @overload 
+    def create(
+        self,
+        *,
+        agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
+        frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
+        guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
+        input: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        logit_bias: Optional[Dict[str, int]] | NotGiven = NOT_GIVEN,
+        max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
+        max_turns: Optional[int] | NotGiven = NOT_GIVEN,
+        mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
+        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
+        n: Optional[int] | NotGiven = NOT_GIVEN,
+        presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
+        stop: Optional[List[str]] | NotGiven = NOT_GIVEN,
+        stream: bool = True,
+        temperature: Optional[float] | NotGiven = NOT_GIVEN,
+        tool_choice: Union[str, Dict[str, object], None] | NotGiven = NOT_GIVEN,
+        tools: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        top_p: Optional[float] | NotGiven = NOT_GIVEN,
+        user: Optional[str] | NotGiven = NOT_GIVEN,
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+    ) -> Stream[ChatCompletionChunk]:
+        ...
 
     def create(
         self,
@@ -72,7 +137,7 @@ class ChatResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Completion:
+    ) -> Union[Completion, Stream[ChatCompletionChunk]]:
         """
         Create a chat completion using the Agent framework.
 
@@ -267,6 +332,8 @@ class ChatResource(SyncAPIResource):
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
             cast_to=Completion,
+            stream=stream or False,
+            stream_cls=Stream[ChatCompletionChunk],
         )
 
 
@@ -289,6 +356,68 @@ class AsyncChatResource(AsyncAPIResource):
         For more information, see https://www.github.com/dedalus-labs/dedalus-sdk-python#with_streaming_response
         """
         return AsyncChatResourceWithStreamingResponse(self)
+
+    @overload
+    async def create(
+        self,
+        *,
+        agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
+        frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
+        guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
+        input: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        logit_bias: Optional[Dict[str, int]] | NotGiven = NOT_GIVEN,
+        max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
+        max_turns: Optional[int] | NotGiven = NOT_GIVEN,
+        mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
+        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
+        n: Optional[int] | NotGiven = NOT_GIVEN,
+        presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
+        stop: Optional[List[str]] | NotGiven = NOT_GIVEN,
+        stream: bool = False,
+        temperature: Optional[float] | NotGiven = NOT_GIVEN,
+        tool_choice: Union[str, Dict[str, object], None] | NotGiven = NOT_GIVEN,
+        tools: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        top_p: Optional[float] | NotGiven = NOT_GIVEN,
+        user: Optional[str] | NotGiven = NOT_GIVEN,
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+    ) -> Completion:
+        ...
+
+    @overload 
+    async def create(
+        self,
+        *,
+        agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
+        frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
+        guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
+        input: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        logit_bias: Optional[Dict[str, int]] | NotGiven = NOT_GIVEN,
+        max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
+        max_turns: Optional[int] | NotGiven = NOT_GIVEN,
+        mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
+        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
+        n: Optional[int] | NotGiven = NOT_GIVEN,
+        presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
+        stop: Optional[List[str]] | NotGiven = NOT_GIVEN,
+        stream: bool = True,
+        temperature: Optional[float] | NotGiven = NOT_GIVEN,
+        tool_choice: Union[str, Dict[str, object], None] | NotGiven = NOT_GIVEN,
+        tools: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        top_p: Optional[float] | NotGiven = NOT_GIVEN,
+        user: Optional[str] | NotGiven = NOT_GIVEN,
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
+    ) -> AsyncStream[ChatCompletionChunk]:
+        ...
 
     async def create(
         self,
@@ -319,7 +448,7 @@ class AsyncChatResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Completion:
+    ) -> Union[Completion, AsyncStream[ChatCompletionChunk]]:
         """
         Create a chat completion using the Agent framework.
 
@@ -514,6 +643,8 @@ class AsyncChatResource(AsyncAPIResource):
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
             cast_to=Completion,
+            stream=stream or False,
+            stream_cls=AsyncStream[ChatCompletionChunk],
         )
 
 
