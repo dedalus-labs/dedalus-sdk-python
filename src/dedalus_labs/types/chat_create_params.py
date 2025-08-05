@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from typing import Dict, List, Union, Iterable, Optional
-from typing_extensions import TypedDict
+from typing_extensions import Literal, Required, TypedDict
 
-__all__ = ["ChatCreateParams"]
+__all__ = ["ChatCreateParamsBase", "ChatCreateParamsNonStreaming", "ChatCreateParamsStreaming"]
 
 
-class ChatCreateParams(TypedDict, total=False):
+class ChatCreateParamsBase(TypedDict, total=False):
     agent_attributes: Optional[Dict[str, float]]
     """Attributes for the agent itself, influencing behavior and model selection.
 
@@ -104,12 +104,6 @@ class ChatCreateParams(TypedDict, total=False):
     The model will stop as soon as it encounters any of these sequences.
     """
 
-    stream: Optional[bool]
-    """Whether to stream back partial message deltas as Server-Sent Events.
-
-    When true, partial message deltas will be sent as chunks in OpenAI format.
-    """
-
     temperature: Optional[float]
     """Sampling temperature (0 to 2).
 
@@ -144,3 +138,22 @@ class ChatCreateParams(TypedDict, total=False):
     Used for monitoring and abuse detection. Should be consistent across requests
     from the same user.
     """
+
+
+class ChatCreateParamsNonStreaming(ChatCreateParamsBase, total=False):
+    stream: Optional[Literal[False]]
+    """Whether to stream back partial message deltas as Server-Sent Events.
+
+    When true, partial message deltas will be sent as chunks in OpenAI format.
+    """
+
+
+class ChatCreateParamsStreaming(ChatCreateParamsBase):
+    stream: Required[Literal[True]]
+    """Whether to stream back partial message deltas as Server-Sent Events.
+
+    When true, partial message deltas will be sent as chunks in OpenAI format.
+    """
+
+
+ChatCreateParams = Union[ChatCreateParamsNonStreaming, ChatCreateParamsStreaming]
