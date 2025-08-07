@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.0-alpha.4 (2025-08-07)
+
+Full Changelog: [v0.1.0-alpha.3...v0.1.0-alpha.4](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.3...v0.1.0-alpha.4)
+
+### Features
+
+* **api:** streaming schemas ([4a98e16](https://github.com/dedalus-labs/dedalus-sdk-python/commit/4a98e16c5cb406ecabcc30e262299d2eed3517bf))
+
+
+### Chores
+
+* **internal:** fix ruff target version ([59fdbfc](https://github.com/dedalus-labs/dedalus-sdk-python/commit/59fdbfc95857204f04c35acd156665a54a7825c6))
+
 ## 0.1.0-alpha.3 (2025-08-05)
 
 Full Changelog: [v0.1.0-alpha.2...v0.1.0-alpha.3](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.2...v0.1.0-alpha.3)
