@@ -21,6 +21,7 @@ from .._response import (
 from .._streaming import Stream, AsyncStream
 from .._base_client import make_request_options
 from ..types.completion import Completion
+from ..types.stream_chunk import StreamChunk
 
 __all__ = ["ChatResource", "AsyncChatResource"]
 
@@ -271,7 +272,7 @@ class ChatResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Stream[Completion]:
+    ) -> Stream[StreamChunk]:
         """
         Create a chat completion using the Agent framework.
 
@@ -467,7 +468,7 @@ class ChatResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Completion | Stream[Completion]:
+    ) -> Completion | Stream[StreamChunk]:
         """
         Create a chat completion using the Agent framework.
 
@@ -662,7 +663,7 @@ class ChatResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Completion | Stream[Completion]:
+    ) -> Completion | Stream[StreamChunk]:
         return self._post(
             "/v1/chat",
             body=maybe_transform(
@@ -697,7 +698,7 @@ class ChatResource(SyncAPIResource):
             ),
             cast_to=Completion,
             stream=stream or False,
-            stream_cls=Stream[Completion],
+            stream_cls=Stream[StreamChunk],
         )
 
 
@@ -947,7 +948,7 @@ class AsyncChatResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> AsyncStream[Completion]:
+    ) -> AsyncStream[StreamChunk]:
         """
         Create a chat completion using the Agent framework.
 
@@ -1143,7 +1144,7 @@ class AsyncChatResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Completion | AsyncStream[Completion]:
+    ) -> Completion | AsyncStream[StreamChunk]:
         """
         Create a chat completion using the Agent framework.
 
@@ -1338,7 +1339,7 @@ class AsyncChatResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Completion | AsyncStream[Completion]:
+    ) -> Completion | AsyncStream[StreamChunk]:
         return await self._post(
             "/v1/chat",
             body=await async_maybe_transform(
@@ -1373,7 +1374,7 @@ class AsyncChatResource(AsyncAPIResource):
             ),
             cast_to=Completion,
             stream=stream or False,
-            stream_cls=AsyncStream[Completion],
+            stream_cls=AsyncStream[StreamChunk],
         )
 
 

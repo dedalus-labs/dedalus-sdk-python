@@ -24,6 +24,7 @@ from pydantic import ValidationError
 from dedalus_labs import Dedalus, AsyncDedalus, APIResponseValidationError
 from dedalus_labs._types import Omit
 from dedalus_labs._models import BaseModel, FinalRequestOptions
+from dedalus_labs._streaming import Stream, AsyncStream
 from dedalus_labs._exceptions import DedalusError, APIStatusError, APITimeoutError, APIResponseValidationError
 from dedalus_labs._base_client import (
     DEFAULT_TIMEOUT,
@@ -661,6 +662,17 @@ class TestDedalus:
     def test_client_max_retries_validation(self) -> None:
         with pytest.raises(TypeError, match=r"max_retries cannot be None"):
             Dedalus(base_url=base_url, api_key=api_key, _strict_response_validation=True, max_retries=cast(Any, None))
+
+    @pytest.mark.respx(base_url=base_url)
+    def test_default_stream_cls(self, respx_mock: MockRouter) -> None:
+        class Model(BaseModel):
+            name: str
+
+        respx_mock.post("/foo").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
+
+        stream = self.client.post("/foo", cast_to=Model, stream=True, stream_cls=Stream[Model])
+        assert isinstance(stream, Stream)
+        stream.response.close()
 
     @pytest.mark.respx(base_url=base_url)
     def test_received_text_for_expected_json(self, respx_mock: MockRouter) -> None:
@@ -1474,6 +1486,18 @@ class TestAsyncDedalus:
             AsyncDedalus(
                 base_url=base_url, api_key=api_key, _strict_response_validation=True, max_retries=cast(Any, None)
             )
+
+    @pytest.mark.respx(base_url=base_url)
+    @pytest.mark.asyncio
+    async def test_default_stream_cls(self, respx_mock: MockRouter) -> None:
+        class Model(BaseModel):
+            name: str
+
+        respx_mock.post("/foo").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
+
+        stream = await self.client.post("/foo", cast_to=Model, stream=True, stream_cls=AsyncStream[Model])
+        assert isinstance(stream, AsyncStream)
+        await stream.response.aclose()
 
     @pytest.mark.respx(base_url=base_url)
     @pytest.mark.asyncio

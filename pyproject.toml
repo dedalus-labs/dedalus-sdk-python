@@ -1,6 +1,6 @@
 [project]
 name = "dedalus_labs"
-version = "0.1.0-alpha.3"
+version = "0.1.0-alpha.4"
 description = "The official Python library for the dedalus API"
 dynamic = ["readme"]
 license = "MIT"
@@ -159,7 +159,7 @@ reportPrivateUsage = false
 [tool.ruff]
 line-length = 120
 output-format = "grouped"
-target-version = "py37"
+target-version = "py38"
 
 [tool.ruff.format]
 docstring-code-format = true
