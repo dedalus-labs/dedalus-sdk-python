@@ -40,7 +40,7 @@ Methods:
 Types:
 
 ```python
-from dedalus_labs.types import Completion, CompletionRequest
+from dedalus_labs.types import Completion, CompletionRequest, StreamChunk
 ```
 
 Methods:
