@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.1.0-alpha.5 (2025-08-09)
+
+Full Changelog: [v0.1.0-alpha.4...v0.1.0-alpha.5](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.4...v0.1.0-alpha.5)
+
+### Features
+
+* **api:** fixing streaming again ([5941d46](https://github.com/dedalus-labs/dedalus-sdk-python/commit/5941d4689192cd099836d201b386ab1503c1fe2b))
+* **api:** logic adj ([a45af92](https://github.com/dedalus-labs/dedalus-sdk-python/commit/a45af925e9dcf78e96759532fefdf107f011177e))
+* **api:** ModelConfig ([984626d](https://github.com/dedalus-labs/dedalus-sdk-python/commit/984626d0bc599656a3cdf9c475f4555d1008983a))
+* **api:** spec concise ([a38503a](https://github.com/dedalus-labs/dedalus-sdk-python/commit/a38503a65686e3d621f1824536ec1ab6c81515d3))
+* **api:** to_schema and Model class ([3bd4b91](https://github.com/dedalus-labs/dedalus-sdk-python/commit/3bd4b9173773b28ddda3707dfd0dc2fc408dc0a7))
+
+
+### Chores
+
+* **internal:** update comment in script ([9c49fad](https://github.com/dedalus-labs/dedalus-sdk-python/commit/9c49fad176ac16c1b204261229a1e385df62df0f))
+* update @stainless-api/prism-cli to v5.15.0 ([ce42854](https://github.com/dedalus-labs/dedalus-sdk-python/commit/ce428545f33a6d02b9b1497a2cd93f4af0cb1740))
+
 ## 0.1.0-alpha.4 (2025-08-07)
 
 Full Changelog: [v0.1.0-alpha.3...v0.1.0-alpha.4](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.3...v0.1.0-alpha.4)
