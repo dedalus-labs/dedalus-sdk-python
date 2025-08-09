@@ -59,7 +59,7 @@ class ChatResource(SyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
-        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -193,10 +193,12 @@ class ChatResource(SyncAPIResource):
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
 
-          model: Model(s) to use for completion. Can be a single model ID or a list for
-              multi-model routing. Single model: 'gpt-4', 'claude-3-5-sonnet-20241022',
-              'gpt-4o-mini'. Multi-model routing: ['gpt-4o-mini', 'gpt-4',
-              'claude-3-5-sonnet'] - agent will choose optimal model based on task complexity.
+          model: Model(s) to use for completion. Can be a single model ID, a ModelConfig object
+              (optionally with per-model 'settings'), or a list for multi-model routing.
+              Single model: 'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model
+              instance. Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or
+              list of ModelConfig objects - agent will choose optimal model based on task
+              complexity.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
               execution. Format: {'model_name': {'attribute': value}}, where values are
@@ -256,7 +258,7 @@ class ChatResource(SyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
-        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -392,10 +394,12 @@ class ChatResource(SyncAPIResource):
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
 
-          model: Model(s) to use for completion. Can be a single model ID or a list for
-              multi-model routing. Single model: 'gpt-4', 'claude-3-5-sonnet-20241022',
-              'gpt-4o-mini'. Multi-model routing: ['gpt-4o-mini', 'gpt-4',
-              'claude-3-5-sonnet'] - agent will choose optimal model based on task complexity.
+          model: Model(s) to use for completion. Can be a single model ID, a ModelConfig object
+              (optionally with per-model 'settings'), or a list for multi-model routing.
+              Single model: 'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model
+              instance. Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or
+              list of ModelConfig objects - agent will choose optimal model based on task
+              complexity.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
               execution. Format: {'model_name': {'attribute': value}}, where values are
@@ -452,7 +456,7 @@ class ChatResource(SyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
-        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -588,10 +592,12 @@ class ChatResource(SyncAPIResource):
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
 
-          model: Model(s) to use for completion. Can be a single model ID or a list for
-              multi-model routing. Single model: 'gpt-4', 'claude-3-5-sonnet-20241022',
-              'gpt-4o-mini'. Multi-model routing: ['gpt-4o-mini', 'gpt-4',
-              'claude-3-5-sonnet'] - agent will choose optimal model based on task complexity.
+          model: Model(s) to use for completion. Can be a single model ID, a ModelConfig object
+              (optionally with per-model 'settings'), or a list for multi-model routing.
+              Single model: 'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model
+              instance. Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or
+              list of ModelConfig objects - agent will choose optimal model based on task
+              complexity.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
               execution. Format: {'model_name': {'attribute': value}}, where values are
@@ -646,7 +652,7 @@ class ChatResource(SyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
-        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -735,7 +741,7 @@ class AsyncChatResource(AsyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
-        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -869,10 +875,12 @@ class AsyncChatResource(AsyncAPIResource):
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
 
-          model: Model(s) to use for completion. Can be a single model ID or a list for
-              multi-model routing. Single model: 'gpt-4', 'claude-3-5-sonnet-20241022',
-              'gpt-4o-mini'. Multi-model routing: ['gpt-4o-mini', 'gpt-4',
-              'claude-3-5-sonnet'] - agent will choose optimal model based on task complexity.
+          model: Model(s) to use for completion. Can be a single model ID, a ModelConfig object
+              (optionally with per-model 'settings'), or a list for multi-model routing.
+              Single model: 'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model
+              instance. Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or
+              list of ModelConfig objects - agent will choose optimal model based on task
+              complexity.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
               execution. Format: {'model_name': {'attribute': value}}, where values are
@@ -932,7 +940,7 @@ class AsyncChatResource(AsyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
-        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -1068,10 +1076,12 @@ class AsyncChatResource(AsyncAPIResource):
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
 
-          model: Model(s) to use for completion. Can be a single model ID or a list for
-              multi-model routing. Single model: 'gpt-4', 'claude-3-5-sonnet-20241022',
-              'gpt-4o-mini'. Multi-model routing: ['gpt-4o-mini', 'gpt-4',
-              'claude-3-5-sonnet'] - agent will choose optimal model based on task complexity.
+          model: Model(s) to use for completion. Can be a single model ID, a ModelConfig object
+              (optionally with per-model 'settings'), or a list for multi-model routing.
+              Single model: 'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model
+              instance. Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or
+              list of ModelConfig objects - agent will choose optimal model based on task
+              complexity.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
               execution. Format: {'model_name': {'attribute': value}}, where values are
@@ -1128,7 +1138,7 @@ class AsyncChatResource(AsyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
-        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -1264,10 +1274,12 @@ class AsyncChatResource(AsyncAPIResource):
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
 
-          model: Model(s) to use for completion. Can be a single model ID or a list for
-              multi-model routing. Single model: 'gpt-4', 'claude-3-5-sonnet-20241022',
-              'gpt-4o-mini'. Multi-model routing: ['gpt-4o-mini', 'gpt-4',
-              'claude-3-5-sonnet'] - agent will choose optimal model based on task complexity.
+          model: Model(s) to use for completion. Can be a single model ID, a ModelConfig object
+              (optionally with per-model 'settings'), or a list for multi-model routing.
+              Single model: 'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model
+              instance. Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or
+              list of ModelConfig objects - agent will choose optimal model based on task
+              complexity.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
               execution. Format: {'model_name': {'attribute': value}}, where values are
@@ -1322,7 +1334,7 @@ class AsyncChatResource(AsyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
-        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,

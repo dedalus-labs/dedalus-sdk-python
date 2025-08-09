@@ -36,7 +36,7 @@ completion = client.chat.create(
     input=[
         {
             "role": "user",
-            "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+            "content": "Hello, how are you?",
         }
     ],
     model="gpt-4o-mini",
@@ -68,7 +68,7 @@ async def main() -> None:
         input=[
             {
                 "role": "user",
-                "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+                "content": "Hello, how are you?",
             }
         ],
         model="gpt-4o-mini",
@@ -109,7 +109,7 @@ async def main() -> None:
             input=[
                 {
                     "role": "user",
-                    "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+                    "content": "Hello, how are you?",
                 }
             ],
             model="gpt-4o-mini",

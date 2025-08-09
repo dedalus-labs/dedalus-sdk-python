@@ -3,9 +3,16 @@
 from __future__ import annotations
 
 from typing import Dict, List, Union, Iterable, Optional
-from typing_extensions import Literal, Required, TypedDict
+from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
-__all__ = ["ChatCreateParamsBase", "ChatCreateParamsNonStreaming", "ChatCreateParamsStreaming"]
+__all__ = [
+    "ChatCreateParamsBase",
+    "Model",
+    "ModelModelConfig",
+    "ModelModelConfigList",
+    "ChatCreateParamsNonStreaming",
+    "ChatCreateParamsStreaming",
+]
 
 
 class ChatCreateParamsBase(TypedDict, total=False):
@@ -71,13 +78,14 @@ class ChatCreateParamsBase(TypedDict, total=False):
     separately.
     """
 
-    model: Union[str, List[str], None]
+    model: Optional[Model]
     """Model(s) to use for completion.
 
-    Can be a single model ID or a list for multi-model routing. Single model:
-    'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini'. Multi-model routing:
-    ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] - agent will choose optimal model
-    based on task complexity.
+    Can be a single model ID, a ModelConfig object (optionally with per-model
+    'settings'), or a list for multi-model routing. Single model: 'gpt-4',
+    'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model instance. Multi-model
+    routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or list of ModelConfig
+    objects - agent will choose optimal model based on task complexity.
     """
 
     model_attributes: Optional[Dict[str, Dict[str, float]]]
@@ -138,6 +146,31 @@ class ChatCreateParamsBase(TypedDict, total=False):
     Used for monitoring and abuse detection. Should be consistent across requests
     from the same user.
     """
+
+
+class ModelModelConfig(TypedDict, total=False):
+    name: Required[str]
+    """Model identifier, e.g. 'gpt-4' or 'claude-3-5-sonnet-20241022'."""
+
+    attributes: Optional[Dict[str, float]]
+    """Numeric attributes used by routing (0.0–1.0), e.g. intelligence, speed, cost."""
+
+    settings: Optional[Dict[str, object]]
+    """Per-model generation settings like temperature, max_tokens, etc."""
+
+
+class ModelModelConfigList(TypedDict, total=False):
+    name: Required[str]
+    """Model identifier, e.g. 'gpt-4' or 'claude-3-5-sonnet-20241022'."""
+
+    attributes: Optional[Dict[str, float]]
+    """Numeric attributes used by routing (0.0–1.0), e.g. intelligence, speed, cost."""
+
+    settings: Optional[Dict[str, object]]
+    """Per-model generation settings like temperature, max_tokens, etc."""
+
+
+Model: TypeAlias = Union[str, List[str], ModelModelConfig, Iterable[ModelModelConfigList]]
 
 
 class ChatCreateParamsNonStreaming(ChatCreateParamsBase, total=False):
