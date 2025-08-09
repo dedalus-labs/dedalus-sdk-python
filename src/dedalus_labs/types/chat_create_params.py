@@ -3,9 +3,16 @@
 from __future__ import annotations
 
 from typing import Dict, List, Union, Iterable, Optional
-from typing_extensions import Literal, Required, TypedDict
+from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
-__all__ = ["ChatCreateParamsBase", "ChatCreateParamsNonStreaming", "ChatCreateParamsStreaming"]
+__all__ = [
+    "ChatCreateParamsBase",
+    "Model",
+    "ModelUnionMember2",
+    "ModelUnionMember3",
+    "ChatCreateParamsNonStreaming",
+    "ChatCreateParamsStreaming",
+]
 
 
 class ChatCreateParamsBase(TypedDict, total=False):
@@ -71,13 +78,14 @@ class ChatCreateParamsBase(TypedDict, total=False):
     separately.
     """
 
-    model: Union[str, List[str], None]
+    model: Optional[Model]
     """Model(s) to use for completion.
 
-    Can be a single model ID or a list for multi-model routing. Single model:
-    'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini'. Multi-model routing:
-    ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] - agent will choose optimal model
-    based on task complexity.
+    Can be a single model ID, a Model object, or a list for multi-model routing.
+    Single model: 'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model
+    instance. Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or
+    list of Model objects - agent will choose optimal model based on task
+    complexity.
     """
 
     model_attributes: Optional[Dict[str, Dict[str, float]]]
@@ -138,6 +146,21 @@ class ChatCreateParamsBase(TypedDict, total=False):
     Used for monitoring and abuse detection. Should be consistent across requests
     from the same user.
     """
+
+
+class ModelUnionMember2(TypedDict, total=False):
+    name: Required[str]
+
+    attributes: Optional[Dict[str, float]]
+
+
+class ModelUnionMember3(TypedDict, total=False):
+    name: Required[str]
+
+    attributes: Optional[Dict[str, float]]
+
+
+Model: TypeAlias = Union[str, List[str], ModelUnionMember2, Iterable[ModelUnionMember3]]
 
 
 class ChatCreateParamsNonStreaming(ChatCreateParamsBase, total=False):
