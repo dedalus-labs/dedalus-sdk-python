@@ -8,8 +8,8 @@ from typing_extensions import Literal, Required, TypeAlias, TypedDict
 __all__ = [
     "ChatCreateParamsBase",
     "Model",
-    "ModelUnionMember2",
-    "ModelUnionMember3",
+    "ModelModelInput",
+    "ModelModelObjectArray",
     "ChatCreateParamsNonStreaming",
     "ChatCreateParamsStreaming",
 ]
@@ -148,19 +148,23 @@ class ChatCreateParamsBase(TypedDict, total=False):
     """
 
 
-class ModelUnionMember2(TypedDict, total=False):
+class ModelModelInput(TypedDict, total=False):
     name: Required[str]
+    """Model identifier"""
 
     attributes: Optional[Dict[str, float]]
+    """Model attributes for routing decisions (0.0-1.0 range)"""
 
 
-class ModelUnionMember3(TypedDict, total=False):
+class ModelModelObjectArray(TypedDict, total=False):
     name: Required[str]
+    """Model identifier"""
 
     attributes: Optional[Dict[str, float]]
+    """Model attributes for routing decisions (0.0-1.0 range)"""
 
 
-Model: TypeAlias = Union[str, List[str], ModelUnionMember2, Iterable[ModelUnionMember3]]
+Model: TypeAlias = Union[str, List[str], ModelModelInput, Iterable[ModelModelObjectArray]]
 
 
 class ChatCreateParamsNonStreaming(ChatCreateParamsBase, total=False):
