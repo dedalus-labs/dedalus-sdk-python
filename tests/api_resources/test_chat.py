@@ -27,56 +27,24 @@ class TestChat:
     @parametrize
     def test_method_create_with_all_params_overload_1(self, client: Dedalus) -> None:
         chat = client.chat.create(
-            agent_attributes={
-                "accuracy": 0.9,
-                "complexity": 0.8,
-                "efficiency": 0.7,
-            },
-            frequency_penalty=-0.5,
-            guardrails=[{"foo": "bar"}],
-            handoff_config={"foo": "bar"},
-            input=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
-            logit_bias={"50256": -100},
-            max_tokens=100,
-            max_turns=5,
-            mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
-            model="gpt-4",
-            model_attributes={
-                "claude-3-5-sonnet": {
-                    "cost": 0.7,
-                    "creativity": 0.8,
-                    "intelligence": 0.95,
-                },
-                "gpt-4": {
-                    "cost": 0.8,
-                    "intelligence": 0.9,
-                    "speed": 0.6,
-                },
-                "gpt-4o-mini": {
-                    "cost": 0.2,
-                    "intelligence": 0.7,
-                    "speed": 0.9,
-                },
-            },
+            agent_attributes={"foo": 0},
+            frequency_penalty=-2,
+            input=[{}],
+            logit_bias={"foo": 0},
+            max_tokens=1,
+            max_turns=1,
+            mcp_servers=["string"],
+            model="string",
+            model_attributes={"foo": {"foo": 0}},
             n=1,
-            presence_penalty=-0.5,
-            stop=["\\n", "END"],
+            presence_penalty=-2,
+            stop=["string"],
             stream=False,
             temperature=0,
-            tool_choice="auto",
-            tools=[
-                {
-                    "function": "bar",
-                    "type": "bar",
-                }
-            ],
-            top_p=0.1,
-            user="user-123",
+            tool_choice="string",
+            tools=[{}],
+            top_p=0,
+            user="user",
         )
         assert_matches_type(Completion, chat, path=["response"])
 
@@ -115,55 +83,23 @@ class TestChat:
     def test_method_create_with_all_params_overload_2(self, client: Dedalus) -> None:
         chat_stream = client.chat.create(
             stream=True,
-            agent_attributes={
-                "accuracy": 0.9,
-                "complexity": 0.8,
-                "efficiency": 0.7,
-            },
-            frequency_penalty=-0.5,
-            guardrails=[{"foo": "bar"}],
-            handoff_config={"foo": "bar"},
-            input=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
-            logit_bias={"50256": -100},
-            max_tokens=100,
-            max_turns=5,
-            mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
-            model="gpt-4",
-            model_attributes={
-                "claude-3-5-sonnet": {
-                    "cost": 0.7,
-                    "creativity": 0.8,
-                    "intelligence": 0.95,
-                },
-                "gpt-4": {
-                    "cost": 0.8,
-                    "intelligence": 0.9,
-                    "speed": 0.6,
-                },
-                "gpt-4o-mini": {
-                    "cost": 0.2,
-                    "intelligence": 0.7,
-                    "speed": 0.9,
-                },
-            },
+            agent_attributes={"foo": 0},
+            frequency_penalty=-2,
+            input=[{}],
+            logit_bias={"foo": 0},
+            max_tokens=1,
+            max_turns=1,
+            mcp_servers=["string"],
+            model="string",
+            model_attributes={"foo": {"foo": 0}},
             n=1,
-            presence_penalty=-0.5,
-            stop=["\\n", "END"],
+            presence_penalty=-2,
+            stop=["string"],
             temperature=0,
-            tool_choice="auto",
-            tools=[
-                {
-                    "function": "bar",
-                    "type": "bar",
-                }
-            ],
-            top_p=0.1,
-            user="user-123",
+            tool_choice="string",
+            tools=[{}],
+            top_p=0,
+            user="user",
         )
         chat_stream.response.close()
 
@@ -208,56 +144,24 @@ class TestAsyncChat:
     @parametrize
     async def test_method_create_with_all_params_overload_1(self, async_client: AsyncDedalus) -> None:
         chat = await async_client.chat.create(
-            agent_attributes={
-                "accuracy": 0.9,
-                "complexity": 0.8,
-                "efficiency": 0.7,
-            },
-            frequency_penalty=-0.5,
-            guardrails=[{"foo": "bar"}],
-            handoff_config={"foo": "bar"},
-            input=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
-            logit_bias={"50256": -100},
-            max_tokens=100,
-            max_turns=5,
-            mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
-            model="gpt-4",
-            model_attributes={
-                "claude-3-5-sonnet": {
-                    "cost": 0.7,
-                    "creativity": 0.8,
-                    "intelligence": 0.95,
-                },
-                "gpt-4": {
-                    "cost": 0.8,
-                    "intelligence": 0.9,
-                    "speed": 0.6,
-                },
-                "gpt-4o-mini": {
-                    "cost": 0.2,
-                    "intelligence": 0.7,
-                    "speed": 0.9,
-                },
-            },
+            agent_attributes={"foo": 0},
+            frequency_penalty=-2,
+            input=[{}],
+            logit_bias={"foo": 0},
+            max_tokens=1,
+            max_turns=1,
+            mcp_servers=["string"],
+            model="string",
+            model_attributes={"foo": {"foo": 0}},
             n=1,
-            presence_penalty=-0.5,
-            stop=["\\n", "END"],
+            presence_penalty=-2,
+            stop=["string"],
             stream=False,
             temperature=0,
-            tool_choice="auto",
-            tools=[
-                {
-                    "function": "bar",
-                    "type": "bar",
-                }
-            ],
-            top_p=0.1,
-            user="user-123",
+            tool_choice="string",
+            tools=[{}],
+            top_p=0,
+            user="user",
         )
         assert_matches_type(Completion, chat, path=["response"])
 
@@ -296,55 +200,23 @@ class TestAsyncChat:
     async def test_method_create_with_all_params_overload_2(self, async_client: AsyncDedalus) -> None:
         chat_stream = await async_client.chat.create(
             stream=True,
-            agent_attributes={
-                "accuracy": 0.9,
-                "complexity": 0.8,
-                "efficiency": 0.7,
-            },
-            frequency_penalty=-0.5,
-            guardrails=[{"foo": "bar"}],
-            handoff_config={"foo": "bar"},
-            input=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
-            logit_bias={"50256": -100},
-            max_tokens=100,
-            max_turns=5,
-            mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
-            model="gpt-4",
-            model_attributes={
-                "claude-3-5-sonnet": {
-                    "cost": 0.7,
-                    "creativity": 0.8,
-                    "intelligence": 0.95,
-                },
-                "gpt-4": {
-                    "cost": 0.8,
-                    "intelligence": 0.9,
-                    "speed": 0.6,
-                },
-                "gpt-4o-mini": {
-                    "cost": 0.2,
-                    "intelligence": 0.7,
-                    "speed": 0.9,
-                },
-            },
+            agent_attributes={"foo": 0},
+            frequency_penalty=-2,
+            input=[{}],
+            logit_bias={"foo": 0},
+            max_tokens=1,
+            max_turns=1,
+            mcp_servers=["string"],
+            model="string",
+            model_attributes={"foo": {"foo": 0}},
             n=1,
-            presence_penalty=-0.5,
-            stop=["\\n", "END"],
+            presence_penalty=-2,
+            stop=["string"],
             temperature=0,
-            tool_choice="auto",
-            tools=[
-                {
-                    "function": "bar",
-                    "type": "bar",
-                }
-            ],
-            top_p=0.1,
-            user="user-123",
+            tool_choice="string",
+            tools=[{}],
+            top_p=0,
+            user="user",
         )
         await chat_stream.response.aclose()
 

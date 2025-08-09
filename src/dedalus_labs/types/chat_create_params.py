@@ -8,8 +8,10 @@ from typing_extensions import Literal, Required, TypeAlias, TypedDict
 __all__ = [
     "ChatCreateParamsBase",
     "Model",
-    "ModelModelInput",
-    "ModelModelObjectArray",
+    "ModelModel",
+    "ModelModelSettings",
+    "ModelUnionMember3",
+    "ModelUnionMember3Settings",
     "ChatCreateParamsNonStreaming",
     "ChatCreateParamsStreaming",
 ]
@@ -17,33 +19,16 @@ __all__ = [
 
 class ChatCreateParamsBase(TypedDict, total=False):
     agent_attributes: Optional[Dict[str, float]]
-    """Attributes for the agent itself, influencing behavior and model selection.
-
-    Format: {'attribute': value}, where values are 0.0-1.0. Common attributes:
-    'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
-    values indicate stronger preference for that characteristic.
-    """
+    """Attributes for the agent itself, influencing behavior and model selection."""
 
     frequency_penalty: Optional[float]
     """Frequency penalty (-2 to 2).
 
     Positive values penalize new tokens based on their existing frequency in the
-    text so far, decreasing likelihood of repeated phrases.
+    text so far.
     """
 
-    guardrails: Optional[Iterable[Dict[str, object]]]
-    """Guardrails to apply to the agent for input/output validation and safety checks.
-
-    Reserved for future use - guardrails configuration format not yet finalized.
-    """
-
-    handoff_config: Optional[Dict[str, object]]
-    """Configuration for multi-model handoffs and agent orchestration.
-
-    Reserved for future use - handoff configuration format not yet finalized.
-    """
-
-    input: Optional[Iterable[Dict[str, object]]]
+    input: Optional[Iterable[object]]
     """Input to the model - can be messages, images, or other modalities.
 
     Supports OpenAI chat format with role/content structure. For multimodal inputs,
@@ -51,49 +36,30 @@ class ChatCreateParamsBase(TypedDict, total=False):
     """
 
     logit_bias: Optional[Dict[str, int]]
-    """Modify likelihood of specified tokens appearing in the completion.
-
-    Maps token IDs (as strings) to bias values (-100 to 100). -100 = completely ban
-    token, +100 = strongly favor token.
-    """
+    """Modify likelihood of specified tokens appearing in the completion."""
 
     max_tokens: Optional[int]
-    """Maximum number of tokens to generate in the completion.
-
-    Does not include tokens in the input messages.
-    """
+    """Maximum number of tokens to generate in the completion."""
 
     max_turns: Optional[int]
-    """Maximum number of turns for agent execution before terminating (default: 10).
-
-    Each turn represents one model inference cycle. Higher values allow more complex
-    reasoning but increase cost and latency.
-    """
+    """Maximum number of turns for agent execution before terminating (default: 10)."""
 
     mcp_servers: Optional[List[str]]
     """
     MCP (Model Context Protocol) server addresses to make available for server-side
-    tool execution. Can be URLs (e.g., 'https://mcp.example.com') or slugs (e.g.,
-    'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
-    separately.
+    tool execution.
     """
 
     model: Optional[Model]
     """Model(s) to use for completion.
 
     Can be a single model ID, a Model object, or a list for multi-model routing.
-    Single model: 'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model
-    instance. Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or
-    list of Model objects - agent will choose optimal model based on task
-    complexity.
     """
 
     model_attributes: Optional[Dict[str, Dict[str, float]]]
     """
     Attributes for individual models used in routing decisions during multi-model
-    execution. Format: {'model_name': {'attribute': value}}, where values are
-    0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
-    'accuracy'. Used by agent to select optimal model based on task requirements.
+    execution.
     """
 
     n: Optional[int]
@@ -103,84 +69,127 @@ class ChatCreateParamsBase(TypedDict, total=False):
     """Presence penalty (-2 to 2).
 
     Positive values penalize new tokens based on whether they appear in the text so
-    far, encouraging the model to talk about new topics.
+    far.
     """
 
     stop: Optional[List[str]]
-    """Up to 4 sequences where the API will stop generating further tokens.
-
-    The model will stop as soon as it encounters any of these sequences.
-    """
+    """Up to 4 sequences where the API will stop generating further tokens."""
 
     temperature: Optional[float]
     """Sampling temperature (0 to 2).
 
     Higher values make output more random, lower values make it more focused and
-    deterministic. 0 = deterministic, 1 = balanced, 2 = very creative.
+    deterministic.
     """
 
-    tool_choice: Union[str, Dict[str, object], None]
-    """Controls which tool is called by the model.
+    tool_choice: Union[str, object, None]
+    """Controls which tool is called by the model."""
 
-    Options: 'auto' (default), 'none', 'required', or specific tool name. Can also
-    be a dict specifying a particular tool.
-    """
-
-    tools: Optional[Iterable[Dict[str, object]]]
-    """List of tools available to the model in OpenAI function calling format.
-
-    Tools are executed client-side and returned as JSON for the application to
-    handle. Use 'mcp_servers' for server-side tool execution.
-    """
+    tools: Optional[Iterable[object]]
+    """List of tools available to the model in OpenAI function calling format."""
 
     top_p: Optional[float]
-    """Nucleus sampling parameter (0 to 1).
-
-    Alternative to temperature. 0.1 = only top 10% probability mass, 1.0 = consider
-    all tokens.
-    """
+    """Nucleus sampling parameter (0 to 1). Alternative to temperature."""
 
     user: Optional[str]
-    """Unique identifier representing your end-user.
+    """Unique identifier representing your end-user."""
 
-    Used for monitoring and abuse detection. Should be consistent across requests
-    from the same user.
+
+class ModelModelSettings(TypedDict, total=False):
+    frequency_penalty: Optional[float]
+
+    include_usage: Optional[bool]
+
+    input_audio_format: Optional[str]
+
+    max_tokens: Optional[int]
+
+    metadata: Optional[Dict[str, str]]
+
+    modalities: Optional[List[str]]
+
+    output_audio_format: Optional[str]
+
+    parallel_tool_calls: Optional[bool]
+
+    presence_penalty: Optional[float]
+
+    store: Optional[bool]
+
+    temperature: Optional[float]
+
+    top_p: Optional[float]
+
+    voice: Optional[str]
+
+
+class ModelModel(TypedDict, total=False):
+    name: Required[str]
+    """Model identifier (e.g., 'gpt-4', 'claude-3-5-sonnet')"""
+
+    attributes: Optional[Dict[str, float]]
+    """Model attributes as scores between 0-1. Used for multi-model routing decisions."""
+
+    settings: Optional[ModelModelSettings]
+    """
+    Model generation settings including temperature, max_tokens, and other
+    parameters.
     """
 
 
-class ModelModelInput(TypedDict, total=False):
+class ModelUnionMember3Settings(TypedDict, total=False):
+    frequency_penalty: Optional[float]
+
+    include_usage: Optional[bool]
+
+    input_audio_format: Optional[str]
+
+    max_tokens: Optional[int]
+
+    metadata: Optional[Dict[str, str]]
+
+    modalities: Optional[List[str]]
+
+    output_audio_format: Optional[str]
+
+    parallel_tool_calls: Optional[bool]
+
+    presence_penalty: Optional[float]
+
+    store: Optional[bool]
+
+    temperature: Optional[float]
+
+    top_p: Optional[float]
+
+    voice: Optional[str]
+
+
+class ModelUnionMember3(TypedDict, total=False):
     name: Required[str]
-    """Model identifier"""
+    """Model identifier (e.g., 'gpt-4', 'claude-3-5-sonnet')"""
 
     attributes: Optional[Dict[str, float]]
-    """Model attributes for routing decisions (0.0-1.0 range)"""
+    """Model attributes as scores between 0-1. Used for multi-model routing decisions."""
+
+    settings: Optional[ModelUnionMember3Settings]
+    """
+    Model generation settings including temperature, max_tokens, and other
+    parameters.
+    """
 
 
-class ModelModelObjectArray(TypedDict, total=False):
-    name: Required[str]
-    """Model identifier"""
-
-    attributes: Optional[Dict[str, float]]
-    """Model attributes for routing decisions (0.0-1.0 range)"""
-
-
-Model: TypeAlias = Union[str, List[str], ModelModelInput, Iterable[ModelModelObjectArray]]
+Model: TypeAlias = Union[str, List[str], ModelModel, Iterable[ModelUnionMember3]]
 
 
 class ChatCreateParamsNonStreaming(ChatCreateParamsBase, total=False):
     stream: Optional[Literal[False]]
-    """Whether to stream back partial message deltas as Server-Sent Events.
-
-    When true, partial message deltas will be sent as chunks in OpenAI format.
-    """
+    """Whether to stream back partial message deltas as Server-Sent Events."""
 
 
 class ChatCreateParamsStreaming(ChatCreateParamsBase):
     stream: Required[Literal[True]]
-    """Whether to stream back partial message deltas as Server-Sent Events.
-
-    When true, partial message deltas will be sent as chunks in OpenAI format.
-    """
+    """Whether to stream back partial message deltas as Server-Sent Events."""
 
 
 ChatCreateParams = Union[ChatCreateParamsNonStreaming, ChatCreateParamsStreaming]

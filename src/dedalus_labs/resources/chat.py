@@ -52,9 +52,7 @@ class ChatResource(SyncAPIResource):
         *,
         agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
-        guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
-        handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
-        input: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        input: Optional[Iterable[object]] | NotGiven = NOT_GIVEN,
         logit_bias: Optional[Dict[str, int]] | NotGiven = NOT_GIVEN,
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
@@ -66,8 +64,8 @@ class ChatResource(SyncAPIResource):
         stop: Optional[List[str]] | NotGiven = NOT_GIVEN,
         stream: Optional[Literal[False]] | NotGiven = NOT_GIVEN,
         temperature: Optional[float] | NotGiven = NOT_GIVEN,
-        tool_choice: Union[str, Dict[str, object], None] | NotGiven = NOT_GIVEN,
-        tools: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        tool_choice: Union[str, object, None] | NotGiven = NOT_GIVEN,
+        tools: Optional[Iterable[object]] | NotGiven = NOT_GIVEN,
         top_p: Optional[float] | NotGiven = NOT_GIVEN,
         user: Optional[str] | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -85,153 +83,50 @@ class ChatResource(SyncAPIResource):
         multi-model routing, client-side and server-side tool execution, and integration
         with MCP (Model Context Protocol) servers.
 
-        Features: - Cross-vendor compatibility (OpenAI, Anthropic, Cohere, etc.) -
-        Multi-model routing with intelligent agentic handoffs - Client-side tool
-        execution (tools returned as JSON) - Server-side MCP tool execution with
-        automatic billing - Streaming and non-streaming responses - Advanced agent
-        attributes for routing decisions - Automatic usage tracking and billing
-
-        Args: request: Chat completion request with messages, model, and configuration
-        http_request: FastAPI request object for accessing headers and state
-        background_tasks: FastAPI background tasks for async billing operations user:
-        Authenticated user with validated API key and sufficient balance
-
-        Returns: ChatCompletion: OpenAI-compatible completion response with usage data
-
-        Raises: HTTPException: - 401 if authentication fails or insufficient balance -
-        400 if request validation fails - 500 if internal processing error occurs
-
-        Billing: - Token usage billed automatically based on model pricing - MCP tool
-        calls billed separately using credits system - Streaming responses billed after
-        completion via background task
-
-        Example: Basic chat completion: ```python import dedalus_labs
-
-            client = dedalus_labs.Client(api_key="your-api-key")
-
-            completion = client.chat.create(
-                model="gpt-4",
-                input=[{"role": "user", "content": "Hello, how are you?"}],
-            )
-
-            print(completion.choices[0].message.content)
-            ```
-
-            With tools and MCP servers:
-            ```python
-            completion = client.chat.create(
-                model="gpt-4",
-                input=[{"role": "user", "content": "Search for recent AI news"}],
-                tools=[
-                    {
-                        "type": "function",
-                        "function": {
-                            "name": "search_web",
-                            "description": "Search the web for information",
-                        },
-                    }
-                ],
-                mcp_servers=["dedalus-labs/brave-search"],
-            )
-            ```
-
-            Multi-model routing:
-            ```python
-            completion = client.chat.create(
-                model=["gpt-4o-mini", "gpt-4", "claude-3-5-sonnet"],
-                input=[{"role": "user", "content": "Analyze this complex data"}],
-                agent_attributes={"complexity": 0.8, "accuracy": 0.9},
-            )
-            ```
-
-            Streaming response:
-            ```python
-            stream = client.chat.create(
-                model="gpt-4",
-                input=[{"role": "user", "content": "Tell me a story"}],
-                stream=True,
-            )
-
-            for chunk in stream:
-                if chunk.choices[0].delta.content:
-                    print(chunk.choices[0].delta.content, end="")
-            ```
-
         Args:
           agent_attributes: Attributes for the agent itself, influencing behavior and model selection.
-              Format: {'attribute': value}, where values are 0.0-1.0. Common attributes:
-              'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
-              values indicate stronger preference for that characteristic.
 
           frequency_penalty: Frequency penalty (-2 to 2). Positive values penalize new tokens based on their
-              existing frequency in the text so far, decreasing likelihood of repeated
-              phrases.
-
-          guardrails: Guardrails to apply to the agent for input/output validation and safety checks.
-              Reserved for future use - guardrails configuration format not yet finalized.
-
-          handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
-              future use - handoff configuration format not yet finalized.
+              existing frequency in the text so far.
 
           input: Input to the model - can be messages, images, or other modalities. Supports
               OpenAI chat format with role/content structure. For multimodal inputs, content
               can include text, images, or other media types.
 
-          logit_bias: Modify likelihood of specified tokens appearing in the completion. Maps token
-              IDs (as strings) to bias values (-100 to 100). -100 = completely ban token, +100
-              = strongly favor token.
+          logit_bias: Modify likelihood of specified tokens appearing in the completion.
 
-          max_tokens: Maximum number of tokens to generate in the completion. Does not include tokens
-              in the input messages.
+          max_tokens: Maximum number of tokens to generate in the completion.
 
           max_turns: Maximum number of turns for agent execution before terminating (default: 10).
-              Each turn represents one model inference cycle. Higher values allow more complex
-              reasoning but increase cost and latency.
 
           mcp_servers: MCP (Model Context Protocol) server addresses to make available for server-side
-              tool execution. Can be URLs (e.g., 'https://mcp.example.com') or slugs (e.g.,
-              'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
-              separately.
+              tool execution.
 
           model: Model(s) to use for completion. Can be a single model ID, a Model object, or a
-              list for multi-model routing. Single model: 'gpt-4',
-              'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model instance. Multi-model
-              routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or list of Model
-              objects - agent will choose optimal model based on task complexity.
+              list for multi-model routing.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
-              execution. Format: {'model_name': {'attribute': value}}, where values are
-              0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
-              'accuracy'. Used by agent to select optimal model based on task requirements.
+              execution.
 
           n: Number of completions to generate. Note: only n=1 is currently supported.
 
           presence_penalty: Presence penalty (-2 to 2). Positive values penalize new tokens based on whether
-              they appear in the text so far, encouraging the model to talk about new topics.
+              they appear in the text so far.
 
-          stop: Up to 4 sequences where the API will stop generating further tokens. The model
-              will stop as soon as it encounters any of these sequences.
+          stop: Up to 4 sequences where the API will stop generating further tokens.
 
-          stream: Whether to stream back partial message deltas as Server-Sent Events. When true,
-              partial message deltas will be sent as chunks in OpenAI format.
+          stream: Whether to stream back partial message deltas as Server-Sent Events.
 
           temperature: Sampling temperature (0 to 2). Higher values make output more random, lower
-              values make it more focused and deterministic. 0 = deterministic, 1 = balanced,
-              2 = very creative.
+              values make it more focused and deterministic.
 
-          tool_choice: Controls which tool is called by the model. Options: 'auto' (default), 'none',
-              'required', or specific tool name. Can also be a dict specifying a particular
-              tool.
+          tool_choice: Controls which tool is called by the model.
 
-          tools: List of tools available to the model in OpenAI function calling format. Tools
-              are executed client-side and returned as JSON for the application to handle. Use
-              'mcp_servers' for server-side tool execution.
+          tools: List of tools available to the model in OpenAI function calling format.
 
-          top_p: Nucleus sampling parameter (0 to 1). Alternative to temperature. 0.1 = only top
-              10% probability mass, 1.0 = consider all tokens.
+          top_p: Nucleus sampling parameter (0 to 1). Alternative to temperature.
 
-          user: Unique identifier representing your end-user. Used for monitoring and abuse
-              detection. Should be consistent across requests from the same user.
+          user: Unique identifier representing your end-user.
 
           extra_headers: Send extra headers
 
@@ -250,9 +145,7 @@ class ChatResource(SyncAPIResource):
         stream: Literal[True],
         agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
-        guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
-        handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
-        input: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        input: Optional[Iterable[object]] | NotGiven = NOT_GIVEN,
         logit_bias: Optional[Dict[str, int]] | NotGiven = NOT_GIVEN,
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
@@ -263,8 +156,8 @@ class ChatResource(SyncAPIResource):
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         stop: Optional[List[str]] | NotGiven = NOT_GIVEN,
         temperature: Optional[float] | NotGiven = NOT_GIVEN,
-        tool_choice: Union[str, Dict[str, object], None] | NotGiven = NOT_GIVEN,
-        tools: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        tool_choice: Union[str, object, None] | NotGiven = NOT_GIVEN,
+        tools: Optional[Iterable[object]] | NotGiven = NOT_GIVEN,
         top_p: Optional[float] | NotGiven = NOT_GIVEN,
         user: Optional[str] | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -282,153 +175,50 @@ class ChatResource(SyncAPIResource):
         multi-model routing, client-side and server-side tool execution, and integration
         with MCP (Model Context Protocol) servers.
 
-        Features: - Cross-vendor compatibility (OpenAI, Anthropic, Cohere, etc.) -
-        Multi-model routing with intelligent agentic handoffs - Client-side tool
-        execution (tools returned as JSON) - Server-side MCP tool execution with
-        automatic billing - Streaming and non-streaming responses - Advanced agent
-        attributes for routing decisions - Automatic usage tracking and billing
-
-        Args: request: Chat completion request with messages, model, and configuration
-        http_request: FastAPI request object for accessing headers and state
-        background_tasks: FastAPI background tasks for async billing operations user:
-        Authenticated user with validated API key and sufficient balance
-
-        Returns: ChatCompletion: OpenAI-compatible completion response with usage data
-
-        Raises: HTTPException: - 401 if authentication fails or insufficient balance -
-        400 if request validation fails - 500 if internal processing error occurs
-
-        Billing: - Token usage billed automatically based on model pricing - MCP tool
-        calls billed separately using credits system - Streaming responses billed after
-        completion via background task
-
-        Example: Basic chat completion: ```python import dedalus_labs
-
-            client = dedalus_labs.Client(api_key="your-api-key")
-
-            completion = client.chat.create(
-                model="gpt-4",
-                input=[{"role": "user", "content": "Hello, how are you?"}],
-            )
-
-            print(completion.choices[0].message.content)
-            ```
-
-            With tools and MCP servers:
-            ```python
-            completion = client.chat.create(
-                model="gpt-4",
-                input=[{"role": "user", "content": "Search for recent AI news"}],
-                tools=[
-                    {
-                        "type": "function",
-                        "function": {
-                            "name": "search_web",
-                            "description": "Search the web for information",
-                        },
-                    }
-                ],
-                mcp_servers=["dedalus-labs/brave-search"],
-            )
-            ```
-
-            Multi-model routing:
-            ```python
-            completion = client.chat.create(
-                model=["gpt-4o-mini", "gpt-4", "claude-3-5-sonnet"],
-                input=[{"role": "user", "content": "Analyze this complex data"}],
-                agent_attributes={"complexity": 0.8, "accuracy": 0.9},
-            )
-            ```
-
-            Streaming response:
-            ```python
-            stream = client.chat.create(
-                model="gpt-4",
-                input=[{"role": "user", "content": "Tell me a story"}],
-                stream=True,
-            )
-
-            for chunk in stream:
-                if chunk.choices[0].delta.content:
-                    print(chunk.choices[0].delta.content, end="")
-            ```
-
         Args:
-          stream: Whether to stream back partial message deltas as Server-Sent Events. When true,
-              partial message deltas will be sent as chunks in OpenAI format.
+          stream: Whether to stream back partial message deltas as Server-Sent Events.
 
           agent_attributes: Attributes for the agent itself, influencing behavior and model selection.
-              Format: {'attribute': value}, where values are 0.0-1.0. Common attributes:
-              'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
-              values indicate stronger preference for that characteristic.
 
           frequency_penalty: Frequency penalty (-2 to 2). Positive values penalize new tokens based on their
-              existing frequency in the text so far, decreasing likelihood of repeated
-              phrases.
-
-          guardrails: Guardrails to apply to the agent for input/output validation and safety checks.
-              Reserved for future use - guardrails configuration format not yet finalized.
-
-          handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
-              future use - handoff configuration format not yet finalized.
+              existing frequency in the text so far.
 
           input: Input to the model - can be messages, images, or other modalities. Supports
               OpenAI chat format with role/content structure. For multimodal inputs, content
               can include text, images, or other media types.
 
-          logit_bias: Modify likelihood of specified tokens appearing in the completion. Maps token
-              IDs (as strings) to bias values (-100 to 100). -100 = completely ban token, +100
-              = strongly favor token.
+          logit_bias: Modify likelihood of specified tokens appearing in the completion.
 
-          max_tokens: Maximum number of tokens to generate in the completion. Does not include tokens
-              in the input messages.
+          max_tokens: Maximum number of tokens to generate in the completion.
 
           max_turns: Maximum number of turns for agent execution before terminating (default: 10).
-              Each turn represents one model inference cycle. Higher values allow more complex
-              reasoning but increase cost and latency.
 
           mcp_servers: MCP (Model Context Protocol) server addresses to make available for server-side
-              tool execution. Can be URLs (e.g., 'https://mcp.example.com') or slugs (e.g.,
-              'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
-              separately.
+              tool execution.
 
           model: Model(s) to use for completion. Can be a single model ID, a Model object, or a
-              list for multi-model routing. Single model: 'gpt-4',
-              'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model instance. Multi-model
-              routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or list of Model
-              objects - agent will choose optimal model based on task complexity.
+              list for multi-model routing.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
-              execution. Format: {'model_name': {'attribute': value}}, where values are
-              0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
-              'accuracy'. Used by agent to select optimal model based on task requirements.
+              execution.
 
           n: Number of completions to generate. Note: only n=1 is currently supported.
 
           presence_penalty: Presence penalty (-2 to 2). Positive values penalize new tokens based on whether
-              they appear in the text so far, encouraging the model to talk about new topics.
+              they appear in the text so far.
 
-          stop: Up to 4 sequences where the API will stop generating further tokens. The model
-              will stop as soon as it encounters any of these sequences.
+          stop: Up to 4 sequences where the API will stop generating further tokens.
 
           temperature: Sampling temperature (0 to 2). Higher values make output more random, lower
-              values make it more focused and deterministic. 0 = deterministic, 1 = balanced,
-              2 = very creative.
+              values make it more focused and deterministic.
 
-          tool_choice: Controls which tool is called by the model. Options: 'auto' (default), 'none',
-              'required', or specific tool name. Can also be a dict specifying a particular
-              tool.
+          tool_choice: Controls which tool is called by the model.
 
-          tools: List of tools available to the model in OpenAI function calling format. Tools
-              are executed client-side and returned as JSON for the application to handle. Use
-              'mcp_servers' for server-side tool execution.
+          tools: List of tools available to the model in OpenAI function calling format.
 
-          top_p: Nucleus sampling parameter (0 to 1). Alternative to temperature. 0.1 = only top
-              10% probability mass, 1.0 = consider all tokens.
+          top_p: Nucleus sampling parameter (0 to 1). Alternative to temperature.
 
-          user: Unique identifier representing your end-user. Used for monitoring and abuse
-              detection. Should be consistent across requests from the same user.
+          user: Unique identifier representing your end-user.
 
           extra_headers: Send extra headers
 
@@ -447,9 +237,7 @@ class ChatResource(SyncAPIResource):
         stream: bool,
         agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
-        guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
-        handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
-        input: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        input: Optional[Iterable[object]] | NotGiven = NOT_GIVEN,
         logit_bias: Optional[Dict[str, int]] | NotGiven = NOT_GIVEN,
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
@@ -460,8 +248,8 @@ class ChatResource(SyncAPIResource):
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         stop: Optional[List[str]] | NotGiven = NOT_GIVEN,
         temperature: Optional[float] | NotGiven = NOT_GIVEN,
-        tool_choice: Union[str, Dict[str, object], None] | NotGiven = NOT_GIVEN,
-        tools: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        tool_choice: Union[str, object, None] | NotGiven = NOT_GIVEN,
+        tools: Optional[Iterable[object]] | NotGiven = NOT_GIVEN,
         top_p: Optional[float] | NotGiven = NOT_GIVEN,
         user: Optional[str] | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -479,153 +267,50 @@ class ChatResource(SyncAPIResource):
         multi-model routing, client-side and server-side tool execution, and integration
         with MCP (Model Context Protocol) servers.
 
-        Features: - Cross-vendor compatibility (OpenAI, Anthropic, Cohere, etc.) -
-        Multi-model routing with intelligent agentic handoffs - Client-side tool
-        execution (tools returned as JSON) - Server-side MCP tool execution with
-        automatic billing - Streaming and non-streaming responses - Advanced agent
-        attributes for routing decisions - Automatic usage tracking and billing
-
-        Args: request: Chat completion request with messages, model, and configuration
-        http_request: FastAPI request object for accessing headers and state
-        background_tasks: FastAPI background tasks for async billing operations user:
-        Authenticated user with validated API key and sufficient balance
-
-        Returns: ChatCompletion: OpenAI-compatible completion response with usage data
-
-        Raises: HTTPException: - 401 if authentication fails or insufficient balance -
-        400 if request validation fails - 500 if internal processing error occurs
-
-        Billing: - Token usage billed automatically based on model pricing - MCP tool
-        calls billed separately using credits system - Streaming responses billed after
-        completion via background task
-
-        Example: Basic chat completion: ```python import dedalus_labs
-
-            client = dedalus_labs.Client(api_key="your-api-key")
-
-            completion = client.chat.create(
-                model="gpt-4",
-                input=[{"role": "user", "content": "Hello, how are you?"}],
-            )
-
-            print(completion.choices[0].message.content)
-            ```
-
-            With tools and MCP servers:
-            ```python
-            completion = client.chat.create(
-                model="gpt-4",
-                input=[{"role": "user", "content": "Search for recent AI news"}],
-                tools=[
-                    {
-                        "type": "function",
-                        "function": {
-                            "name": "search_web",
-                            "description": "Search the web for information",
-                        },
-                    }
-                ],
-                mcp_servers=["dedalus-labs/brave-search"],
-            )
-            ```
-
-            Multi-model routing:
-            ```python
-            completion = client.chat.create(
-                model=["gpt-4o-mini", "gpt-4", "claude-3-5-sonnet"],
-                input=[{"role": "user", "content": "Analyze this complex data"}],
-                agent_attributes={"complexity": 0.8, "accuracy": 0.9},
-            )
-            ```
-
-            Streaming response:
-            ```python
-            stream = client.chat.create(
-                model="gpt-4",
-                input=[{"role": "user", "content": "Tell me a story"}],
-                stream=True,
-            )
-
-            for chunk in stream:
-                if chunk.choices[0].delta.content:
-                    print(chunk.choices[0].delta.content, end="")
-            ```
-
         Args:
-          stream: Whether to stream back partial message deltas as Server-Sent Events. When true,
-              partial message deltas will be sent as chunks in OpenAI format.
+          stream: Whether to stream back partial message deltas as Server-Sent Events.
 
           agent_attributes: Attributes for the agent itself, influencing behavior and model selection.
-              Format: {'attribute': value}, where values are 0.0-1.0. Common attributes:
-              'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
-              values indicate stronger preference for that characteristic.
 
           frequency_penalty: Frequency penalty (-2 to 2). Positive values penalize new tokens based on their
-              existing frequency in the text so far, decreasing likelihood of repeated
-              phrases.
-
-          guardrails: Guardrails to apply to the agent for input/output validation and safety checks.
-              Reserved for future use - guardrails configuration format not yet finalized.
-
-          handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
-              future use - handoff configuration format not yet finalized.
+              existing frequency in the text so far.
 
           input: Input to the model - can be messages, images, or other modalities. Supports
               OpenAI chat format with role/content structure. For multimodal inputs, content
               can include text, images, or other media types.
 
-          logit_bias: Modify likelihood of specified tokens appearing in the completion. Maps token
-              IDs (as strings) to bias values (-100 to 100). -100 = completely ban token, +100
-              = strongly favor token.
+          logit_bias: Modify likelihood of specified tokens appearing in the completion.
 
-          max_tokens: Maximum number of tokens to generate in the completion. Does not include tokens
-              in the input messages.
+          max_tokens: Maximum number of tokens to generate in the completion.
 
           max_turns: Maximum number of turns for agent execution before terminating (default: 10).
-              Each turn represents one model inference cycle. Higher values allow more complex
-              reasoning but increase cost and latency.
 
           mcp_servers: MCP (Model Context Protocol) server addresses to make available for server-side
-              tool execution. Can be URLs (e.g., 'https://mcp.example.com') or slugs (e.g.,
-              'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
-              separately.
+              tool execution.
 
           model: Model(s) to use for completion. Can be a single model ID, a Model object, or a
-              list for multi-model routing. Single model: 'gpt-4',
-              'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model instance. Multi-model
-              routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or list of Model
-              objects - agent will choose optimal model based on task complexity.
+              list for multi-model routing.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
-              execution. Format: {'model_name': {'attribute': value}}, where values are
-              0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
-              'accuracy'. Used by agent to select optimal model based on task requirements.
+              execution.
 
           n: Number of completions to generate. Note: only n=1 is currently supported.
 
           presence_penalty: Presence penalty (-2 to 2). Positive values penalize new tokens based on whether
-              they appear in the text so far, encouraging the model to talk about new topics.
+              they appear in the text so far.
 
-          stop: Up to 4 sequences where the API will stop generating further tokens. The model
-              will stop as soon as it encounters any of these sequences.
+          stop: Up to 4 sequences where the API will stop generating further tokens.
 
           temperature: Sampling temperature (0 to 2). Higher values make output more random, lower
-              values make it more focused and deterministic. 0 = deterministic, 1 = balanced,
-              2 = very creative.
+              values make it more focused and deterministic.
 
-          tool_choice: Controls which tool is called by the model. Options: 'auto' (default), 'none',
-              'required', or specific tool name. Can also be a dict specifying a particular
-              tool.
+          tool_choice: Controls which tool is called by the model.
 
-          tools: List of tools available to the model in OpenAI function calling format. Tools
-              are executed client-side and returned as JSON for the application to handle. Use
-              'mcp_servers' for server-side tool execution.
+          tools: List of tools available to the model in OpenAI function calling format.
 
-          top_p: Nucleus sampling parameter (0 to 1). Alternative to temperature. 0.1 = only top
-              10% probability mass, 1.0 = consider all tokens.
+          top_p: Nucleus sampling parameter (0 to 1). Alternative to temperature.
 
-          user: Unique identifier representing your end-user. Used for monitoring and abuse
-              detection. Should be consistent across requests from the same user.
+          user: Unique identifier representing your end-user.
 
           extra_headers: Send extra headers
 
@@ -642,9 +327,7 @@ class ChatResource(SyncAPIResource):
         *,
         agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
-        guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
-        handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
-        input: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        input: Optional[Iterable[object]] | NotGiven = NOT_GIVEN,
         logit_bias: Optional[Dict[str, int]] | NotGiven = NOT_GIVEN,
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
@@ -656,8 +339,8 @@ class ChatResource(SyncAPIResource):
         stop: Optional[List[str]] | NotGiven = NOT_GIVEN,
         stream: Optional[Literal[False]] | Literal[True] | NotGiven = NOT_GIVEN,
         temperature: Optional[float] | NotGiven = NOT_GIVEN,
-        tool_choice: Union[str, Dict[str, object], None] | NotGiven = NOT_GIVEN,
-        tools: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        tool_choice: Union[str, object, None] | NotGiven = NOT_GIVEN,
+        tools: Optional[Iterable[object]] | NotGiven = NOT_GIVEN,
         top_p: Optional[float] | NotGiven = NOT_GIVEN,
         user: Optional[str] | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -673,8 +356,6 @@ class ChatResource(SyncAPIResource):
                 {
                     "agent_attributes": agent_attributes,
                     "frequency_penalty": frequency_penalty,
-                    "guardrails": guardrails,
-                    "handoff_config": handoff_config,
                     "input": input,
                     "logit_bias": logit_bias,
                     "max_tokens": max_tokens,
@@ -731,9 +412,7 @@ class AsyncChatResource(AsyncAPIResource):
         *,
         agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
-        guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
-        handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
-        input: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        input: Optional[Iterable[object]] | NotGiven = NOT_GIVEN,
         logit_bias: Optional[Dict[str, int]] | NotGiven = NOT_GIVEN,
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
@@ -745,8 +424,8 @@ class AsyncChatResource(AsyncAPIResource):
         stop: Optional[List[str]] | NotGiven = NOT_GIVEN,
         stream: Optional[Literal[False]] | NotGiven = NOT_GIVEN,
         temperature: Optional[float] | NotGiven = NOT_GIVEN,
-        tool_choice: Union[str, Dict[str, object], None] | NotGiven = NOT_GIVEN,
-        tools: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        tool_choice: Union[str, object, None] | NotGiven = NOT_GIVEN,
+        tools: Optional[Iterable[object]] | NotGiven = NOT_GIVEN,
         top_p: Optional[float] | NotGiven = NOT_GIVEN,
         user: Optional[str] | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -764,153 +443,50 @@ class AsyncChatResource(AsyncAPIResource):
         multi-model routing, client-side and server-side tool execution, and integration
         with MCP (Model Context Protocol) servers.
 
-        Features: - Cross-vendor compatibility (OpenAI, Anthropic, Cohere, etc.) -
-        Multi-model routing with intelligent agentic handoffs - Client-side tool
-        execution (tools returned as JSON) - Server-side MCP tool execution with
-        automatic billing - Streaming and non-streaming responses - Advanced agent
-        attributes for routing decisions - Automatic usage tracking and billing
-
-        Args: request: Chat completion request with messages, model, and configuration
-        http_request: FastAPI request object for accessing headers and state
-        background_tasks: FastAPI background tasks for async billing operations user:
-        Authenticated user with validated API key and sufficient balance
-
-        Returns: ChatCompletion: OpenAI-compatible completion response with usage data
-
-        Raises: HTTPException: - 401 if authentication fails or insufficient balance -
-        400 if request validation fails - 500 if internal processing error occurs
-
-        Billing: - Token usage billed automatically based on model pricing - MCP tool
-        calls billed separately using credits system - Streaming responses billed after
-        completion via background task
-
-        Example: Basic chat completion: ```python import dedalus_labs
-
-            client = dedalus_labs.Client(api_key="your-api-key")
-
-            completion = client.chat.create(
-                model="gpt-4",
-                input=[{"role": "user", "content": "Hello, how are you?"}],
-            )
-
-            print(completion.choices[0].message.content)
-            ```
-
-            With tools and MCP servers:
-            ```python
-            completion = client.chat.create(
-                model="gpt-4",
-                input=[{"role": "user", "content": "Search for recent AI news"}],
-                tools=[
-                    {
-                        "type": "function",
-                        "function": {
-                            "name": "search_web",
-                            "description": "Search the web for information",
-                        },
-                    }
-                ],
-                mcp_servers=["dedalus-labs/brave-search"],
-            )
-            ```
-
-            Multi-model routing:
-            ```python
-            completion = client.chat.create(
-                model=["gpt-4o-mini", "gpt-4", "claude-3-5-sonnet"],
-                input=[{"role": "user", "content": "Analyze this complex data"}],
-                agent_attributes={"complexity": 0.8, "accuracy": 0.9},
-            )
-            ```
-
-            Streaming response:
-            ```python
-            stream = client.chat.create(
-                model="gpt-4",
-                input=[{"role": "user", "content": "Tell me a story"}],
-                stream=True,
-            )
-
-            for chunk in stream:
-                if chunk.choices[0].delta.content:
-                    print(chunk.choices[0].delta.content, end="")
-            ```
-
         Args:
           agent_attributes: Attributes for the agent itself, influencing behavior and model selection.
-              Format: {'attribute': value}, where values are 0.0-1.0. Common attributes:
-              'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
-              values indicate stronger preference for that characteristic.
 
           frequency_penalty: Frequency penalty (-2 to 2). Positive values penalize new tokens based on their
-              existing frequency in the text so far, decreasing likelihood of repeated
-              phrases.
-
-          guardrails: Guardrails to apply to the agent for input/output validation and safety checks.
-              Reserved for future use - guardrails configuration format not yet finalized.
-
-          handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
-              future use - handoff configuration format not yet finalized.
+              existing frequency in the text so far.
 
           input: Input to the model - can be messages, images, or other modalities. Supports
               OpenAI chat format with role/content structure. For multimodal inputs, content
               can include text, images, or other media types.
 
-          logit_bias: Modify likelihood of specified tokens appearing in the completion. Maps token
-              IDs (as strings) to bias values (-100 to 100). -100 = completely ban token, +100
-              = strongly favor token.
+          logit_bias: Modify likelihood of specified tokens appearing in the completion.
 
-          max_tokens: Maximum number of tokens to generate in the completion. Does not include tokens
-              in the input messages.
+          max_tokens: Maximum number of tokens to generate in the completion.
 
           max_turns: Maximum number of turns for agent execution before terminating (default: 10).
-              Each turn represents one model inference cycle. Higher values allow more complex
-              reasoning but increase cost and latency.
 
           mcp_servers: MCP (Model Context Protocol) server addresses to make available for server-side
-              tool execution. Can be URLs (e.g., 'https://mcp.example.com') or slugs (e.g.,
-              'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
-              separately.
+              tool execution.
 
           model: Model(s) to use for completion. Can be a single model ID, a Model object, or a
-              list for multi-model routing. Single model: 'gpt-4',
-              'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model instance. Multi-model
-              routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or list of Model
-              objects - agent will choose optimal model based on task complexity.
+              list for multi-model routing.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
-              execution. Format: {'model_name': {'attribute': value}}, where values are
-              0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
-              'accuracy'. Used by agent to select optimal model based on task requirements.
+              execution.
 
           n: Number of completions to generate. Note: only n=1 is currently supported.
 
           presence_penalty: Presence penalty (-2 to 2). Positive values penalize new tokens based on whether
-              they appear in the text so far, encouraging the model to talk about new topics.
+              they appear in the text so far.
 
-          stop: Up to 4 sequences where the API will stop generating further tokens. The model
-              will stop as soon as it encounters any of these sequences.
+          stop: Up to 4 sequences where the API will stop generating further tokens.
 
-          stream: Whether to stream back partial message deltas as Server-Sent Events. When true,
-              partial message deltas will be sent as chunks in OpenAI format.
+          stream: Whether to stream back partial message deltas as Server-Sent Events.
 
           temperature: Sampling temperature (0 to 2). Higher values make output more random, lower
-              values make it more focused and deterministic. 0 = deterministic, 1 = balanced,
-              2 = very creative.
+              values make it more focused and deterministic.
 
-          tool_choice: Controls which tool is called by the model. Options: 'auto' (default), 'none',
-              'required', or specific tool name. Can also be a dict specifying a particular
-              tool.
+          tool_choice: Controls which tool is called by the model.
 
-          tools: List of tools available to the model in OpenAI function calling format. Tools
-              are executed client-side and returned as JSON for the application to handle. Use
-              'mcp_servers' for server-side tool execution.
+          tools: List of tools available to the model in OpenAI function calling format.
 
-          top_p: Nucleus sampling parameter (0 to 1). Alternative to temperature. 0.1 = only top
-              10% probability mass, 1.0 = consider all tokens.
+          top_p: Nucleus sampling parameter (0 to 1). Alternative to temperature.
 
-          user: Unique identifier representing your end-user. Used for monitoring and abuse
-              detection. Should be consistent across requests from the same user.
+          user: Unique identifier representing your end-user.
 
           extra_headers: Send extra headers
 
@@ -929,9 +505,7 @@ class AsyncChatResource(AsyncAPIResource):
         stream: Literal[True],
         agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
-        guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
-        handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
-        input: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        input: Optional[Iterable[object]] | NotGiven = NOT_GIVEN,
         logit_bias: Optional[Dict[str, int]] | NotGiven = NOT_GIVEN,
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
@@ -942,8 +516,8 @@ class AsyncChatResource(AsyncAPIResource):
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         stop: Optional[List[str]] | NotGiven = NOT_GIVEN,
         temperature: Optional[float] | NotGiven = NOT_GIVEN,
-        tool_choice: Union[str, Dict[str, object], None] | NotGiven = NOT_GIVEN,
-        tools: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        tool_choice: Union[str, object, None] | NotGiven = NOT_GIVEN,
+        tools: Optional[Iterable[object]] | NotGiven = NOT_GIVEN,
         top_p: Optional[float] | NotGiven = NOT_GIVEN,
         user: Optional[str] | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -961,153 +535,50 @@ class AsyncChatResource(AsyncAPIResource):
         multi-model routing, client-side and server-side tool execution, and integration
         with MCP (Model Context Protocol) servers.
 
-        Features: - Cross-vendor compatibility (OpenAI, Anthropic, Cohere, etc.) -
-        Multi-model routing with intelligent agentic handoffs - Client-side tool
-        execution (tools returned as JSON) - Server-side MCP tool execution with
-        automatic billing - Streaming and non-streaming responses - Advanced agent
-        attributes for routing decisions - Automatic usage tracking and billing
-
-        Args: request: Chat completion request with messages, model, and configuration
-        http_request: FastAPI request object for accessing headers and state
-        background_tasks: FastAPI background tasks for async billing operations user:
-        Authenticated user with validated API key and sufficient balance
-
-        Returns: ChatCompletion: OpenAI-compatible completion response with usage data
-
-        Raises: HTTPException: - 401 if authentication fails or insufficient balance -
-        400 if request validation fails - 500 if internal processing error occurs
-
-        Billing: - Token usage billed automatically based on model pricing - MCP tool
-        calls billed separately using credits system - Streaming responses billed after
-        completion via background task
-
-        Example: Basic chat completion: ```python import dedalus_labs
-
-            client = dedalus_labs.Client(api_key="your-api-key")
-
-            completion = client.chat.create(
-                model="gpt-4",
-                input=[{"role": "user", "content": "Hello, how are you?"}],
-            )
-
-            print(completion.choices[0].message.content)
-            ```
-
-            With tools and MCP servers:
-            ```python
-            completion = client.chat.create(
-                model="gpt-4",
-                input=[{"role": "user", "content": "Search for recent AI news"}],
-                tools=[
-                    {
-                        "type": "function",
-                        "function": {
-                            "name": "search_web",
-                            "description": "Search the web for information",
-                        },
-                    }
-                ],
-                mcp_servers=["dedalus-labs/brave-search"],
-            )
-            ```
-
-            Multi-model routing:
-            ```python
-            completion = client.chat.create(
-                model=["gpt-4o-mini", "gpt-4", "claude-3-5-sonnet"],
-                input=[{"role": "user", "content": "Analyze this complex data"}],
-                agent_attributes={"complexity": 0.8, "accuracy": 0.9},
-            )
-            ```
-
-            Streaming response:
-            ```python
-            stream = client.chat.create(
-                model="gpt-4",
-                input=[{"role": "user", "content": "Tell me a story"}],
-                stream=True,
-            )
-
-            for chunk in stream:
-                if chunk.choices[0].delta.content:
-                    print(chunk.choices[0].delta.content, end="")
-            ```
-
         Args:
-          stream: Whether to stream back partial message deltas as Server-Sent Events. When true,
-              partial message deltas will be sent as chunks in OpenAI format.
+          stream: Whether to stream back partial message deltas as Server-Sent Events.
 
           agent_attributes: Attributes for the agent itself, influencing behavior and model selection.
-              Format: {'attribute': value}, where values are 0.0-1.0. Common attributes:
-              'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
-              values indicate stronger preference for that characteristic.
 
           frequency_penalty: Frequency penalty (-2 to 2). Positive values penalize new tokens based on their
-              existing frequency in the text so far, decreasing likelihood of repeated
-              phrases.
-
-          guardrails: Guardrails to apply to the agent for input/output validation and safety checks.
-              Reserved for future use - guardrails configuration format not yet finalized.
-
-          handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
-              future use - handoff configuration format not yet finalized.
+              existing frequency in the text so far.
 
           input: Input to the model - can be messages, images, or other modalities. Supports
               OpenAI chat format with role/content structure. For multimodal inputs, content
               can include text, images, or other media types.
 
-          logit_bias: Modify likelihood of specified tokens appearing in the completion. Maps token
-              IDs (as strings) to bias values (-100 to 100). -100 = completely ban token, +100
-              = strongly favor token.
+          logit_bias: Modify likelihood of specified tokens appearing in the completion.
 
-          max_tokens: Maximum number of tokens to generate in the completion. Does not include tokens
-              in the input messages.
+          max_tokens: Maximum number of tokens to generate in the completion.
 
           max_turns: Maximum number of turns for agent execution before terminating (default: 10).
-              Each turn represents one model inference cycle. Higher values allow more complex
-              reasoning but increase cost and latency.
 
           mcp_servers: MCP (Model Context Protocol) server addresses to make available for server-side
-              tool execution. Can be URLs (e.g., 'https://mcp.example.com') or slugs (e.g.,
-              'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
-              separately.
+              tool execution.
 
           model: Model(s) to use for completion. Can be a single model ID, a Model object, or a
-              list for multi-model routing. Single model: 'gpt-4',
-              'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model instance. Multi-model
-              routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or list of Model
-              objects - agent will choose optimal model based on task complexity.
+              list for multi-model routing.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
-              execution. Format: {'model_name': {'attribute': value}}, where values are
-              0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
-              'accuracy'. Used by agent to select optimal model based on task requirements.
+              execution.
 
           n: Number of completions to generate. Note: only n=1 is currently supported.
 
           presence_penalty: Presence penalty (-2 to 2). Positive values penalize new tokens based on whether
-              they appear in the text so far, encouraging the model to talk about new topics.
+              they appear in the text so far.
 
-          stop: Up to 4 sequences where the API will stop generating further tokens. The model
-              will stop as soon as it encounters any of these sequences.
+          stop: Up to 4 sequences where the API will stop generating further tokens.
 
           temperature: Sampling temperature (0 to 2). Higher values make output more random, lower
-              values make it more focused and deterministic. 0 = deterministic, 1 = balanced,
-              2 = very creative.
+              values make it more focused and deterministic.
 
-          tool_choice: Controls which tool is called by the model. Options: 'auto' (default), 'none',
-              'required', or specific tool name. Can also be a dict specifying a particular
-              tool.
+          tool_choice: Controls which tool is called by the model.
 
-          tools: List of tools available to the model in OpenAI function calling format. Tools
-              are executed client-side and returned as JSON for the application to handle. Use
-              'mcp_servers' for server-side tool execution.
+          tools: List of tools available to the model in OpenAI function calling format.
 
-          top_p: Nucleus sampling parameter (0 to 1). Alternative to temperature. 0.1 = only top
-              10% probability mass, 1.0 = consider all tokens.
+          top_p: Nucleus sampling parameter (0 to 1). Alternative to temperature.
 
-          user: Unique identifier representing your end-user. Used for monitoring and abuse
-              detection. Should be consistent across requests from the same user.
+          user: Unique identifier representing your end-user.
 
           extra_headers: Send extra headers
 
@@ -1126,9 +597,7 @@ class AsyncChatResource(AsyncAPIResource):
         stream: bool,
         agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
-        guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
-        handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
-        input: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        input: Optional[Iterable[object]] | NotGiven = NOT_GIVEN,
         logit_bias: Optional[Dict[str, int]] | NotGiven = NOT_GIVEN,
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
@@ -1139,8 +608,8 @@ class AsyncChatResource(AsyncAPIResource):
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         stop: Optional[List[str]] | NotGiven = NOT_GIVEN,
         temperature: Optional[float] | NotGiven = NOT_GIVEN,
-        tool_choice: Union[str, Dict[str, object], None] | NotGiven = NOT_GIVEN,
-        tools: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        tool_choice: Union[str, object, None] | NotGiven = NOT_GIVEN,
+        tools: Optional[Iterable[object]] | NotGiven = NOT_GIVEN,
         top_p: Optional[float] | NotGiven = NOT_GIVEN,
         user: Optional[str] | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -1158,153 +627,50 @@ class AsyncChatResource(AsyncAPIResource):
         multi-model routing, client-side and server-side tool execution, and integration
         with MCP (Model Context Protocol) servers.
 
-        Features: - Cross-vendor compatibility (OpenAI, Anthropic, Cohere, etc.) -
-        Multi-model routing with intelligent agentic handoffs - Client-side tool
-        execution (tools returned as JSON) - Server-side MCP tool execution with
-        automatic billing - Streaming and non-streaming responses - Advanced agent
-        attributes for routing decisions - Automatic usage tracking and billing
-
-        Args: request: Chat completion request with messages, model, and configuration
-        http_request: FastAPI request object for accessing headers and state
-        background_tasks: FastAPI background tasks for async billing operations user:
-        Authenticated user with validated API key and sufficient balance
-
-        Returns: ChatCompletion: OpenAI-compatible completion response with usage data
-
-        Raises: HTTPException: - 401 if authentication fails or insufficient balance -
-        400 if request validation fails - 500 if internal processing error occurs
-
-        Billing: - Token usage billed automatically based on model pricing - MCP tool
-        calls billed separately using credits system - Streaming responses billed after
-        completion via background task
-
-        Example: Basic chat completion: ```python import dedalus_labs
-
-            client = dedalus_labs.Client(api_key="your-api-key")
-
-            completion = client.chat.create(
-                model="gpt-4",
-                input=[{"role": "user", "content": "Hello, how are you?"}],
-            )
-
-            print(completion.choices[0].message.content)
-            ```
-
-            With tools and MCP servers:
-            ```python
-            completion = client.chat.create(
-                model="gpt-4",
-                input=[{"role": "user", "content": "Search for recent AI news"}],
-                tools=[
-                    {
-                        "type": "function",
-                        "function": {
-                            "name": "search_web",
-                            "description": "Search the web for information",
-                        },
-                    }
-                ],
-                mcp_servers=["dedalus-labs/brave-search"],
-            )
-            ```
-
-            Multi-model routing:
-            ```python
-            completion = client.chat.create(
-                model=["gpt-4o-mini", "gpt-4", "claude-3-5-sonnet"],
-                input=[{"role": "user", "content": "Analyze this complex data"}],
-                agent_attributes={"complexity": 0.8, "accuracy": 0.9},
-            )
-            ```
-
-            Streaming response:
-            ```python
-            stream = client.chat.create(
-                model="gpt-4",
-                input=[{"role": "user", "content": "Tell me a story"}],
-                stream=True,
-            )
-
-            for chunk in stream:
-                if chunk.choices[0].delta.content:
-                    print(chunk.choices[0].delta.content, end="")
-            ```
-
         Args:
-          stream: Whether to stream back partial message deltas as Server-Sent Events. When true,
-              partial message deltas will be sent as chunks in OpenAI format.
+          stream: Whether to stream back partial message deltas as Server-Sent Events.
 
           agent_attributes: Attributes for the agent itself, influencing behavior and model selection.
-              Format: {'attribute': value}, where values are 0.0-1.0. Common attributes:
-              'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
-              values indicate stronger preference for that characteristic.
 
           frequency_penalty: Frequency penalty (-2 to 2). Positive values penalize new tokens based on their
-              existing frequency in the text so far, decreasing likelihood of repeated
-              phrases.
-
-          guardrails: Guardrails to apply to the agent for input/output validation and safety checks.
-              Reserved for future use - guardrails configuration format not yet finalized.
-
-          handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
-              future use - handoff configuration format not yet finalized.
+              existing frequency in the text so far.
 
           input: Input to the model - can be messages, images, or other modalities. Supports
               OpenAI chat format with role/content structure. For multimodal inputs, content
               can include text, images, or other media types.
 
-          logit_bias: Modify likelihood of specified tokens appearing in the completion. Maps token
-              IDs (as strings) to bias values (-100 to 100). -100 = completely ban token, +100
-              = strongly favor token.
+          logit_bias: Modify likelihood of specified tokens appearing in the completion.
 
-          max_tokens: Maximum number of tokens to generate in the completion. Does not include tokens
-              in the input messages.
+          max_tokens: Maximum number of tokens to generate in the completion.
 
           max_turns: Maximum number of turns for agent execution before terminating (default: 10).
-              Each turn represents one model inference cycle. Higher values allow more complex
-              reasoning but increase cost and latency.
 
           mcp_servers: MCP (Model Context Protocol) server addresses to make available for server-side
-              tool execution. Can be URLs (e.g., 'https://mcp.example.com') or slugs (e.g.,
-              'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
-              separately.
+              tool execution.
 
           model: Model(s) to use for completion. Can be a single model ID, a Model object, or a
-              list for multi-model routing. Single model: 'gpt-4',
-              'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model instance. Multi-model
-              routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or list of Model
-              objects - agent will choose optimal model based on task complexity.
+              list for multi-model routing.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
-              execution. Format: {'model_name': {'attribute': value}}, where values are
-              0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
-              'accuracy'. Used by agent to select optimal model based on task requirements.
+              execution.
 
           n: Number of completions to generate. Note: only n=1 is currently supported.
 
           presence_penalty: Presence penalty (-2 to 2). Positive values penalize new tokens based on whether
-              they appear in the text so far, encouraging the model to talk about new topics.
+              they appear in the text so far.
 
-          stop: Up to 4 sequences where the API will stop generating further tokens. The model
-              will stop as soon as it encounters any of these sequences.
+          stop: Up to 4 sequences where the API will stop generating further tokens.
 
           temperature: Sampling temperature (0 to 2). Higher values make output more random, lower
-              values make it more focused and deterministic. 0 = deterministic, 1 = balanced,
-              2 = very creative.
+              values make it more focused and deterministic.
 
-          tool_choice: Controls which tool is called by the model. Options: 'auto' (default), 'none',
-              'required', or specific tool name. Can also be a dict specifying a particular
-              tool.
+          tool_choice: Controls which tool is called by the model.
 
-          tools: List of tools available to the model in OpenAI function calling format. Tools
-              are executed client-side and returned as JSON for the application to handle. Use
-              'mcp_servers' for server-side tool execution.
+          tools: List of tools available to the model in OpenAI function calling format.
 
-          top_p: Nucleus sampling parameter (0 to 1). Alternative to temperature. 0.1 = only top
-              10% probability mass, 1.0 = consider all tokens.
+          top_p: Nucleus sampling parameter (0 to 1). Alternative to temperature.
 
-          user: Unique identifier representing your end-user. Used for monitoring and abuse
-              detection. Should be consistent across requests from the same user.
+          user: Unique identifier representing your end-user.
 
           extra_headers: Send extra headers
 
@@ -1321,9 +687,7 @@ class AsyncChatResource(AsyncAPIResource):
         *,
         agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
-        guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
-        handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
-        input: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        input: Optional[Iterable[object]] | NotGiven = NOT_GIVEN,
         logit_bias: Optional[Dict[str, int]] | NotGiven = NOT_GIVEN,
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
@@ -1335,8 +699,8 @@ class AsyncChatResource(AsyncAPIResource):
         stop: Optional[List[str]] | NotGiven = NOT_GIVEN,
         stream: Optional[Literal[False]] | Literal[True] | NotGiven = NOT_GIVEN,
         temperature: Optional[float] | NotGiven = NOT_GIVEN,
-        tool_choice: Union[str, Dict[str, object], None] | NotGiven = NOT_GIVEN,
-        tools: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
+        tool_choice: Union[str, object, None] | NotGiven = NOT_GIVEN,
+        tools: Optional[Iterable[object]] | NotGiven = NOT_GIVEN,
         top_p: Optional[float] | NotGiven = NOT_GIVEN,
         user: Optional[str] | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
@@ -1352,8 +716,6 @@ class AsyncChatResource(AsyncAPIResource):
                 {
                     "agent_attributes": agent_attributes,
                     "frequency_penalty": frequency_penalty,
-                    "guardrails": guardrails,
-                    "handoff_config": handoff_config,
                     "input": input,
                     "logit_bias": logit_bias,
                     "max_tokens": max_tokens,
