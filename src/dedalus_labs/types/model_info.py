@@ -1,7 +1,7 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
 import builtins
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from .._models import BaseModel
 
@@ -24,7 +24,7 @@ class ModelInfo(BaseModel):
     parent: Optional[str] = None
     """Parent model"""
 
-    permission: Optional[List[builtins.object]] = None
+    permission: Optional[List[Dict[str, builtins.object]]] = None
     """Permissions"""
 
     root: Optional[str] = None
