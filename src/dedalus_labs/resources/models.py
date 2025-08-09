@@ -57,6 +57,36 @@ class ModelsResource(SyncAPIResource):
         Returns detailed information about a specific model by ID. The model must be
         available to your API key's configured providers.
 
+        Args: model_id: The ID of the model to retrieve (e.g., 'gpt-4',
+        'claude-3-5-sonnet-20241022') user: Authenticated user obtained from API key
+        validation
+
+        Returns: Model: Information about the requested model
+
+        Raises: HTTPException: - 401 if authentication fails - 404 if model not found or
+        not accessible with current API key - 500 if internal error occurs
+
+        Requires: Valid API key with 'read' scope permission
+
+        Example: ```python import dedalus_labs
+
+            client = dedalus_labs.Client(api_key="your-api-key")
+            model = client.models.retrieve("gpt-4")
+
+            print(f"Model: {model.id}")
+            print(f"Owner: {model.owned_by}")
+            ```
+
+            Response:
+            ```json
+            {
+                "id": "gpt-4",
+                "object": "model",
+                "created": 1687882411,
+                "owned_by": "openai"
+            }
+            ```
+
         Args:
           extra_headers: Send extra headers
 
@@ -92,6 +122,43 @@ class ModelsResource(SyncAPIResource):
         Returns a list of available models from all configured providers. Models are
         filtered based on provider availability and API key configuration. Only models
         from providers with valid API keys are returned.
+
+        Args: user: Authenticated user obtained from API key validation
+
+        Returns: ModelsResponse: Object containing list of available models
+
+        Raises: HTTPException: - 401 if authentication fails - 500 if internal error
+        occurs during model listing
+
+        Requires: Valid API key with 'read' scope permission
+
+        Example: ```python import dedalus_labs
+
+            client = dedalus_labs.Client(api_key="your-api-key")
+            models = client.models.list()
+
+            for model in models.data:
+                print(f"Model: {model.id} (Owner: {model.owned_by})")
+            ```
+
+            Response:
+            ```json
+            {
+                "object": "list",
+                "data": [
+                    {
+                        "id": "gpt-4",
+                        "object": "model",
+                        "owned_by": "openai"
+                    },
+                    {
+                        "id": "claude-3-5-sonnet-20241022",
+                        "object": "model",
+                        "owned_by": "anthropic"
+                    }
+                ]
+            }
+            ```
         """
         return self._get(
             "/v1/models",
@@ -139,6 +206,36 @@ class AsyncModelsResource(AsyncAPIResource):
         Returns detailed information about a specific model by ID. The model must be
         available to your API key's configured providers.
 
+        Args: model_id: The ID of the model to retrieve (e.g., 'gpt-4',
+        'claude-3-5-sonnet-20241022') user: Authenticated user obtained from API key
+        validation
+
+        Returns: Model: Information about the requested model
+
+        Raises: HTTPException: - 401 if authentication fails - 404 if model not found or
+        not accessible with current API key - 500 if internal error occurs
+
+        Requires: Valid API key with 'read' scope permission
+
+        Example: ```python import dedalus_labs
+
+            client = dedalus_labs.Client(api_key="your-api-key")
+            model = client.models.retrieve("gpt-4")
+
+            print(f"Model: {model.id}")
+            print(f"Owner: {model.owned_by}")
+            ```
+
+            Response:
+            ```json
+            {
+                "id": "gpt-4",
+                "object": "model",
+                "created": 1687882411,
+                "owned_by": "openai"
+            }
+            ```
+
         Args:
           extra_headers: Send extra headers
 
@@ -174,6 +271,43 @@ class AsyncModelsResource(AsyncAPIResource):
         Returns a list of available models from all configured providers. Models are
         filtered based on provider availability and API key configuration. Only models
         from providers with valid API keys are returned.
+
+        Args: user: Authenticated user obtained from API key validation
+
+        Returns: ModelsResponse: Object containing list of available models
+
+        Raises: HTTPException: - 401 if authentication fails - 500 if internal error
+        occurs during model listing
+
+        Requires: Valid API key with 'read' scope permission
+
+        Example: ```python import dedalus_labs
+
+            client = dedalus_labs.Client(api_key="your-api-key")
+            models = client.models.list()
+
+            for model in models.data:
+                print(f"Model: {model.id} (Owner: {model.owned_by})")
+            ```
+
+            Response:
+            ```json
+            {
+                "object": "list",
+                "data": [
+                    {
+                        "id": "gpt-4",
+                        "object": "model",
+                        "owned_by": "openai"
+                    },
+                    {
+                        "id": "claude-3-5-sonnet-20241022",
+                        "object": "model",
+                        "owned_by": "anthropic"
+                    }
+                ]
+            }
+            ```
         """
         return await self._get(
             "/v1/models",
