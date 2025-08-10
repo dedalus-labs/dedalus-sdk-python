@@ -2,14 +2,14 @@
 
 from typing import List, Optional
 
+from .model import Model
 from .._models import BaseModel
-from .model_info import ModelInfo
 
 __all__ = ["ModelsResponse"]
 
 
 class ModelsResponse(BaseModel):
-    data: List[ModelInfo]
+    data: List[Model]
     """List of models"""
 
     object: Optional[str] = None

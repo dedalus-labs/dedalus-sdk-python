@@ -13,8 +13,8 @@ from .._response import (
     async_to_raw_response_wrapper,
     async_to_streamed_response_wrapper,
 )
+from ..types.model import Model
 from .._base_client import make_request_options
-from ..types.model_info import ModelInfo
 from ..types.models_response import ModelsResponse
 
 __all__ = ["ModelsResource", "AsyncModelsResource"]
@@ -50,7 +50,7 @@ class ModelsResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> ModelInfo:
+    ) -> Model:
         """
         Get information about a specific model.
 
@@ -103,7 +103,7 @@ class ModelsResource(SyncAPIResource):
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=ModelInfo,
+            cast_to=Model,
         )
 
     def list(
@@ -199,7 +199,7 @@ class AsyncModelsResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> ModelInfo:
+    ) -> Model:
         """
         Get information about a specific model.
 
@@ -252,7 +252,7 @@ class AsyncModelsResource(AsyncAPIResource):
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=ModelInfo,
+            cast_to=Model,
         )
 
     async def list(
