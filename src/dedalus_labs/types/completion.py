@@ -7,6 +7,7 @@ from typing_extensions import Literal
 from pydantic import Field as FieldInfo
 
 from .._models import BaseModel
+from .top_logprob import TopLogprob
 
 __all__ = [
     "Completion",
@@ -20,9 +21,7 @@ __all__ = [
     "ChoiceMessageToolCallFunction",
     "ChoiceLogprobs",
     "ChoiceLogprobsContent",
-    "ChoiceLogprobsContentTopLogprob",
     "ChoiceLogprobsRefusal",
-    "ChoiceLogprobsRefusalTopLogprob",
     "Usage",
     "UsageCompletionTokensDetails",
     "UsagePromptTokensDetails",
@@ -140,42 +139,12 @@ class ChoiceMessage(BaseModel):
         def __getattr__(self, attr: str) -> object: ...
 
 
-class ChoiceLogprobsContentTopLogprob(BaseModel):
-    token: str
-
-    logprob: float
-
-    bytes: Optional[List[int]] = None
-
-    __pydantic_extra__: Dict[str, object] = FieldInfo(init=False)  # pyright: ignore[reportIncompatibleVariableOverride]
-    if TYPE_CHECKING:
-        # Stub to indicate that arbitrary properties are accepted.
-        # To access properties that are not valid identifiers you can use `getattr`, e.g.
-        # `getattr(obj, '$type')`
-        def __getattr__(self, attr: str) -> object: ...
-
-
 class ChoiceLogprobsContent(BaseModel):
     token: str
 
     logprob: float
 
-    top_logprobs: List[ChoiceLogprobsContentTopLogprob]
-
-    bytes: Optional[List[int]] = None
-
-    __pydantic_extra__: Dict[str, object] = FieldInfo(init=False)  # pyright: ignore[reportIncompatibleVariableOverride]
-    if TYPE_CHECKING:
-        # Stub to indicate that arbitrary properties are accepted.
-        # To access properties that are not valid identifiers you can use `getattr`, e.g.
-        # `getattr(obj, '$type')`
-        def __getattr__(self, attr: str) -> object: ...
-
-
-class ChoiceLogprobsRefusalTopLogprob(BaseModel):
-    token: str
-
-    logprob: float
+    top_logprobs: List[TopLogprob]
 
     bytes: Optional[List[int]] = None
 
@@ -192,7 +161,7 @@ class ChoiceLogprobsRefusal(BaseModel):
 
     logprob: float
 
-    top_logprobs: List[ChoiceLogprobsRefusalTopLogprob]
+    top_logprobs: List[TopLogprob]
 
     bytes: Optional[List[int]] = None
 

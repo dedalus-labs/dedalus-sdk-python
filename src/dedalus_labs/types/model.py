@@ -5,10 +5,10 @@ from typing import Dict, List, Optional
 
 from .._models import BaseModel
 
-__all__ = ["ModelInfo"]
+__all__ = ["Model"]
 
 
-class ModelInfo(BaseModel):
+class Model(BaseModel):
     id: str
     """Model identifier"""
 

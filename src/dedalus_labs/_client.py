@@ -95,6 +95,8 @@ class Dedalus(SyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
+        self._default_stream_cls = Stream
+
         self.root = root.RootResource(self)
         self.health = health.HealthResource(self)
         self.models = models.ModelsResource(self)
@@ -268,6 +270,8 @@ class AsyncDedalus(AsyncAPIClient):
             custom_query=default_query,
             _strict_response_validation=_strict_response_validation,
         )
+
+        self._default_stream_cls = AsyncStream
 
         self.root = root.AsyncRootResource(self)
         self.health = health.AsyncHealthResource(self)

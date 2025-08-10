@@ -50,7 +50,7 @@ class ChatResource(SyncAPIResource):
     def create(
         self,
         *,
-        agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
+        agent_attributes: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
         handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
@@ -60,7 +60,7 @@ class ChatResource(SyncAPIResource):
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
         model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
-        model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
+        model_attributes: Optional[Dict[str, Dict[str, object]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         stop: Optional[List[str]] | NotGiven = NOT_GIVEN,
@@ -158,10 +158,12 @@ class ChatResource(SyncAPIResource):
             ```
 
         Args:
-          agent_attributes: Attributes for the agent itself, influencing behavior and model selection.
-              Format: {'attribute': value}, where values are 0.0-1.0. Common attributes:
-              'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
-              values indicate stronger preference for that characteristic.
+          agent_attributes:
+              Metadata for the agent itself, used for documentation and handoffs. Format:
+              {'attribute': value}. Supports flexible types for rich agent description. Common
+              attributes: 'complexity', 'accuracy', 'efficiency', 'creativity',
+              'friendliness'. Higher values indicate stronger preference for that
+              characteristic.
 
           frequency_penalty: Frequency penalty (-2 to 2). Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing likelihood of repeated
@@ -193,17 +195,16 @@ class ChatResource(SyncAPIResource):
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
 
-          model: Model(s) to use for completion. Can be a single model ID, a ModelConfig object
-              (optionally with per-model 'settings'), or a list for multi-model routing.
-              Single model: 'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model
-              instance. Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or
-              list of ModelConfig objects - agent will choose optimal model based on task
-              complexity.
+          model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
+              or a list for multi-model routing. Single model: 'gpt-4',
+              'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a DedalusModel instance.
+              Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or list of
+              DedalusModel objects - agent will choose optimal model based on task complexity.
 
-          model_attributes: Attributes for individual models used in routing decisions during multi-model
-              execution. Format: {'model_name': {'attribute': value}}, where values are
-              0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
-              'accuracy'. Used by agent to select optimal model based on task requirements.
+          model_attributes: Metadata for individual models used in schema documentation and handoffs.
+              Format: {'model_name': {'attribute': value}}. Supports flexible types: strings,
+              numbers, booleans, lists. Used for model documentation and capability
+              description.
 
           n: Number of completions to generate. Note: only n=1 is currently supported.
 
@@ -249,7 +250,7 @@ class ChatResource(SyncAPIResource):
         self,
         *,
         stream: Literal[True],
-        agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
+        agent_attributes: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
         handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
@@ -259,7 +260,7 @@ class ChatResource(SyncAPIResource):
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
         model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
-        model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
+        model_attributes: Optional[Dict[str, Dict[str, object]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         stop: Optional[List[str]] | NotGiven = NOT_GIVEN,
@@ -359,10 +360,12 @@ class ChatResource(SyncAPIResource):
           stream: Whether to stream back partial message deltas as Server-Sent Events. When true,
               partial message deltas will be sent as chunks in OpenAI format.
 
-          agent_attributes: Attributes for the agent itself, influencing behavior and model selection.
-              Format: {'attribute': value}, where values are 0.0-1.0. Common attributes:
-              'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
-              values indicate stronger preference for that characteristic.
+          agent_attributes:
+              Metadata for the agent itself, used for documentation and handoffs. Format:
+              {'attribute': value}. Supports flexible types for rich agent description. Common
+              attributes: 'complexity', 'accuracy', 'efficiency', 'creativity',
+              'friendliness'. Higher values indicate stronger preference for that
+              characteristic.
 
           frequency_penalty: Frequency penalty (-2 to 2). Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing likelihood of repeated
@@ -394,17 +397,16 @@ class ChatResource(SyncAPIResource):
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
 
-          model: Model(s) to use for completion. Can be a single model ID, a ModelConfig object
-              (optionally with per-model 'settings'), or a list for multi-model routing.
-              Single model: 'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model
-              instance. Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or
-              list of ModelConfig objects - agent will choose optimal model based on task
-              complexity.
+          model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
+              or a list for multi-model routing. Single model: 'gpt-4',
+              'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a DedalusModel instance.
+              Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or list of
+              DedalusModel objects - agent will choose optimal model based on task complexity.
 
-          model_attributes: Attributes for individual models used in routing decisions during multi-model
-              execution. Format: {'model_name': {'attribute': value}}, where values are
-              0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
-              'accuracy'. Used by agent to select optimal model based on task requirements.
+          model_attributes: Metadata for individual models used in schema documentation and handoffs.
+              Format: {'model_name': {'attribute': value}}. Supports flexible types: strings,
+              numbers, booleans, lists. Used for model documentation and capability
+              description.
 
           n: Number of completions to generate. Note: only n=1 is currently supported.
 
@@ -447,7 +449,7 @@ class ChatResource(SyncAPIResource):
         self,
         *,
         stream: bool,
-        agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
+        agent_attributes: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
         handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
@@ -457,7 +459,7 @@ class ChatResource(SyncAPIResource):
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
         model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
-        model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
+        model_attributes: Optional[Dict[str, Dict[str, object]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         stop: Optional[List[str]] | NotGiven = NOT_GIVEN,
@@ -557,10 +559,12 @@ class ChatResource(SyncAPIResource):
           stream: Whether to stream back partial message deltas as Server-Sent Events. When true,
               partial message deltas will be sent as chunks in OpenAI format.
 
-          agent_attributes: Attributes for the agent itself, influencing behavior and model selection.
-              Format: {'attribute': value}, where values are 0.0-1.0. Common attributes:
-              'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
-              values indicate stronger preference for that characteristic.
+          agent_attributes:
+              Metadata for the agent itself, used for documentation and handoffs. Format:
+              {'attribute': value}. Supports flexible types for rich agent description. Common
+              attributes: 'complexity', 'accuracy', 'efficiency', 'creativity',
+              'friendliness'. Higher values indicate stronger preference for that
+              characteristic.
 
           frequency_penalty: Frequency penalty (-2 to 2). Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing likelihood of repeated
@@ -592,17 +596,16 @@ class ChatResource(SyncAPIResource):
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
 
-          model: Model(s) to use for completion. Can be a single model ID, a ModelConfig object
-              (optionally with per-model 'settings'), or a list for multi-model routing.
-              Single model: 'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model
-              instance. Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or
-              list of ModelConfig objects - agent will choose optimal model based on task
-              complexity.
+          model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
+              or a list for multi-model routing. Single model: 'gpt-4',
+              'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a DedalusModel instance.
+              Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or list of
+              DedalusModel objects - agent will choose optimal model based on task complexity.
 
-          model_attributes: Attributes for individual models used in routing decisions during multi-model
-              execution. Format: {'model_name': {'attribute': value}}, where values are
-              0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
-              'accuracy'. Used by agent to select optimal model based on task requirements.
+          model_attributes: Metadata for individual models used in schema documentation and handoffs.
+              Format: {'model_name': {'attribute': value}}. Supports flexible types: strings,
+              numbers, booleans, lists. Used for model documentation and capability
+              description.
 
           n: Number of completions to generate. Note: only n=1 is currently supported.
 
@@ -643,7 +646,7 @@ class ChatResource(SyncAPIResource):
     def create(
         self,
         *,
-        agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
+        agent_attributes: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
         handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
@@ -653,7 +656,7 @@ class ChatResource(SyncAPIResource):
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
         model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
-        model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
+        model_attributes: Optional[Dict[str, Dict[str, object]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         stop: Optional[List[str]] | NotGiven = NOT_GIVEN,
@@ -732,7 +735,7 @@ class AsyncChatResource(AsyncAPIResource):
     async def create(
         self,
         *,
-        agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
+        agent_attributes: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
         handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
@@ -742,7 +745,7 @@ class AsyncChatResource(AsyncAPIResource):
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
         model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
-        model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
+        model_attributes: Optional[Dict[str, Dict[str, object]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         stop: Optional[List[str]] | NotGiven = NOT_GIVEN,
@@ -840,10 +843,12 @@ class AsyncChatResource(AsyncAPIResource):
             ```
 
         Args:
-          agent_attributes: Attributes for the agent itself, influencing behavior and model selection.
-              Format: {'attribute': value}, where values are 0.0-1.0. Common attributes:
-              'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
-              values indicate stronger preference for that characteristic.
+          agent_attributes:
+              Metadata for the agent itself, used for documentation and handoffs. Format:
+              {'attribute': value}. Supports flexible types for rich agent description. Common
+              attributes: 'complexity', 'accuracy', 'efficiency', 'creativity',
+              'friendliness'. Higher values indicate stronger preference for that
+              characteristic.
 
           frequency_penalty: Frequency penalty (-2 to 2). Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing likelihood of repeated
@@ -875,17 +880,16 @@ class AsyncChatResource(AsyncAPIResource):
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
 
-          model: Model(s) to use for completion. Can be a single model ID, a ModelConfig object
-              (optionally with per-model 'settings'), or a list for multi-model routing.
-              Single model: 'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model
-              instance. Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or
-              list of ModelConfig objects - agent will choose optimal model based on task
-              complexity.
+          model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
+              or a list for multi-model routing. Single model: 'gpt-4',
+              'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a DedalusModel instance.
+              Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or list of
+              DedalusModel objects - agent will choose optimal model based on task complexity.
 
-          model_attributes: Attributes for individual models used in routing decisions during multi-model
-              execution. Format: {'model_name': {'attribute': value}}, where values are
-              0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
-              'accuracy'. Used by agent to select optimal model based on task requirements.
+          model_attributes: Metadata for individual models used in schema documentation and handoffs.
+              Format: {'model_name': {'attribute': value}}. Supports flexible types: strings,
+              numbers, booleans, lists. Used for model documentation and capability
+              description.
 
           n: Number of completions to generate. Note: only n=1 is currently supported.
 
@@ -931,7 +935,7 @@ class AsyncChatResource(AsyncAPIResource):
         self,
         *,
         stream: Literal[True],
-        agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
+        agent_attributes: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
         handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
@@ -941,7 +945,7 @@ class AsyncChatResource(AsyncAPIResource):
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
         model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
-        model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
+        model_attributes: Optional[Dict[str, Dict[str, object]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         stop: Optional[List[str]] | NotGiven = NOT_GIVEN,
@@ -1041,10 +1045,12 @@ class AsyncChatResource(AsyncAPIResource):
           stream: Whether to stream back partial message deltas as Server-Sent Events. When true,
               partial message deltas will be sent as chunks in OpenAI format.
 
-          agent_attributes: Attributes for the agent itself, influencing behavior and model selection.
-              Format: {'attribute': value}, where values are 0.0-1.0. Common attributes:
-              'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
-              values indicate stronger preference for that characteristic.
+          agent_attributes:
+              Metadata for the agent itself, used for documentation and handoffs. Format:
+              {'attribute': value}. Supports flexible types for rich agent description. Common
+              attributes: 'complexity', 'accuracy', 'efficiency', 'creativity',
+              'friendliness'. Higher values indicate stronger preference for that
+              characteristic.
 
           frequency_penalty: Frequency penalty (-2 to 2). Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing likelihood of repeated
@@ -1076,17 +1082,16 @@ class AsyncChatResource(AsyncAPIResource):
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
 
-          model: Model(s) to use for completion. Can be a single model ID, a ModelConfig object
-              (optionally with per-model 'settings'), or a list for multi-model routing.
-              Single model: 'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model
-              instance. Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or
-              list of ModelConfig objects - agent will choose optimal model based on task
-              complexity.
+          model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
+              or a list for multi-model routing. Single model: 'gpt-4',
+              'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a DedalusModel instance.
+              Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or list of
+              DedalusModel objects - agent will choose optimal model based on task complexity.
 
-          model_attributes: Attributes for individual models used in routing decisions during multi-model
-              execution. Format: {'model_name': {'attribute': value}}, where values are
-              0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
-              'accuracy'. Used by agent to select optimal model based on task requirements.
+          model_attributes: Metadata for individual models used in schema documentation and handoffs.
+              Format: {'model_name': {'attribute': value}}. Supports flexible types: strings,
+              numbers, booleans, lists. Used for model documentation and capability
+              description.
 
           n: Number of completions to generate. Note: only n=1 is currently supported.
 
@@ -1129,7 +1134,7 @@ class AsyncChatResource(AsyncAPIResource):
         self,
         *,
         stream: bool,
-        agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
+        agent_attributes: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
         handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
@@ -1139,7 +1144,7 @@ class AsyncChatResource(AsyncAPIResource):
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
         model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
-        model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
+        model_attributes: Optional[Dict[str, Dict[str, object]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         stop: Optional[List[str]] | NotGiven = NOT_GIVEN,
@@ -1239,10 +1244,12 @@ class AsyncChatResource(AsyncAPIResource):
           stream: Whether to stream back partial message deltas as Server-Sent Events. When true,
               partial message deltas will be sent as chunks in OpenAI format.
 
-          agent_attributes: Attributes for the agent itself, influencing behavior and model selection.
-              Format: {'attribute': value}, where values are 0.0-1.0. Common attributes:
-              'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
-              values indicate stronger preference for that characteristic.
+          agent_attributes:
+              Metadata for the agent itself, used for documentation and handoffs. Format:
+              {'attribute': value}. Supports flexible types for rich agent description. Common
+              attributes: 'complexity', 'accuracy', 'efficiency', 'creativity',
+              'friendliness'. Higher values indicate stronger preference for that
+              characteristic.
 
           frequency_penalty: Frequency penalty (-2 to 2). Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing likelihood of repeated
@@ -1274,17 +1281,16 @@ class AsyncChatResource(AsyncAPIResource):
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
 
-          model: Model(s) to use for completion. Can be a single model ID, a ModelConfig object
-              (optionally with per-model 'settings'), or a list for multi-model routing.
-              Single model: 'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a Model
-              instance. Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or
-              list of ModelConfig objects - agent will choose optimal model based on task
-              complexity.
+          model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
+              or a list for multi-model routing. Single model: 'gpt-4',
+              'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or a DedalusModel instance.
+              Multi-model routing: ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] or list of
+              DedalusModel objects - agent will choose optimal model based on task complexity.
 
-          model_attributes: Attributes for individual models used in routing decisions during multi-model
-              execution. Format: {'model_name': {'attribute': value}}, where values are
-              0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
-              'accuracy'. Used by agent to select optimal model based on task requirements.
+          model_attributes: Metadata for individual models used in schema documentation and handoffs.
+              Format: {'model_name': {'attribute': value}}. Supports flexible types: strings,
+              numbers, booleans, lists. Used for model documentation and capability
+              description.
 
           n: Number of completions to generate. Note: only n=1 is currently supported.
 
@@ -1325,7 +1331,7 @@ class AsyncChatResource(AsyncAPIResource):
     async def create(
         self,
         *,
-        agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
+        agent_attributes: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
         handoff_config: Optional[Dict[str, object]] | NotGiven = NOT_GIVEN,
@@ -1335,7 +1341,7 @@ class AsyncChatResource(AsyncAPIResource):
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
         model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
-        model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
+        model_attributes: Optional[Dict[str, Dict[str, object]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         stop: Optional[List[str]] | NotGiven = NOT_GIVEN,

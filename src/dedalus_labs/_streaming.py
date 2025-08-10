@@ -55,7 +55,26 @@ class Stream(Generic[_T]):
         iterator = self._iter_events()
 
         for sse in iterator:
-            yield process_data(data=sse.json(), cast_to=cast_to, response=response)
+            if sse.data.startswith("[DONE]"):
+                break
+
+            if sse.event == "error":
+                body = sse.data
+
+                try:
+                    body = sse.json()
+                    err_msg = f"{body}"
+                except Exception:
+                    err_msg = sse.data or f"Error code: {response.status_code}"
+
+                raise self._client._make_status_error(
+                    err_msg,
+                    body=body,
+                    response=self.response,
+                )
+
+            if sse.event is None:
+                yield process_data(data=sse.json(), cast_to=cast_to, response=response)
 
         # Ensure the entire stream is consumed
         for _sse in iterator:
@@ -119,7 +138,26 @@ class AsyncStream(Generic[_T]):
         iterator = self._iter_events()
 
         async for sse in iterator:
-            yield process_data(data=sse.json(), cast_to=cast_to, response=response)
+            if sse.data.startswith("[DONE]"):
+                break
+
+            if sse.event == "error":
+                body = sse.data
+
+                try:
+                    body = sse.json()
+                    err_msg = f"{body}"
+                except Exception:
+                    err_msg = sse.data or f"Error code: {response.status_code}"
+
+                raise self._client._make_status_error(
+                    err_msg,
+                    body=body,
+                    response=self.response,
+                )
+
+            if sse.event is None:
+                yield process_data(data=sse.json(), cast_to=cast_to, response=response)
 
         # Ensure the entire stream is consumed
         async for _sse in iterator:
