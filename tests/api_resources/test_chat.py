@@ -9,7 +9,7 @@ import pytest
 
 from tests.utils import assert_matches_type
 from dedalus_labs import Dedalus, AsyncDedalus
-from dedalus_labs.types import ChatCreateResponse
+from dedalus_labs.types import Completion
 
 base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 
@@ -21,16 +21,16 @@ class TestChat:
     @parametrize
     def test_method_create_overload_1(self, client: Dedalus) -> None:
         chat = client.chat.create()
-        assert_matches_type(ChatCreateResponse, chat, path=["response"])
+        assert_matches_type(Completion, chat, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     def test_method_create_with_all_params_overload_1(self, client: Dedalus) -> None:
         chat = client.chat.create(
             agent_attributes={
-                "accuracy": "bar",
-                "complexity": "bar",
-                "efficiency": "bar",
+                "accuracy": 0.9,
+                "complexity": 0.8,
+                "efficiency": 0.7,
             },
             frequency_penalty=-0.5,
             guardrails=[{"foo": "bar"}],
@@ -47,16 +47,20 @@ class TestChat:
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
             model="gpt-4",
             model_attributes={
+                "claude-3-5-sonnet": {
+                    "cost": 0.7,
+                    "creativity": 0.8,
+                    "intelligence": 0.95,
+                },
                 "gpt-4": {
-                    "context_window": "bar",
-                    "description": "bar",
-                    "multimodal": "bar",
-                    "strengths": "bar",
+                    "cost": 0.8,
+                    "intelligence": 0.9,
+                    "speed": 0.6,
                 },
                 "gpt-4o-mini": {
-                    "cost_tier": "bar",
-                    "description": "bar",
-                    "strengths": "bar",
+                    "cost": 0.2,
+                    "intelligence": 0.7,
+                    "speed": 0.9,
                 },
             },
             n=1,
@@ -74,7 +78,7 @@ class TestChat:
             top_p=0.1,
             user="user-123",
         )
-        assert_matches_type(ChatCreateResponse, chat, path=["response"])
+        assert_matches_type(Completion, chat, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -84,7 +88,7 @@ class TestChat:
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
         chat = response.parse()
-        assert_matches_type(ChatCreateResponse, chat, path=["response"])
+        assert_matches_type(Completion, chat, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -94,7 +98,7 @@ class TestChat:
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
             chat = response.parse()
-            assert_matches_type(ChatCreateResponse, chat, path=["response"])
+            assert_matches_type(Completion, chat, path=["response"])
 
         assert cast(Any, response.is_closed) is True
 
@@ -112,9 +116,9 @@ class TestChat:
         chat_stream = client.chat.create(
             stream=True,
             agent_attributes={
-                "accuracy": "bar",
-                "complexity": "bar",
-                "efficiency": "bar",
+                "accuracy": 0.9,
+                "complexity": 0.8,
+                "efficiency": 0.7,
             },
             frequency_penalty=-0.5,
             guardrails=[{"foo": "bar"}],
@@ -131,16 +135,20 @@ class TestChat:
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
             model="gpt-4",
             model_attributes={
+                "claude-3-5-sonnet": {
+                    "cost": 0.7,
+                    "creativity": 0.8,
+                    "intelligence": 0.95,
+                },
                 "gpt-4": {
-                    "context_window": "bar",
-                    "description": "bar",
-                    "multimodal": "bar",
-                    "strengths": "bar",
+                    "cost": 0.8,
+                    "intelligence": 0.9,
+                    "speed": 0.6,
                 },
                 "gpt-4o-mini": {
-                    "cost_tier": "bar",
-                    "description": "bar",
-                    "strengths": "bar",
+                    "cost": 0.2,
+                    "intelligence": 0.7,
+                    "speed": 0.9,
                 },
             },
             n=1,
@@ -194,16 +202,16 @@ class TestAsyncChat:
     @parametrize
     async def test_method_create_overload_1(self, async_client: AsyncDedalus) -> None:
         chat = await async_client.chat.create()
-        assert_matches_type(ChatCreateResponse, chat, path=["response"])
+        assert_matches_type(Completion, chat, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     async def test_method_create_with_all_params_overload_1(self, async_client: AsyncDedalus) -> None:
         chat = await async_client.chat.create(
             agent_attributes={
-                "accuracy": "bar",
-                "complexity": "bar",
-                "efficiency": "bar",
+                "accuracy": 0.9,
+                "complexity": 0.8,
+                "efficiency": 0.7,
             },
             frequency_penalty=-0.5,
             guardrails=[{"foo": "bar"}],
@@ -220,16 +228,20 @@ class TestAsyncChat:
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
             model="gpt-4",
             model_attributes={
+                "claude-3-5-sonnet": {
+                    "cost": 0.7,
+                    "creativity": 0.8,
+                    "intelligence": 0.95,
+                },
                 "gpt-4": {
-                    "context_window": "bar",
-                    "description": "bar",
-                    "multimodal": "bar",
-                    "strengths": "bar",
+                    "cost": 0.8,
+                    "intelligence": 0.9,
+                    "speed": 0.6,
                 },
                 "gpt-4o-mini": {
-                    "cost_tier": "bar",
-                    "description": "bar",
-                    "strengths": "bar",
+                    "cost": 0.2,
+                    "intelligence": 0.7,
+                    "speed": 0.9,
                 },
             },
             n=1,
@@ -247,7 +259,7 @@ class TestAsyncChat:
             top_p=0.1,
             user="user-123",
         )
-        assert_matches_type(ChatCreateResponse, chat, path=["response"])
+        assert_matches_type(Completion, chat, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -257,7 +269,7 @@ class TestAsyncChat:
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
         chat = await response.parse()
-        assert_matches_type(ChatCreateResponse, chat, path=["response"])
+        assert_matches_type(Completion, chat, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -267,7 +279,7 @@ class TestAsyncChat:
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
             chat = await response.parse()
-            assert_matches_type(ChatCreateResponse, chat, path=["response"])
+            assert_matches_type(Completion, chat, path=["response"])
 
         assert cast(Any, response.is_closed) is True
 
@@ -285,9 +297,9 @@ class TestAsyncChat:
         chat_stream = await async_client.chat.create(
             stream=True,
             agent_attributes={
-                "accuracy": "bar",
-                "complexity": "bar",
-                "efficiency": "bar",
+                "accuracy": 0.9,
+                "complexity": 0.8,
+                "efficiency": 0.7,
             },
             frequency_penalty=-0.5,
             guardrails=[{"foo": "bar"}],
@@ -304,16 +316,20 @@ class TestAsyncChat:
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
             model="gpt-4",
             model_attributes={
+                "claude-3-5-sonnet": {
+                    "cost": 0.7,
+                    "creativity": 0.8,
+                    "intelligence": 0.95,
+                },
                 "gpt-4": {
-                    "context_window": "bar",
-                    "description": "bar",
-                    "multimodal": "bar",
-                    "strengths": "bar",
+                    "cost": 0.8,
+                    "intelligence": 0.9,
+                    "speed": 0.6,
                 },
                 "gpt-4o-mini": {
-                    "cost_tier": "bar",
-                    "description": "bar",
-                    "strengths": "bar",
+                    "cost": 0.2,
+                    "intelligence": 0.7,
+                    "speed": 0.9,
                 },
             },
             n=1,
