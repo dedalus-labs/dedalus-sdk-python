@@ -40,9 +40,16 @@ Methods:
 Types:
 
 ```python
-from dedalus_labs.types import Completion, CompletionRequest, DedalusModel, StreamChunk, TopLogprob
+from dedalus_labs.types import (
+    Completion,
+    CompletionRequest,
+    DedalusModel,
+    StreamChunk,
+    TopLogprob,
+    ChatCreateResponse,
+)
 ```
 
 Methods:
 
-- <code title="post /v1/chat">client.chat.<a href="./src/dedalus_labs/resources/chat.py">create</a>(\*\*<a href="src/dedalus_labs/types/chat_create_params.py">params</a>) -> <a href="./src/dedalus_labs/types/completion.py">Completion</a></code>
+- <code title="post /v1/chat">client.chat.<a href="./src/dedalus_labs/resources/chat.py">create</a>(\*\*<a href="src/dedalus_labs/types/chat_create_params.py">params</a>) -> <a href="./src/dedalus_labs/types/chat_create_response.py">ChatCreateResponse</a></code>

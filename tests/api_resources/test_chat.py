@@ -9,7 +9,7 @@ import pytest
 
 from tests.utils import assert_matches_type
 from dedalus_labs import Dedalus, AsyncDedalus
-from dedalus_labs.types import Completion
+from dedalus_labs.types import ChatCreateResponse
 
 base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 
@@ -21,7 +21,7 @@ class TestChat:
     @parametrize
     def test_method_create_overload_1(self, client: Dedalus) -> None:
         chat = client.chat.create()
-        assert_matches_type(Completion, chat, path=["response"])
+        assert_matches_type(ChatCreateResponse, chat, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -74,7 +74,7 @@ class TestChat:
             top_p=0.1,
             user="user-123",
         )
-        assert_matches_type(Completion, chat, path=["response"])
+        assert_matches_type(ChatCreateResponse, chat, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -84,7 +84,7 @@ class TestChat:
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
         chat = response.parse()
-        assert_matches_type(Completion, chat, path=["response"])
+        assert_matches_type(ChatCreateResponse, chat, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -94,7 +94,7 @@ class TestChat:
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
             chat = response.parse()
-            assert_matches_type(Completion, chat, path=["response"])
+            assert_matches_type(ChatCreateResponse, chat, path=["response"])
 
         assert cast(Any, response.is_closed) is True
 
@@ -194,7 +194,7 @@ class TestAsyncChat:
     @parametrize
     async def test_method_create_overload_1(self, async_client: AsyncDedalus) -> None:
         chat = await async_client.chat.create()
-        assert_matches_type(Completion, chat, path=["response"])
+        assert_matches_type(ChatCreateResponse, chat, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -247,7 +247,7 @@ class TestAsyncChat:
             top_p=0.1,
             user="user-123",
         )
-        assert_matches_type(Completion, chat, path=["response"])
+        assert_matches_type(ChatCreateResponse, chat, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -257,7 +257,7 @@ class TestAsyncChat:
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
         chat = await response.parse()
-        assert_matches_type(Completion, chat, path=["response"])
+        assert_matches_type(ChatCreateResponse, chat, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -267,7 +267,7 @@ class TestAsyncChat:
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
             chat = await response.parse()
-            assert_matches_type(Completion, chat, path=["response"])
+            assert_matches_type(ChatCreateResponse, chat, path=["response"])
 
         assert cast(Any, response.is_closed) is True
 

@@ -10,4 +10,5 @@ from .models_response import ModelsResponse as ModelsResponse
 from .root_get_response import RootGetResponse as RootGetResponse
 from .chat_create_params import ChatCreateParams as ChatCreateParams
 from .dedalus_model_param import DedalusModelParam as DedalusModelParam
+from .chat_create_response import ChatCreateResponse as ChatCreateResponse
 from .health_check_response import HealthCheckResponse as HealthCheckResponse
