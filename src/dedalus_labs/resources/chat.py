@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Union, Iterable, Optional
+from typing import Any, Dict, List, Union, Iterable, Optional, cast
 from typing_extensions import Literal, overload
 
 import httpx
@@ -20,8 +20,8 @@ from .._response import (
 )
 from .._streaming import Stream, AsyncStream
 from .._base_client import make_request_options
-from ..types.completion import Completion
 from ..types.stream_chunk import StreamChunk
+from ..types.chat_create_response import ChatCreateResponse
 
 __all__ = ["ChatResource", "AsyncChatResource"]
 
@@ -76,7 +76,7 @@ class ChatResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Completion:
+    ) -> ChatCreateResponse:
         """
         Create a chat completion using the Agent framework.
 
@@ -474,7 +474,7 @@ class ChatResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Completion | Stream[StreamChunk]:
+    ) -> ChatCreateResponse | Stream[StreamChunk]:
         """
         Create a chat completion using the Agent framework.
 
@@ -672,7 +672,7 @@ class ChatResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Completion | Stream[StreamChunk]:
+    ) -> ChatCreateResponse | Stream[StreamChunk]:
         return self._post(
             "/v1/chat",
             body=maybe_transform(
@@ -705,7 +705,7 @@ class ChatResource(SyncAPIResource):
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=Completion,
+            cast_to=cast(Any, ChatCreateResponse),  # Union types cannot be passed in as arguments in the type system
             stream=stream or False,
             stream_cls=Stream[StreamChunk],
         )
@@ -761,7 +761,7 @@ class AsyncChatResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Completion:
+    ) -> ChatCreateResponse:
         """
         Create a chat completion using the Agent framework.
 
@@ -1159,7 +1159,7 @@ class AsyncChatResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Completion | AsyncStream[StreamChunk]:
+    ) -> ChatCreateResponse | AsyncStream[StreamChunk]:
         """
         Create a chat completion using the Agent framework.
 
@@ -1357,7 +1357,7 @@ class AsyncChatResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Completion | AsyncStream[StreamChunk]:
+    ) -> ChatCreateResponse | AsyncStream[StreamChunk]:
         return await self._post(
             "/v1/chat",
             body=await async_maybe_transform(
@@ -1390,7 +1390,7 @@ class AsyncChatResource(AsyncAPIResource):
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=Completion,
+            cast_to=cast(Any, ChatCreateResponse),  # Union types cannot be passed in as arguments in the type system
             stream=stream or False,
             stream_cls=AsyncStream[StreamChunk],
         )

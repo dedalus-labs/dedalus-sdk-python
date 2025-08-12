@@ -32,7 +32,7 @@ client = Dedalus(
     api_key=os.environ.get("DEDALUS_API_KEY"),  # This is the default and can be omitted
 )
 
-completion = client.chat.create(
+chat = client.chat.create(
     input=[
         {
             "role": "user",
@@ -41,7 +41,6 @@ completion = client.chat.create(
     ],
     model="gpt-4o-mini",
 )
-print(completion.id)
 ```
 
 While you can provide an `api_key` keyword argument,
@@ -64,7 +63,7 @@ client = AsyncDedalus(
 
 
 async def main() -> None:
-    completion = await client.chat.create(
+    chat = await client.chat.create(
         input=[
             {
                 "role": "user",
@@ -73,7 +72,6 @@ async def main() -> None:
         ],
         model="gpt-4o-mini",
     )
-    print(completion.id)
 
 
 asyncio.run(main())
@@ -105,7 +103,7 @@ async def main() -> None:
         api_key="My API Key",
         http_client=DefaultAioHttpClient(),
     ) as client:
-        completion = await client.chat.create(
+        chat = await client.chat.create(
             input=[
                 {
                     "role": "user",
@@ -114,7 +112,6 @@ async def main() -> None:
             ],
             model="gpt-4o-mini",
         )
-        print(completion.id)
 
 
 asyncio.run(main())
