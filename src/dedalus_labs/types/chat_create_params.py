@@ -3,21 +3,18 @@
 from __future__ import annotations
 
 from typing import Dict, List, Union, Iterable, Optional
-from typing_extensions import Literal, Required, TypeAlias, TypedDict
+from typing_extensions import Literal, Required, TypedDict
 
-from .dedalus_model_param import DedalusModelParam
-
-__all__ = ["ChatCreateParamsBase", "Model", "ChatCreateParamsNonStreaming", "ChatCreateParamsStreaming"]
+__all__ = ["ChatCreateParamsBase", "ChatCreateParamsNonStreaming", "ChatCreateParamsStreaming"]
 
 
 class ChatCreateParamsBase(TypedDict, total=False):
-    agent_attributes: Optional[Dict[str, object]]
-    """Metadata for the agent itself, used for documentation and handoffs.
+    agent_attributes: Optional[Dict[str, float]]
+    """Attributes for the agent itself, influencing behavior and model selection.
 
-    Format: {'attribute': value}. Supports flexible types for rich agent
-    description. Common attributes: 'complexity', 'accuracy', 'efficiency',
-    'creativity', 'friendliness'. Higher values indicate stronger preference for
-    that characteristic.
+    Format: {'attribute': value}, where values are 0.0-1.0. Common attributes:
+    'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
+    values indicate stronger preference for that characteristic.
     """
 
     frequency_penalty: Optional[float]
@@ -74,22 +71,21 @@ class ChatCreateParamsBase(TypedDict, total=False):
     separately.
     """
 
-    model: Optional[Model]
+    model: Union[str, List[str], None]
     """Model(s) to use for completion.
 
-    Can be a single model ID, a DedalusModel object, or a list for multi-model
-    routing. Single model: 'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini', or
-    a DedalusModel instance. Multi-model routing: ['gpt-4o-mini', 'gpt-4',
-    'claude-3-5-sonnet'] or list of DedalusModel objects - agent will choose optimal
-    model based on task complexity.
+    Can be a single model ID or a list for multi-model routing. Single model:
+    'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini'. Multi-model routing:
+    ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] - agent will choose optimal model
+    based on task complexity.
     """
 
-    model_attributes: Optional[Dict[str, Dict[str, object]]]
-    """Metadata for individual models used in schema documentation and handoffs.
-
-    Format: {'model_name': {'attribute': value}}. Supports flexible types: strings,
-    numbers, booleans, lists. Used for model documentation and capability
-    description.
+    model_attributes: Optional[Dict[str, Dict[str, float]]]
+    """
+    Attributes for individual models used in routing decisions during multi-model
+    execution. Format: {'model_name': {'attribute': value}}, where values are
+    0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
+    'accuracy'. Used by agent to select optimal model based on task requirements.
     """
 
     n: Optional[int]
@@ -142,9 +138,6 @@ class ChatCreateParamsBase(TypedDict, total=False):
     Used for monitoring and abuse detection. Should be consistent across requests
     from the same user.
     """
-
-
-Model: TypeAlias = Union[str, List[str], DedalusModelParam, Iterable[DedalusModelParam]]
 
 
 class ChatCreateParamsNonStreaming(ChatCreateParamsBase, total=False):
