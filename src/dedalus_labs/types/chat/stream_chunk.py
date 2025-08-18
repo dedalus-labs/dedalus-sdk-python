@@ -5,7 +5,7 @@ from typing_extensions import Literal
 
 from pydantic import Field as FieldInfo
 
-from .._models import BaseModel
+from ..._models import BaseModel
 from .chat_completion_token_logprob import ChatCompletionTokenLogprob
 
 __all__ = [
