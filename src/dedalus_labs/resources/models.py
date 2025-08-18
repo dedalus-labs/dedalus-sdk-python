@@ -14,8 +14,8 @@ from .._response import (
     async_to_streamed_response_wrapper,
 )
 from .._base_client import make_request_options
+from ..types.dedalus_model import DedalusModel
 from ..types.models_response import ModelsResponse
-from ..types.model_retrieve_response import ModelRetrieveResponse
 
 __all__ = ["ModelsResource", "AsyncModelsResource"]
 
@@ -50,18 +50,18 @@ class ModelsResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> ModelRetrieveResponse:
+    ) -> DedalusModel:
         """
         Get information about a specific model.
 
         Returns detailed information about a specific model by ID. The model must be
         available to your API key's configured providers.
 
-        Args: model_id: The ID of the model to retrieve (e.g., 'gpt-4',
-        'claude-3-5-sonnet-20241022') user: Authenticated user obtained from API key
-        validation
+        Args: model_id: The ID of the model to retrieve (e.g., 'openai/gpt-4',
+        'anthropic/claude-3-5-sonnet-20241022') user: Authenticated user obtained from
+        API key validation
 
-        Returns: Model: Information about the requested model
+        Returns: DedalusModel: Information about the requested model
 
         Raises: HTTPException: - 401 if authentication fails - 404 if model not found or
         not accessible with current API key - 500 if internal error occurs
@@ -71,7 +71,7 @@ class ModelsResource(SyncAPIResource):
         Example: ```python import dedalus_labs
 
             client = dedalus_labs.Client(api_key="your-api-key")
-            model = client.models.retrieve("gpt-4")
+            model = client.models.retrieve("openai/gpt-4")
 
             print(f"Model: {model.id}")
             print(f"Owner: {model.owned_by}")
@@ -80,7 +80,7 @@ class ModelsResource(SyncAPIResource):
             Response:
             ```json
             {
-                "id": "gpt-4",
+                "id": "openai/gpt-4",
                 "object": "model",
                 "created": 1687882411,
                 "owned_by": "openai"
@@ -103,7 +103,7 @@ class ModelsResource(SyncAPIResource):
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=ModelRetrieveResponse,
+            cast_to=DedalusModel,
         )
 
     def list(
@@ -147,12 +147,12 @@ class ModelsResource(SyncAPIResource):
                 "object": "list",
                 "data": [
                     {
-                        "id": "gpt-4",
+                        "id": "openai/gpt-4",
                         "object": "model",
                         "owned_by": "openai"
                     },
                     {
-                        "id": "claude-3-5-sonnet-20241022",
+                        "id": "anthropic/claude-3-5-sonnet-20241022",
                         "object": "model",
                         "owned_by": "anthropic"
                     }
@@ -199,18 +199,18 @@ class AsyncModelsResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> ModelRetrieveResponse:
+    ) -> DedalusModel:
         """
         Get information about a specific model.
 
         Returns detailed information about a specific model by ID. The model must be
         available to your API key's configured providers.
 
-        Args: model_id: The ID of the model to retrieve (e.g., 'gpt-4',
-        'claude-3-5-sonnet-20241022') user: Authenticated user obtained from API key
-        validation
+        Args: model_id: The ID of the model to retrieve (e.g., 'openai/gpt-4',
+        'anthropic/claude-3-5-sonnet-20241022') user: Authenticated user obtained from
+        API key validation
 
-        Returns: Model: Information about the requested model
+        Returns: DedalusModel: Information about the requested model
 
         Raises: HTTPException: - 401 if authentication fails - 404 if model not found or
         not accessible with current API key - 500 if internal error occurs
@@ -220,7 +220,7 @@ class AsyncModelsResource(AsyncAPIResource):
         Example: ```python import dedalus_labs
 
             client = dedalus_labs.Client(api_key="your-api-key")
-            model = client.models.retrieve("gpt-4")
+            model = client.models.retrieve("openai/gpt-4")
 
             print(f"Model: {model.id}")
             print(f"Owner: {model.owned_by}")
@@ -229,7 +229,7 @@ class AsyncModelsResource(AsyncAPIResource):
             Response:
             ```json
             {
-                "id": "gpt-4",
+                "id": "openai/gpt-4",
                 "object": "model",
                 "created": 1687882411,
                 "owned_by": "openai"
@@ -252,7 +252,7 @@ class AsyncModelsResource(AsyncAPIResource):
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=ModelRetrieveResponse,
+            cast_to=DedalusModel,
         )
 
     async def list(
@@ -296,12 +296,12 @@ class AsyncModelsResource(AsyncAPIResource):
                 "object": "list",
                 "data": [
                     {
-                        "id": "gpt-4",
+                        "id": "openai/gpt-4",
                         "object": "model",
                         "owned_by": "openai"
                     },
                     {
-                        "id": "claude-3-5-sonnet-20241022",
+                        "id": "anthropic/claude-3-5-sonnet-20241022",
                         "object": "model",
                         "owned_by": "anthropic"
                     }
