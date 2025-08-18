@@ -27,12 +27,12 @@ Methods:
 Types:
 
 ```python
-from dedalus_labs.types import Model, ModelsResponse
+from dedalus_labs.types import ModelsResponse, ModelRetrieveResponse
 ```
 
 Methods:
 
-- <code title="get /v1/models/{model_id}">client.models.<a href="./src/dedalus_labs/resources/models.py">retrieve</a>(model_id) -> <a href="./src/dedalus_labs/types/model.py">Model</a></code>
+- <code title="get /v1/models/{model_id}">client.models.<a href="./src/dedalus_labs/resources/models.py">retrieve</a>(model_id) -> <a href="./src/dedalus_labs/types/model_retrieve_response.py">ModelRetrieveResponse</a></code>
 - <code title="get /v1/models">client.models.<a href="./src/dedalus_labs/resources/models.py">list</a>() -> <a href="./src/dedalus_labs/types/models_response.py">ModelsResponse</a></code>
 
 # Chat
@@ -40,15 +40,5 @@ Methods:
 Types:
 
 ```python
-from dedalus_labs.types import (
-    ChatCompletionTokenLogprob,
-    Completion,
-    CompletionRequest,
-    StreamChunk,
-    TopLogprob,
-)
+from dedalus_labs.types import ChatCompletionTokenLogprob, Completion, CompletionRequest, TopLogprob
 ```
-
-Methods:
-
-- <code title="post /v1/chat/completions">client.chat.<a href="./src/dedalus_labs/resources/chat.py">create</a>(\*\*<a href="src/dedalus_labs/types/chat_create_params.py">params</a>) -> <a href="./src/dedalus_labs/types/stream_chunk.py">StreamChunk</a></code>
