@@ -1,6 +1,7 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Optional
+import builtins
+from typing import Dict, List, Optional
 
 from .._models import BaseModel
 
@@ -12,10 +13,19 @@ class Model(BaseModel):
     """Model identifier"""
 
     created: Optional[int] = None
-    """Unix timestamp of model creation"""
+    """Creation timestamp"""
 
     object: Optional[str] = None
-    """Object type, always 'model'"""
+    """Object type"""
 
     owned_by: Optional[str] = None
-    """Organization that owns this model"""
+    """Model owner"""
+
+    parent: Optional[str] = None
+    """Parent model"""
+
+    permission: Optional[List[Dict[str, builtins.object]]] = None
+    """Permissions"""
+
+    root: Optional[str] = None
+    """Root model"""

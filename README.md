@@ -34,16 +34,8 @@ client = Dedalus(
     environment="staging",
 )
 
-stream_chunk = client.chat.completions.create(
-    messages=[
-        {
-            "role": "user",
-            "content": "Hello, how can you help me today?",
-        }
-    ],
-    model="openai/gpt-5",
-)
-print(stream_chunk.id)
+response = client.health.check()
+print(response.status)
 ```
 
 While you can provide an `api_key` keyword argument,
@@ -68,16 +60,8 @@ client = AsyncDedalus(
 
 
 async def main() -> None:
-    stream_chunk = await client.chat.completions.create(
-        messages=[
-            {
-                "role": "user",
-                "content": "Hello, how can you help me today?",
-            }
-        ],
-        model="openai/gpt-5",
-    )
-    print(stream_chunk.id)
+    response = await client.health.check()
+    print(response.status)
 
 
 asyncio.run(main())
@@ -109,71 +93,11 @@ async def main() -> None:
         api_key="My API Key",
         http_client=DefaultAioHttpClient(),
     ) as client:
-        stream_chunk = await client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": "Hello, how can you help me today?",
-                }
-            ],
-            model="openai/gpt-5",
-        )
-        print(stream_chunk.id)
+        response = await client.health.check()
+        print(response.status)
 
 
 asyncio.run(main())
-```
-
-## Streaming responses
-
-We provide support for streaming responses using Server Side Events (SSE).
-
-```python
-from dedalus_labs import Dedalus
-
-client = Dedalus()
-
-stream = client.chat.completions.create(
-    stream=True,
-    messages=[
-        {
-            "role": "system",
-            "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
-        },
-        {
-            "role": "user",
-            "content": "What do you think of artificial intelligence?",
-        },
-    ],
-    model="openai/gpt-5",
-)
-for stream_chunk in stream:
-    print(stream_chunk.id)
-```
-
-The async client uses the exact same interface.
-
-```python
-from dedalus_labs import AsyncDedalus
-
-client = AsyncDedalus()
-
-stream = await client.chat.completions.create(
-    stream=True,
-    messages=[
-        {
-            "role": "system",
-            "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
-        },
-        {
-            "role": "user",
-            "content": "What do you think of artificial intelligence?",
-        },
-    ],
-    model="openai/gpt-5",
-)
-async for stream_chunk in stream:
-    print(stream_chunk.id)
 ```
 
 ## Using types
