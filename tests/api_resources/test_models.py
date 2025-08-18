@@ -9,7 +9,7 @@ import pytest
 
 from tests.utils import assert_matches_type
 from dedalus_labs import Dedalus, AsyncDedalus
-from dedalus_labs.types import ModelsResponse, ModelRetrieveResponse
+from dedalus_labs.types import DedalusModel, ModelsResponse
 
 base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 
@@ -23,7 +23,7 @@ class TestModels:
         model = client.models.retrieve(
             "model_id",
         )
-        assert_matches_type(ModelRetrieveResponse, model, path=["response"])
+        assert_matches_type(DedalusModel, model, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -35,7 +35,7 @@ class TestModels:
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
         model = response.parse()
-        assert_matches_type(ModelRetrieveResponse, model, path=["response"])
+        assert_matches_type(DedalusModel, model, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -47,7 +47,7 @@ class TestModels:
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
             model = response.parse()
-            assert_matches_type(ModelRetrieveResponse, model, path=["response"])
+            assert_matches_type(DedalusModel, model, path=["response"])
 
         assert cast(Any, response.is_closed) is True
 
@@ -99,7 +99,7 @@ class TestAsyncModels:
         model = await async_client.models.retrieve(
             "model_id",
         )
-        assert_matches_type(ModelRetrieveResponse, model, path=["response"])
+        assert_matches_type(DedalusModel, model, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -111,7 +111,7 @@ class TestAsyncModels:
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
         model = await response.parse()
-        assert_matches_type(ModelRetrieveResponse, model, path=["response"])
+        assert_matches_type(DedalusModel, model, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -123,7 +123,7 @@ class TestAsyncModels:
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
             model = await response.parse()
-            assert_matches_type(ModelRetrieveResponse, model, path=["response"])
+            assert_matches_type(DedalusModel, model, path=["response"])
 
         assert cast(Any, response.is_closed) is True
 
