@@ -20,7 +20,7 @@ from .._response import (
 )
 from .._streaming import Stream, AsyncStream
 from .._base_client import make_request_options
-from ..types.completion import Completion
+from ..types.stream_chunk import StreamChunk
 
 __all__ = ["ChatResource", "AsyncChatResource"]
 
@@ -58,7 +58,7 @@ class ChatResource(SyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
-        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -75,7 +75,8 @@ class ChatResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Completion:
+        idempotency_key: str | None = None,
+    ) -> StreamChunk:
         """
         Create a chat completion using the Agent framework.
 
@@ -104,12 +105,12 @@ class ChatResource(SyncAPIResource):
         calls billed separately using credits system - Streaming responses billed after
         completion via background task
 
-        Example: Basic chat completion: ```python import dedalus_labs
+        Example: Basic chat completion: ```python from dedalus_labs import Dedalus
 
-            client = dedalus_labs.Client(api_key="your-api-key")
+            client = Dedalus(api_key="your-api-key")
 
             completion = client.chat.create(
-                model="gpt-4",
+                model="openai/gpt-5",
                 input=[{"role": "user", "content": "Hello, how are you?"}],
             )
 
@@ -119,7 +120,7 @@ class ChatResource(SyncAPIResource):
             With tools and MCP servers:
             ```python
             completion = client.chat.create(
-                model="gpt-4",
+                model="openai/gpt-5",
                 input=[{"role": "user", "content": "Search for recent AI news"}],
                 tools=[
                     {
@@ -137,7 +138,7 @@ class ChatResource(SyncAPIResource):
             Multi-model routing:
             ```python
             completion = client.chat.create(
-                model=["gpt-4o-mini", "gpt-4", "claude-3-5-sonnet"],
+                model=["openai/gpt-4o-mini", "openai/gpt-5", "anthropic/claude-sonnet-4-20250514"],
                 input=[{"role": "user", "content": "Analyze this complex data"}],
                 agent_attributes={"complexity": 0.8, "accuracy": 0.9},
             )
@@ -146,7 +147,7 @@ class ChatResource(SyncAPIResource):
             Streaming response:
             ```python
             stream = client.chat.create(
-                model="gpt-4",
+                model="openai/gpt-5",
                 input=[{"role": "user", "content": "Tell me a story"}],
                 stream=True,
             )
@@ -172,9 +173,8 @@ class ChatResource(SyncAPIResource):
           handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
               future use - handoff configuration format not yet finalized.
 
-          input: Input to the model - can be messages, images, or other modalities. Supports
-              OpenAI chat format with role/content structure. For multimodal inputs, content
-              can include text, images, or other media types.
+          input: Input/messages to the model – accepts either 'input' (Dedalus) or 'messages'
+              (OpenAI). Supports role/content structure and multimodal content arrays.
 
           logit_bias: Modify likelihood of specified tokens appearing in the completion. Maps token
               IDs (as strings) to bias values (-100 to 100). -100 = completely ban token, +100
@@ -192,10 +192,12 @@ class ChatResource(SyncAPIResource):
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
 
-          model: Model(s) to use for completion. Can be a single model ID or a list for
-              multi-model routing. Single model: 'gpt-4', 'claude-3-5-sonnet-20241022',
-              'gpt-4o-mini'. Multi-model routing: ['gpt-4o-mini', 'gpt-4',
-              'claude-3-5-sonnet'] - agent will choose optimal model based on task complexity.
+          model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
+              or a list for multi-model routing. Single model: 'openai/gpt-4',
+              'anthropic/claude-3-5-sonnet-20241022', 'openai/gpt-4o-mini', or a DedalusModel
+              instance. Multi-model routing: ['openai/gpt-4o-mini', 'openai/gpt-4',
+              'anthropic/claude-3-5-sonnet'] or list of DedalusModel objects - agent will
+              choose optimal model based on task complexity.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
               execution. Format: {'model_name': {'attribute': value}}, where values are
@@ -221,7 +223,7 @@ class ChatResource(SyncAPIResource):
               'required', or specific tool name. Can also be a dict specifying a particular
               tool.
 
-          tools: List of tools available to the model in OpenAI function calling format. Tools
+          tools: list of tools available to the model in OpenAI function calling format. Tools
               are executed client-side and returned as JSON for the application to handle. Use
               'mcp_servers' for server-side tool execution.
 
@@ -238,6 +240,8 @@ class ChatResource(SyncAPIResource):
           extra_body: Add additional JSON properties to the request
 
           timeout: Override the client-level default timeout for this request, in seconds
+
+          idempotency_key: Specify a custom idempotency key for this request
         """
         ...
 
@@ -255,7 +259,7 @@ class ChatResource(SyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
-        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -271,7 +275,8 @@ class ChatResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Stream[object]:
+        idempotency_key: str | None = None,
+    ) -> Stream[StreamChunk]:
         """
         Create a chat completion using the Agent framework.
 
@@ -300,12 +305,12 @@ class ChatResource(SyncAPIResource):
         calls billed separately using credits system - Streaming responses billed after
         completion via background task
 
-        Example: Basic chat completion: ```python import dedalus_labs
+        Example: Basic chat completion: ```python from dedalus_labs import Dedalus
 
-            client = dedalus_labs.Client(api_key="your-api-key")
+            client = Dedalus(api_key="your-api-key")
 
             completion = client.chat.create(
-                model="gpt-4",
+                model="openai/gpt-5",
                 input=[{"role": "user", "content": "Hello, how are you?"}],
             )
 
@@ -315,7 +320,7 @@ class ChatResource(SyncAPIResource):
             With tools and MCP servers:
             ```python
             completion = client.chat.create(
-                model="gpt-4",
+                model="openai/gpt-5",
                 input=[{"role": "user", "content": "Search for recent AI news"}],
                 tools=[
                     {
@@ -333,7 +338,7 @@ class ChatResource(SyncAPIResource):
             Multi-model routing:
             ```python
             completion = client.chat.create(
-                model=["gpt-4o-mini", "gpt-4", "claude-3-5-sonnet"],
+                model=["openai/gpt-4o-mini", "openai/gpt-5", "anthropic/claude-sonnet-4-20250514"],
                 input=[{"role": "user", "content": "Analyze this complex data"}],
                 agent_attributes={"complexity": 0.8, "accuracy": 0.9},
             )
@@ -342,7 +347,7 @@ class ChatResource(SyncAPIResource):
             Streaming response:
             ```python
             stream = client.chat.create(
-                model="gpt-4",
+                model="openai/gpt-5",
                 input=[{"role": "user", "content": "Tell me a story"}],
                 stream=True,
             )
@@ -371,9 +376,8 @@ class ChatResource(SyncAPIResource):
           handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
               future use - handoff configuration format not yet finalized.
 
-          input: Input to the model - can be messages, images, or other modalities. Supports
-              OpenAI chat format with role/content structure. For multimodal inputs, content
-              can include text, images, or other media types.
+          input: Input/messages to the model – accepts either 'input' (Dedalus) or 'messages'
+              (OpenAI). Supports role/content structure and multimodal content arrays.
 
           logit_bias: Modify likelihood of specified tokens appearing in the completion. Maps token
               IDs (as strings) to bias values (-100 to 100). -100 = completely ban token, +100
@@ -391,10 +395,12 @@ class ChatResource(SyncAPIResource):
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
 
-          model: Model(s) to use for completion. Can be a single model ID or a list for
-              multi-model routing. Single model: 'gpt-4', 'claude-3-5-sonnet-20241022',
-              'gpt-4o-mini'. Multi-model routing: ['gpt-4o-mini', 'gpt-4',
-              'claude-3-5-sonnet'] - agent will choose optimal model based on task complexity.
+          model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
+              or a list for multi-model routing. Single model: 'openai/gpt-4',
+              'anthropic/claude-3-5-sonnet-20241022', 'openai/gpt-4o-mini', or a DedalusModel
+              instance. Multi-model routing: ['openai/gpt-4o-mini', 'openai/gpt-4',
+              'anthropic/claude-3-5-sonnet'] or list of DedalusModel objects - agent will
+              choose optimal model based on task complexity.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
               execution. Format: {'model_name': {'attribute': value}}, where values are
@@ -417,7 +423,7 @@ class ChatResource(SyncAPIResource):
               'required', or specific tool name. Can also be a dict specifying a particular
               tool.
 
-          tools: List of tools available to the model in OpenAI function calling format. Tools
+          tools: list of tools available to the model in OpenAI function calling format. Tools
               are executed client-side and returned as JSON for the application to handle. Use
               'mcp_servers' for server-side tool execution.
 
@@ -434,6 +440,8 @@ class ChatResource(SyncAPIResource):
           extra_body: Add additional JSON properties to the request
 
           timeout: Override the client-level default timeout for this request, in seconds
+
+          idempotency_key: Specify a custom idempotency key for this request
         """
         ...
 
@@ -451,7 +459,7 @@ class ChatResource(SyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
-        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -467,7 +475,8 @@ class ChatResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Completion | Stream[object]:
+        idempotency_key: str | None = None,
+    ) -> StreamChunk | Stream[StreamChunk]:
         """
         Create a chat completion using the Agent framework.
 
@@ -496,12 +505,12 @@ class ChatResource(SyncAPIResource):
         calls billed separately using credits system - Streaming responses billed after
         completion via background task
 
-        Example: Basic chat completion: ```python import dedalus_labs
+        Example: Basic chat completion: ```python from dedalus_labs import Dedalus
 
-            client = dedalus_labs.Client(api_key="your-api-key")
+            client = Dedalus(api_key="your-api-key")
 
             completion = client.chat.create(
-                model="gpt-4",
+                model="openai/gpt-5",
                 input=[{"role": "user", "content": "Hello, how are you?"}],
             )
 
@@ -511,7 +520,7 @@ class ChatResource(SyncAPIResource):
             With tools and MCP servers:
             ```python
             completion = client.chat.create(
-                model="gpt-4",
+                model="openai/gpt-5",
                 input=[{"role": "user", "content": "Search for recent AI news"}],
                 tools=[
                     {
@@ -529,7 +538,7 @@ class ChatResource(SyncAPIResource):
             Multi-model routing:
             ```python
             completion = client.chat.create(
-                model=["gpt-4o-mini", "gpt-4", "claude-3-5-sonnet"],
+                model=["openai/gpt-4o-mini", "openai/gpt-5", "anthropic/claude-sonnet-4-20250514"],
                 input=[{"role": "user", "content": "Analyze this complex data"}],
                 agent_attributes={"complexity": 0.8, "accuracy": 0.9},
             )
@@ -538,7 +547,7 @@ class ChatResource(SyncAPIResource):
             Streaming response:
             ```python
             stream = client.chat.create(
-                model="gpt-4",
+                model="openai/gpt-5",
                 input=[{"role": "user", "content": "Tell me a story"}],
                 stream=True,
             )
@@ -567,9 +576,8 @@ class ChatResource(SyncAPIResource):
           handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
               future use - handoff configuration format not yet finalized.
 
-          input: Input to the model - can be messages, images, or other modalities. Supports
-              OpenAI chat format with role/content structure. For multimodal inputs, content
-              can include text, images, or other media types.
+          input: Input/messages to the model – accepts either 'input' (Dedalus) or 'messages'
+              (OpenAI). Supports role/content structure and multimodal content arrays.
 
           logit_bias: Modify likelihood of specified tokens appearing in the completion. Maps token
               IDs (as strings) to bias values (-100 to 100). -100 = completely ban token, +100
@@ -587,10 +595,12 @@ class ChatResource(SyncAPIResource):
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
 
-          model: Model(s) to use for completion. Can be a single model ID or a list for
-              multi-model routing. Single model: 'gpt-4', 'claude-3-5-sonnet-20241022',
-              'gpt-4o-mini'. Multi-model routing: ['gpt-4o-mini', 'gpt-4',
-              'claude-3-5-sonnet'] - agent will choose optimal model based on task complexity.
+          model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
+              or a list for multi-model routing. Single model: 'openai/gpt-4',
+              'anthropic/claude-3-5-sonnet-20241022', 'openai/gpt-4o-mini', or a DedalusModel
+              instance. Multi-model routing: ['openai/gpt-4o-mini', 'openai/gpt-4',
+              'anthropic/claude-3-5-sonnet'] or list of DedalusModel objects - agent will
+              choose optimal model based on task complexity.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
               execution. Format: {'model_name': {'attribute': value}}, where values are
@@ -613,7 +623,7 @@ class ChatResource(SyncAPIResource):
               'required', or specific tool name. Can also be a dict specifying a particular
               tool.
 
-          tools: List of tools available to the model in OpenAI function calling format. Tools
+          tools: list of tools available to the model in OpenAI function calling format. Tools
               are executed client-side and returned as JSON for the application to handle. Use
               'mcp_servers' for server-side tool execution.
 
@@ -630,6 +640,8 @@ class ChatResource(SyncAPIResource):
           extra_body: Add additional JSON properties to the request
 
           timeout: Override the client-level default timeout for this request, in seconds
+
+          idempotency_key: Specify a custom idempotency key for this request
         """
         ...
 
@@ -645,7 +657,7 @@ class ChatResource(SyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
-        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -662,9 +674,10 @@ class ChatResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Completion | Stream[object]:
+        idempotency_key: str | None = None,
+    ) -> StreamChunk | Stream[StreamChunk]:
         return self._post(
-            "/v1/chat",
+            "/v1/chat/completions",
             body=maybe_transform(
                 {
                     "agent_attributes": agent_attributes,
@@ -693,11 +706,15 @@ class ChatResource(SyncAPIResource):
                 else chat_create_params.ChatCreateParamsNonStreaming,
             ),
             options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                idempotency_key=idempotency_key,
             ),
-            cast_to=Completion,
+            cast_to=StreamChunk,
             stream=stream or False,
-            stream_cls=Stream[object],
+            stream_cls=Stream[StreamChunk],
         )
 
 
@@ -734,7 +751,7 @@ class AsyncChatResource(AsyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
-        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -751,7 +768,8 @@ class AsyncChatResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Completion:
+        idempotency_key: str | None = None,
+    ) -> StreamChunk:
         """
         Create a chat completion using the Agent framework.
 
@@ -780,12 +798,12 @@ class AsyncChatResource(AsyncAPIResource):
         calls billed separately using credits system - Streaming responses billed after
         completion via background task
 
-        Example: Basic chat completion: ```python import dedalus_labs
+        Example: Basic chat completion: ```python from dedalus_labs import Dedalus
 
-            client = dedalus_labs.Client(api_key="your-api-key")
+            client = Dedalus(api_key="your-api-key")
 
             completion = client.chat.create(
-                model="gpt-4",
+                model="openai/gpt-5",
                 input=[{"role": "user", "content": "Hello, how are you?"}],
             )
 
@@ -795,7 +813,7 @@ class AsyncChatResource(AsyncAPIResource):
             With tools and MCP servers:
             ```python
             completion = client.chat.create(
-                model="gpt-4",
+                model="openai/gpt-5",
                 input=[{"role": "user", "content": "Search for recent AI news"}],
                 tools=[
                     {
@@ -813,7 +831,7 @@ class AsyncChatResource(AsyncAPIResource):
             Multi-model routing:
             ```python
             completion = client.chat.create(
-                model=["gpt-4o-mini", "gpt-4", "claude-3-5-sonnet"],
+                model=["openai/gpt-4o-mini", "openai/gpt-5", "anthropic/claude-sonnet-4-20250514"],
                 input=[{"role": "user", "content": "Analyze this complex data"}],
                 agent_attributes={"complexity": 0.8, "accuracy": 0.9},
             )
@@ -822,7 +840,7 @@ class AsyncChatResource(AsyncAPIResource):
             Streaming response:
             ```python
             stream = client.chat.create(
-                model="gpt-4",
+                model="openai/gpt-5",
                 input=[{"role": "user", "content": "Tell me a story"}],
                 stream=True,
             )
@@ -848,9 +866,8 @@ class AsyncChatResource(AsyncAPIResource):
           handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
               future use - handoff configuration format not yet finalized.
 
-          input: Input to the model - can be messages, images, or other modalities. Supports
-              OpenAI chat format with role/content structure. For multimodal inputs, content
-              can include text, images, or other media types.
+          input: Input/messages to the model – accepts either 'input' (Dedalus) or 'messages'
+              (OpenAI). Supports role/content structure and multimodal content arrays.
 
           logit_bias: Modify likelihood of specified tokens appearing in the completion. Maps token
               IDs (as strings) to bias values (-100 to 100). -100 = completely ban token, +100
@@ -868,10 +885,12 @@ class AsyncChatResource(AsyncAPIResource):
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
 
-          model: Model(s) to use for completion. Can be a single model ID or a list for
-              multi-model routing. Single model: 'gpt-4', 'claude-3-5-sonnet-20241022',
-              'gpt-4o-mini'. Multi-model routing: ['gpt-4o-mini', 'gpt-4',
-              'claude-3-5-sonnet'] - agent will choose optimal model based on task complexity.
+          model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
+              or a list for multi-model routing. Single model: 'openai/gpt-4',
+              'anthropic/claude-3-5-sonnet-20241022', 'openai/gpt-4o-mini', or a DedalusModel
+              instance. Multi-model routing: ['openai/gpt-4o-mini', 'openai/gpt-4',
+              'anthropic/claude-3-5-sonnet'] or list of DedalusModel objects - agent will
+              choose optimal model based on task complexity.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
               execution. Format: {'model_name': {'attribute': value}}, where values are
@@ -897,7 +916,7 @@ class AsyncChatResource(AsyncAPIResource):
               'required', or specific tool name. Can also be a dict specifying a particular
               tool.
 
-          tools: List of tools available to the model in OpenAI function calling format. Tools
+          tools: list of tools available to the model in OpenAI function calling format. Tools
               are executed client-side and returned as JSON for the application to handle. Use
               'mcp_servers' for server-side tool execution.
 
@@ -914,6 +933,8 @@ class AsyncChatResource(AsyncAPIResource):
           extra_body: Add additional JSON properties to the request
 
           timeout: Override the client-level default timeout for this request, in seconds
+
+          idempotency_key: Specify a custom idempotency key for this request
         """
         ...
 
@@ -931,7 +952,7 @@ class AsyncChatResource(AsyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
-        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -947,7 +968,8 @@ class AsyncChatResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> AsyncStream[object]:
+        idempotency_key: str | None = None,
+    ) -> AsyncStream[StreamChunk]:
         """
         Create a chat completion using the Agent framework.
 
@@ -976,12 +998,12 @@ class AsyncChatResource(AsyncAPIResource):
         calls billed separately using credits system - Streaming responses billed after
         completion via background task
 
-        Example: Basic chat completion: ```python import dedalus_labs
+        Example: Basic chat completion: ```python from dedalus_labs import Dedalus
 
-            client = dedalus_labs.Client(api_key="your-api-key")
+            client = Dedalus(api_key="your-api-key")
 
             completion = client.chat.create(
-                model="gpt-4",
+                model="openai/gpt-5",
                 input=[{"role": "user", "content": "Hello, how are you?"}],
             )
 
@@ -991,7 +1013,7 @@ class AsyncChatResource(AsyncAPIResource):
             With tools and MCP servers:
             ```python
             completion = client.chat.create(
-                model="gpt-4",
+                model="openai/gpt-5",
                 input=[{"role": "user", "content": "Search for recent AI news"}],
                 tools=[
                     {
@@ -1009,7 +1031,7 @@ class AsyncChatResource(AsyncAPIResource):
             Multi-model routing:
             ```python
             completion = client.chat.create(
-                model=["gpt-4o-mini", "gpt-4", "claude-3-5-sonnet"],
+                model=["openai/gpt-4o-mini", "openai/gpt-5", "anthropic/claude-sonnet-4-20250514"],
                 input=[{"role": "user", "content": "Analyze this complex data"}],
                 agent_attributes={"complexity": 0.8, "accuracy": 0.9},
             )
@@ -1018,7 +1040,7 @@ class AsyncChatResource(AsyncAPIResource):
             Streaming response:
             ```python
             stream = client.chat.create(
-                model="gpt-4",
+                model="openai/gpt-5",
                 input=[{"role": "user", "content": "Tell me a story"}],
                 stream=True,
             )
@@ -1047,9 +1069,8 @@ class AsyncChatResource(AsyncAPIResource):
           handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
               future use - handoff configuration format not yet finalized.
 
-          input: Input to the model - can be messages, images, or other modalities. Supports
-              OpenAI chat format with role/content structure. For multimodal inputs, content
-              can include text, images, or other media types.
+          input: Input/messages to the model – accepts either 'input' (Dedalus) or 'messages'
+              (OpenAI). Supports role/content structure and multimodal content arrays.
 
           logit_bias: Modify likelihood of specified tokens appearing in the completion. Maps token
               IDs (as strings) to bias values (-100 to 100). -100 = completely ban token, +100
@@ -1067,10 +1088,12 @@ class AsyncChatResource(AsyncAPIResource):
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
 
-          model: Model(s) to use for completion. Can be a single model ID or a list for
-              multi-model routing. Single model: 'gpt-4', 'claude-3-5-sonnet-20241022',
-              'gpt-4o-mini'. Multi-model routing: ['gpt-4o-mini', 'gpt-4',
-              'claude-3-5-sonnet'] - agent will choose optimal model based on task complexity.
+          model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
+              or a list for multi-model routing. Single model: 'openai/gpt-4',
+              'anthropic/claude-3-5-sonnet-20241022', 'openai/gpt-4o-mini', or a DedalusModel
+              instance. Multi-model routing: ['openai/gpt-4o-mini', 'openai/gpt-4',
+              'anthropic/claude-3-5-sonnet'] or list of DedalusModel objects - agent will
+              choose optimal model based on task complexity.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
               execution. Format: {'model_name': {'attribute': value}}, where values are
@@ -1093,7 +1116,7 @@ class AsyncChatResource(AsyncAPIResource):
               'required', or specific tool name. Can also be a dict specifying a particular
               tool.
 
-          tools: List of tools available to the model in OpenAI function calling format. Tools
+          tools: list of tools available to the model in OpenAI function calling format. Tools
               are executed client-side and returned as JSON for the application to handle. Use
               'mcp_servers' for server-side tool execution.
 
@@ -1110,6 +1133,8 @@ class AsyncChatResource(AsyncAPIResource):
           extra_body: Add additional JSON properties to the request
 
           timeout: Override the client-level default timeout for this request, in seconds
+
+          idempotency_key: Specify a custom idempotency key for this request
         """
         ...
 
@@ -1127,7 +1152,7 @@ class AsyncChatResource(AsyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
-        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -1143,7 +1168,8 @@ class AsyncChatResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Completion | AsyncStream[object]:
+        idempotency_key: str | None = None,
+    ) -> StreamChunk | AsyncStream[StreamChunk]:
         """
         Create a chat completion using the Agent framework.
 
@@ -1172,12 +1198,12 @@ class AsyncChatResource(AsyncAPIResource):
         calls billed separately using credits system - Streaming responses billed after
         completion via background task
 
-        Example: Basic chat completion: ```python import dedalus_labs
+        Example: Basic chat completion: ```python from dedalus_labs import Dedalus
 
-            client = dedalus_labs.Client(api_key="your-api-key")
+            client = Dedalus(api_key="your-api-key")
 
             completion = client.chat.create(
-                model="gpt-4",
+                model="openai/gpt-5",
                 input=[{"role": "user", "content": "Hello, how are you?"}],
             )
 
@@ -1187,7 +1213,7 @@ class AsyncChatResource(AsyncAPIResource):
             With tools and MCP servers:
             ```python
             completion = client.chat.create(
-                model="gpt-4",
+                model="openai/gpt-5",
                 input=[{"role": "user", "content": "Search for recent AI news"}],
                 tools=[
                     {
@@ -1205,7 +1231,7 @@ class AsyncChatResource(AsyncAPIResource):
             Multi-model routing:
             ```python
             completion = client.chat.create(
-                model=["gpt-4o-mini", "gpt-4", "claude-3-5-sonnet"],
+                model=["openai/gpt-4o-mini", "openai/gpt-5", "anthropic/claude-sonnet-4-20250514"],
                 input=[{"role": "user", "content": "Analyze this complex data"}],
                 agent_attributes={"complexity": 0.8, "accuracy": 0.9},
             )
@@ -1214,7 +1240,7 @@ class AsyncChatResource(AsyncAPIResource):
             Streaming response:
             ```python
             stream = client.chat.create(
-                model="gpt-4",
+                model="openai/gpt-5",
                 input=[{"role": "user", "content": "Tell me a story"}],
                 stream=True,
             )
@@ -1243,9 +1269,8 @@ class AsyncChatResource(AsyncAPIResource):
           handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
               future use - handoff configuration format not yet finalized.
 
-          input: Input to the model - can be messages, images, or other modalities. Supports
-              OpenAI chat format with role/content structure. For multimodal inputs, content
-              can include text, images, or other media types.
+          input: Input/messages to the model – accepts either 'input' (Dedalus) or 'messages'
+              (OpenAI). Supports role/content structure and multimodal content arrays.
 
           logit_bias: Modify likelihood of specified tokens appearing in the completion. Maps token
               IDs (as strings) to bias values (-100 to 100). -100 = completely ban token, +100
@@ -1263,10 +1288,12 @@ class AsyncChatResource(AsyncAPIResource):
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
 
-          model: Model(s) to use for completion. Can be a single model ID or a list for
-              multi-model routing. Single model: 'gpt-4', 'claude-3-5-sonnet-20241022',
-              'gpt-4o-mini'. Multi-model routing: ['gpt-4o-mini', 'gpt-4',
-              'claude-3-5-sonnet'] - agent will choose optimal model based on task complexity.
+          model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
+              or a list for multi-model routing. Single model: 'openai/gpt-4',
+              'anthropic/claude-3-5-sonnet-20241022', 'openai/gpt-4o-mini', or a DedalusModel
+              instance. Multi-model routing: ['openai/gpt-4o-mini', 'openai/gpt-4',
+              'anthropic/claude-3-5-sonnet'] or list of DedalusModel objects - agent will
+              choose optimal model based on task complexity.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
               execution. Format: {'model_name': {'attribute': value}}, where values are
@@ -1289,7 +1316,7 @@ class AsyncChatResource(AsyncAPIResource):
               'required', or specific tool name. Can also be a dict specifying a particular
               tool.
 
-          tools: List of tools available to the model in OpenAI function calling format. Tools
+          tools: list of tools available to the model in OpenAI function calling format. Tools
               are executed client-side and returned as JSON for the application to handle. Use
               'mcp_servers' for server-side tool execution.
 
@@ -1306,6 +1333,8 @@ class AsyncChatResource(AsyncAPIResource):
           extra_body: Add additional JSON properties to the request
 
           timeout: Override the client-level default timeout for this request, in seconds
+
+          idempotency_key: Specify a custom idempotency key for this request
         """
         ...
 
@@ -1321,7 +1350,7 @@ class AsyncChatResource(AsyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
-        model: Union[str, List[str], None] | NotGiven = NOT_GIVEN,
+        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -1338,9 +1367,10 @@ class AsyncChatResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Completion | AsyncStream[object]:
+        idempotency_key: str | None = None,
+    ) -> StreamChunk | AsyncStream[StreamChunk]:
         return await self._post(
-            "/v1/chat",
+            "/v1/chat/completions",
             body=await async_maybe_transform(
                 {
                     "agent_attributes": agent_attributes,
@@ -1369,11 +1399,15 @@ class AsyncChatResource(AsyncAPIResource):
                 else chat_create_params.ChatCreateParamsNonStreaming,
             ),
             options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                idempotency_key=idempotency_key,
             ),
-            cast_to=Completion,
+            cast_to=StreamChunk,
             stream=stream or False,
-            stream_cls=AsyncStream[object],
+            stream_cls=AsyncStream[StreamChunk],
         )
 
 

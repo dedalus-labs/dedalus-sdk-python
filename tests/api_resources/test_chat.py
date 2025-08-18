@@ -9,7 +9,7 @@ import pytest
 
 from tests.utils import assert_matches_type
 from dedalus_labs import Dedalus, AsyncDedalus
-from dedalus_labs.types import Completion
+from dedalus_labs.types import StreamChunk
 
 base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 
@@ -21,7 +21,7 @@ class TestChat:
     @parametrize
     def test_method_create_overload_1(self, client: Dedalus) -> None:
         chat = client.chat.create()
-        assert_matches_type(Completion, chat, path=["response"])
+        assert_matches_type(StreamChunk, chat, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -45,19 +45,19 @@ class TestChat:
             max_tokens=100,
             max_turns=5,
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
-            model="gpt-4",
+            model="openai/gpt-4",
             model_attributes={
-                "claude-3-5-sonnet": {
+                "anthropic/claude-3-5-sonnet": {
                     "cost": 0.7,
                     "creativity": 0.8,
                     "intelligence": 0.95,
                 },
-                "gpt-4": {
+                "openai/gpt-4": {
                     "cost": 0.8,
                     "intelligence": 0.9,
                     "speed": 0.6,
                 },
-                "gpt-4o-mini": {
+                "openai/gpt-4o-mini": {
                     "cost": 0.2,
                     "intelligence": 0.7,
                     "speed": 0.9,
@@ -78,7 +78,7 @@ class TestChat:
             top_p=0.1,
             user="user-123",
         )
-        assert_matches_type(Completion, chat, path=["response"])
+        assert_matches_type(StreamChunk, chat, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -88,7 +88,7 @@ class TestChat:
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
         chat = response.parse()
-        assert_matches_type(Completion, chat, path=["response"])
+        assert_matches_type(StreamChunk, chat, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -98,7 +98,7 @@ class TestChat:
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
             chat = response.parse()
-            assert_matches_type(Completion, chat, path=["response"])
+            assert_matches_type(StreamChunk, chat, path=["response"])
 
         assert cast(Any, response.is_closed) is True
 
@@ -133,19 +133,19 @@ class TestChat:
             max_tokens=100,
             max_turns=5,
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
-            model="gpt-4",
+            model="openai/gpt-4",
             model_attributes={
-                "claude-3-5-sonnet": {
+                "anthropic/claude-3-5-sonnet": {
                     "cost": 0.7,
                     "creativity": 0.8,
                     "intelligence": 0.95,
                 },
-                "gpt-4": {
+                "openai/gpt-4": {
                     "cost": 0.8,
                     "intelligence": 0.9,
                     "speed": 0.6,
                 },
-                "gpt-4o-mini": {
+                "openai/gpt-4o-mini": {
                     "cost": 0.2,
                     "intelligence": 0.7,
                     "speed": 0.9,
@@ -202,7 +202,7 @@ class TestAsyncChat:
     @parametrize
     async def test_method_create_overload_1(self, async_client: AsyncDedalus) -> None:
         chat = await async_client.chat.create()
-        assert_matches_type(Completion, chat, path=["response"])
+        assert_matches_type(StreamChunk, chat, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -226,19 +226,19 @@ class TestAsyncChat:
             max_tokens=100,
             max_turns=5,
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
-            model="gpt-4",
+            model="openai/gpt-4",
             model_attributes={
-                "claude-3-5-sonnet": {
+                "anthropic/claude-3-5-sonnet": {
                     "cost": 0.7,
                     "creativity": 0.8,
                     "intelligence": 0.95,
                 },
-                "gpt-4": {
+                "openai/gpt-4": {
                     "cost": 0.8,
                     "intelligence": 0.9,
                     "speed": 0.6,
                 },
-                "gpt-4o-mini": {
+                "openai/gpt-4o-mini": {
                     "cost": 0.2,
                     "intelligence": 0.7,
                     "speed": 0.9,
@@ -259,7 +259,7 @@ class TestAsyncChat:
             top_p=0.1,
             user="user-123",
         )
-        assert_matches_type(Completion, chat, path=["response"])
+        assert_matches_type(StreamChunk, chat, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -269,7 +269,7 @@ class TestAsyncChat:
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
         chat = await response.parse()
-        assert_matches_type(Completion, chat, path=["response"])
+        assert_matches_type(StreamChunk, chat, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -279,7 +279,7 @@ class TestAsyncChat:
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
             chat = await response.parse()
-            assert_matches_type(Completion, chat, path=["response"])
+            assert_matches_type(StreamChunk, chat, path=["response"])
 
         assert cast(Any, response.is_closed) is True
 
@@ -314,19 +314,19 @@ class TestAsyncChat:
             max_tokens=100,
             max_turns=5,
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
-            model="gpt-4",
+            model="openai/gpt-4",
             model_attributes={
-                "claude-3-5-sonnet": {
+                "anthropic/claude-3-5-sonnet": {
                     "cost": 0.7,
                     "creativity": 0.8,
                     "intelligence": 0.95,
                 },
-                "gpt-4": {
+                "openai/gpt-4": {
                     "cost": 0.8,
                     "intelligence": 0.9,
                     "speed": 0.6,
                 },
-                "gpt-4o-mini": {
+                "openai/gpt-4o-mini": {
                     "cost": 0.2,
                     "intelligence": 0.7,
                     "speed": 0.9,

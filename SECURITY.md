@@ -20,7 +20,7 @@ or products provided by Dedalus, please follow the respective company's security
 
 ### Dedalus Terms and Policies
 
-Please contact founders@dedaluslabs.ai for any questions or concerns regarding the security of our services.
+Please contact security@dedaluslabs.ai for any questions or concerns regarding the security of our services.
 
 ---
 

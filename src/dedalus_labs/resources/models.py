@@ -57,11 +57,11 @@ class ModelsResource(SyncAPIResource):
         Returns detailed information about a specific model by ID. The model must be
         available to your API key's configured providers.
 
-        Args: model_id: The ID of the model to retrieve (e.g., 'gpt-4',
-        'claude-3-5-sonnet-20241022') user: Authenticated user obtained from API key
-        validation
+        Args: model_id: The ID of the model to retrieve (e.g., 'openai/gpt-4',
+        'anthropic/claude-3-5-sonnet-20241022') user: Authenticated user obtained from
+        API key validation
 
-        Returns: Model: Information about the requested model
+        Returns: DedalusModel: Information about the requested model
 
         Raises: HTTPException: - 401 if authentication fails - 404 if model not found or
         not accessible with current API key - 500 if internal error occurs
@@ -71,7 +71,7 @@ class ModelsResource(SyncAPIResource):
         Example: ```python import dedalus_labs
 
             client = dedalus_labs.Client(api_key="your-api-key")
-            model = client.models.retrieve("gpt-4")
+            model = client.models.retrieve("openai/gpt-4")
 
             print(f"Model: {model.id}")
             print(f"Owner: {model.owned_by}")
@@ -80,7 +80,7 @@ class ModelsResource(SyncAPIResource):
             Response:
             ```json
             {
-                "id": "gpt-4",
+                "id": "openai/gpt-4",
                 "object": "model",
                 "created": 1687882411,
                 "owned_by": "openai"
@@ -147,12 +147,12 @@ class ModelsResource(SyncAPIResource):
                 "object": "list",
                 "data": [
                     {
-                        "id": "gpt-4",
+                        "id": "openai/gpt-4",
                         "object": "model",
                         "owned_by": "openai"
                     },
                     {
-                        "id": "claude-3-5-sonnet-20241022",
+                        "id": "anthropic/claude-3-5-sonnet-20241022",
                         "object": "model",
                         "owned_by": "anthropic"
                     }
@@ -206,11 +206,11 @@ class AsyncModelsResource(AsyncAPIResource):
         Returns detailed information about a specific model by ID. The model must be
         available to your API key's configured providers.
 
-        Args: model_id: The ID of the model to retrieve (e.g., 'gpt-4',
-        'claude-3-5-sonnet-20241022') user: Authenticated user obtained from API key
-        validation
+        Args: model_id: The ID of the model to retrieve (e.g., 'openai/gpt-4',
+        'anthropic/claude-3-5-sonnet-20241022') user: Authenticated user obtained from
+        API key validation
 
-        Returns: Model: Information about the requested model
+        Returns: DedalusModel: Information about the requested model
 
         Raises: HTTPException: - 401 if authentication fails - 404 if model not found or
         not accessible with current API key - 500 if internal error occurs
@@ -220,7 +220,7 @@ class AsyncModelsResource(AsyncAPIResource):
         Example: ```python import dedalus_labs
 
             client = dedalus_labs.Client(api_key="your-api-key")
-            model = client.models.retrieve("gpt-4")
+            model = client.models.retrieve("openai/gpt-4")
 
             print(f"Model: {model.id}")
             print(f"Owner: {model.owned_by}")
@@ -229,7 +229,7 @@ class AsyncModelsResource(AsyncAPIResource):
             Response:
             ```json
             {
-                "id": "gpt-4",
+                "id": "openai/gpt-4",
                 "object": "model",
                 "created": 1687882411,
                 "owned_by": "openai"
@@ -296,12 +296,12 @@ class AsyncModelsResource(AsyncAPIResource):
                 "object": "list",
                 "data": [
                     {
-                        "id": "gpt-4",
+                        "id": "openai/gpt-4",
                         "object": "model",
                         "owned_by": "openai"
                     },
                     {
-                        "id": "claude-3-5-sonnet-20241022",
+                        "id": "anthropic/claude-3-5-sonnet-20241022",
                         "object": "model",
                         "owned_by": "anthropic"
                     }

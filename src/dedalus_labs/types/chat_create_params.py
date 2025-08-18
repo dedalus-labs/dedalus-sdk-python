@@ -3,9 +3,17 @@
 from __future__ import annotations
 
 from typing import Dict, List, Union, Iterable, Optional
-from typing_extensions import Literal, Required, TypedDict
+from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
-__all__ = ["ChatCreateParamsBase", "ChatCreateParamsNonStreaming", "ChatCreateParamsStreaming"]
+from .model_param import ModelParam
+
+__all__ = [
+    "ChatCreateParamsBase",
+    "Model",
+    "ModelUnionMember2",
+    "ChatCreateParamsNonStreaming",
+    "ChatCreateParamsStreaming",
+]
 
 
 class ChatCreateParamsBase(TypedDict, total=False):
@@ -37,10 +45,9 @@ class ChatCreateParamsBase(TypedDict, total=False):
     """
 
     input: Optional[Iterable[Dict[str, object]]]
-    """Input to the model - can be messages, images, or other modalities.
-
-    Supports OpenAI chat format with role/content structure. For multimodal inputs,
-    content can include text, images, or other media types.
+    """
+    Input/messages to the model – accepts either 'input' (Dedalus) or 'messages'
+    (OpenAI). Supports role/content structure and multimodal content arrays.
     """
 
     logit_bias: Optional[Dict[str, int]]
@@ -71,13 +78,14 @@ class ChatCreateParamsBase(TypedDict, total=False):
     separately.
     """
 
-    model: Union[str, List[str], None]
+    model: Optional[Model]
     """Model(s) to use for completion.
 
-    Can be a single model ID or a list for multi-model routing. Single model:
-    'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini'. Multi-model routing:
-    ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] - agent will choose optimal model
-    based on task complexity.
+    Can be a single model ID, a DedalusModel object, or a list for multi-model
+    routing. Single model: 'openai/gpt-4', 'anthropic/claude-3-5-sonnet-20241022',
+    'openai/gpt-4o-mini', or a DedalusModel instance. Multi-model routing:
+    ['openai/gpt-4o-mini', 'openai/gpt-4', 'anthropic/claude-3-5-sonnet'] or list of
+    DedalusModel objects - agent will choose optimal model based on task complexity.
     """
 
     model_attributes: Optional[Dict[str, Dict[str, float]]]
@@ -119,7 +127,7 @@ class ChatCreateParamsBase(TypedDict, total=False):
     """
 
     tools: Optional[Iterable[Dict[str, object]]]
-    """List of tools available to the model in OpenAI function calling format.
+    """list of tools available to the model in OpenAI function calling format.
 
     Tools are executed client-side and returned as JSON for the application to
     handle. Use 'mcp_servers' for server-side tool execution.
@@ -138,6 +146,11 @@ class ChatCreateParamsBase(TypedDict, total=False):
     Used for monitoring and abuse detection. Should be consistent across requests
     from the same user.
     """
+
+
+ModelUnionMember2: TypeAlias = Union[str, ModelParam]
+
+Model: TypeAlias = Union[str, ModelParam, List[ModelUnionMember2]]
 
 
 class ChatCreateParamsNonStreaming(ChatCreateParamsBase, total=False):

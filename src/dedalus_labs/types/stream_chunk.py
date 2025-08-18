@@ -1,41 +1,31 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-import builtins
 from typing import TYPE_CHECKING, Dict, List, Optional
 from typing_extensions import Literal
 
 from pydantic import Field as FieldInfo
 
 from .._models import BaseModel
-from .top_logprob import TopLogprob
+from .chat_completion_token_logprob import ChatCompletionTokenLogprob
 
 __all__ = [
-    "Completion",
+    "StreamChunk",
     "Choice",
-    "ChoiceMessage",
-    "ChoiceMessageAnnotation",
-    "ChoiceMessageAnnotationURLCitation",
-    "ChoiceMessageAudio",
-    "ChoiceMessageFunctionCall",
-    "ChoiceMessageToolCall",
-    "ChoiceMessageToolCallFunction",
+    "ChoiceDelta",
+    "ChoiceDeltaFunctionCall",
+    "ChoiceDeltaToolCall",
+    "ChoiceDeltaToolCallFunction",
     "ChoiceLogprobs",
-    "ChoiceLogprobsContent",
-    "ChoiceLogprobsRefusal",
     "Usage",
     "UsageCompletionTokensDetails",
     "UsagePromptTokensDetails",
 ]
 
 
-class ChoiceMessageAnnotationURLCitation(BaseModel):
-    end_index: int
+class ChoiceDeltaFunctionCall(BaseModel):
+    arguments: Optional[str] = None
 
-    start_index: int
-
-    title: str
-
-    url: str
+    name: Optional[str] = None
 
     __pydantic_extra__: Dict[str, object] = FieldInfo(init=False)  # pyright: ignore[reportIncompatibleVariableOverride]
     if TYPE_CHECKING:
@@ -45,27 +35,10 @@ class ChoiceMessageAnnotationURLCitation(BaseModel):
         def __getattr__(self, attr: str) -> object: ...
 
 
-class ChoiceMessageAnnotation(BaseModel):
-    type: Literal["url_citation"]
+class ChoiceDeltaToolCallFunction(BaseModel):
+    arguments: Optional[str] = None
 
-    url_citation: ChoiceMessageAnnotationURLCitation
-
-    __pydantic_extra__: Dict[str, object] = FieldInfo(init=False)  # pyright: ignore[reportIncompatibleVariableOverride]
-    if TYPE_CHECKING:
-        # Stub to indicate that arbitrary properties are accepted.
-        # To access properties that are not valid identifiers you can use `getattr`, e.g.
-        # `getattr(obj, '$type')`
-        def __getattr__(self, attr: str) -> object: ...
-
-
-class ChoiceMessageAudio(BaseModel):
-    id: str
-
-    data: str
-
-    expires_at: int
-
-    transcript: str
+    name: Optional[str] = None
 
     __pydantic_extra__: Dict[str, object] = FieldInfo(init=False)  # pyright: ignore[reportIncompatibleVariableOverride]
     if TYPE_CHECKING:
@@ -75,23 +48,14 @@ class ChoiceMessageAudio(BaseModel):
         def __getattr__(self, attr: str) -> object: ...
 
 
-class ChoiceMessageFunctionCall(BaseModel):
-    arguments: str
+class ChoiceDeltaToolCall(BaseModel):
+    index: int
 
-    name: str
+    id: Optional[str] = None
 
-    __pydantic_extra__: Dict[str, object] = FieldInfo(init=False)  # pyright: ignore[reportIncompatibleVariableOverride]
-    if TYPE_CHECKING:
-        # Stub to indicate that arbitrary properties are accepted.
-        # To access properties that are not valid identifiers you can use `getattr`, e.g.
-        # `getattr(obj, '$type')`
-        def __getattr__(self, attr: str) -> object: ...
+    function: Optional[ChoiceDeltaToolCallFunction] = None
 
-
-class ChoiceMessageToolCallFunction(BaseModel):
-    arguments: str
-
-    name: str
+    type: Optional[Literal["function"]] = None
 
     __pydantic_extra__: Dict[str, object] = FieldInfo(init=False)  # pyright: ignore[reportIncompatibleVariableOverride]
     if TYPE_CHECKING:
@@ -101,69 +65,16 @@ class ChoiceMessageToolCallFunction(BaseModel):
         def __getattr__(self, attr: str) -> object: ...
 
 
-class ChoiceMessageToolCall(BaseModel):
-    id: str
-
-    function: ChoiceMessageToolCallFunction
-
-    type: Literal["function"]
-
-    __pydantic_extra__: Dict[str, object] = FieldInfo(init=False)  # pyright: ignore[reportIncompatibleVariableOverride]
-    if TYPE_CHECKING:
-        # Stub to indicate that arbitrary properties are accepted.
-        # To access properties that are not valid identifiers you can use `getattr`, e.g.
-        # `getattr(obj, '$type')`
-        def __getattr__(self, attr: str) -> object: ...
-
-
-class ChoiceMessage(BaseModel):
-    role: Literal["assistant"]
-
-    annotations: Optional[List[ChoiceMessageAnnotation]] = None
-
-    audio: Optional[ChoiceMessageAudio] = None
-
+class ChoiceDelta(BaseModel):
     content: Optional[str] = None
 
-    function_call: Optional[ChoiceMessageFunctionCall] = None
+    function_call: Optional[ChoiceDeltaFunctionCall] = None
 
     refusal: Optional[str] = None
 
-    tool_calls: Optional[List[ChoiceMessageToolCall]] = None
+    role: Optional[Literal["developer", "system", "user", "assistant", "tool"]] = None
 
-    __pydantic_extra__: Dict[str, object] = FieldInfo(init=False)  # pyright: ignore[reportIncompatibleVariableOverride]
-    if TYPE_CHECKING:
-        # Stub to indicate that arbitrary properties are accepted.
-        # To access properties that are not valid identifiers you can use `getattr`, e.g.
-        # `getattr(obj, '$type')`
-        def __getattr__(self, attr: str) -> object: ...
-
-
-class ChoiceLogprobsContent(BaseModel):
-    token: str
-
-    logprob: float
-
-    top_logprobs: List[TopLogprob]
-
-    bytes: Optional[List[int]] = None
-
-    __pydantic_extra__: Dict[str, object] = FieldInfo(init=False)  # pyright: ignore[reportIncompatibleVariableOverride]
-    if TYPE_CHECKING:
-        # Stub to indicate that arbitrary properties are accepted.
-        # To access properties that are not valid identifiers you can use `getattr`, e.g.
-        # `getattr(obj, '$type')`
-        def __getattr__(self, attr: str) -> object: ...
-
-
-class ChoiceLogprobsRefusal(BaseModel):
-    token: str
-
-    logprob: float
-
-    top_logprobs: List[TopLogprob]
-
-    bytes: Optional[List[int]] = None
+    tool_calls: Optional[List[ChoiceDeltaToolCall]] = None
 
     __pydantic_extra__: Dict[str, object] = FieldInfo(init=False)  # pyright: ignore[reportIncompatibleVariableOverride]
     if TYPE_CHECKING:
@@ -174,9 +85,9 @@ class ChoiceLogprobsRefusal(BaseModel):
 
 
 class ChoiceLogprobs(BaseModel):
-    content: Optional[List[ChoiceLogprobsContent]] = None
+    content: Optional[List[ChatCompletionTokenLogprob]] = None
 
-    refusal: Optional[List[ChoiceLogprobsRefusal]] = None
+    refusal: Optional[List[ChatCompletionTokenLogprob]] = None
 
     __pydantic_extra__: Dict[str, object] = FieldInfo(init=False)  # pyright: ignore[reportIncompatibleVariableOverride]
     if TYPE_CHECKING:
@@ -187,11 +98,11 @@ class ChoiceLogprobs(BaseModel):
 
 
 class Choice(BaseModel):
-    finish_reason: Literal["stop", "length", "tool_calls", "content_filter", "function_call"]
+    delta: ChoiceDelta
 
     index: int
 
-    message: ChoiceMessage
+    finish_reason: Optional[Literal["stop", "length", "tool_calls", "content_filter", "function_call"]] = None
 
     logprobs: Optional[ChoiceLogprobs] = None
 
@@ -252,26 +163,27 @@ class Usage(BaseModel):
         def __getattr__(self, attr: str) -> object: ...
 
 
-class Completion(BaseModel):
+class StreamChunk(BaseModel):
     id: str
+    """Unique identifier for the chat completion"""
 
     choices: List[Choice]
+    """List of completion choice chunks"""
 
     created: int
+    """Unix timestamp when the chunk was created"""
 
     model: str
+    """ID of the model used for the completion"""
 
-    object: Literal["chat.completion"]
+    object: Optional[Literal["chat.completion.chunk"]] = None
+    """Object type, always 'chat.completion.chunk'"""
 
     service_tier: Optional[Literal["auto", "default", "flex", "scale", "priority"]] = None
+    """Service tier used for processing the request"""
 
     system_fingerprint: Optional[str] = None
+    """System fingerprint representing backend configuration"""
 
     usage: Optional[Usage] = None
-
-    __pydantic_extra__: Dict[str, builtins.object] = FieldInfo(init=False)  # pyright: ignore[reportIncompatibleVariableOverride]
-    if TYPE_CHECKING:
-        # Stub to indicate that arbitrary properties are accepted.
-        # To access properties that are not valid identifiers you can use `getattr`, e.g.
-        # `getattr(obj, '$type')`
-        def __getattr__(self, attr: str) -> builtins.object: ...
+    """Usage statistics (only in final chunk with stream_options.include_usage=true)"""
