@@ -34,11 +34,11 @@ client = Dedalus(
     environment="staging",
 )
 
-stream_chunk = client.chat.create(
+stream_chunk = client.chat.completions.create(
     messages=[
         {
             "role": "user",
-            "content": "Hello, how can you help me today?",
+            "content": "Hello, how are you today?",
         }
     ],
     model="openai/gpt-5",
@@ -68,11 +68,11 @@ client = AsyncDedalus(
 
 
 async def main() -> None:
-    stream_chunk = await client.chat.create(
+    stream_chunk = await client.chat.completions.create(
         messages=[
             {
                 "role": "user",
-                "content": "Hello, how can you help me today?",
+                "content": "Hello, how are you today?",
             }
         ],
         model="openai/gpt-5",
@@ -109,11 +109,11 @@ async def main() -> None:
         api_key="My API Key",
         http_client=DefaultAioHttpClient(),
     ) as client:
-        stream_chunk = await client.chat.create(
+        stream_chunk = await client.chat.completions.create(
             messages=[
                 {
                     "role": "user",
-                    "content": "Hello, how can you help me today?",
+                    "content": "Hello, how are you today?",
                 }
             ],
             model="openai/gpt-5",
@@ -133,7 +133,7 @@ from dedalus_labs import Dedalus
 
 client = Dedalus()
 
-stream = client.chat.create(
+stream = client.chat.completions.create(
     stream=True,
     messages=[
         {
@@ -158,7 +158,7 @@ from dedalus_labs import AsyncDedalus
 
 client = AsyncDedalus()
 
-stream = await client.chat.create(
+stream = await client.chat.completions.create(
     stream=True,
     messages=[
         {

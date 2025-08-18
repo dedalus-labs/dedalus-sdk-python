@@ -5,18 +5,18 @@ from __future__ import annotations
 from typing import Dict, List, Union, Iterable, Optional
 from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
-from .model_param import ModelParam
+from ..model_param import ModelParam
 
 __all__ = [
-    "ChatCreateParamsBase",
+    "CompletionCreateParamsBase",
     "Model",
     "ModelModelList",
-    "ChatCreateParamsNonStreaming",
-    "ChatCreateParamsStreaming",
+    "CompletionCreateParamsNonStreaming",
+    "CompletionCreateParamsStreaming",
 ]
 
 
-class ChatCreateParamsBase(TypedDict, total=False):
+class CompletionCreateParamsBase(TypedDict, total=False):
     agent_attributes: Optional[Dict[str, float]]
     """Attributes for the agent itself, influencing behavior and model selection.
 
@@ -153,7 +153,7 @@ ModelModelList: TypeAlias = Union[str, ModelParam]
 Model: TypeAlias = Union[str, ModelParam, List[ModelModelList]]
 
 
-class ChatCreateParamsNonStreaming(ChatCreateParamsBase, total=False):
+class CompletionCreateParamsNonStreaming(CompletionCreateParamsBase, total=False):
     stream: Literal[False]
     """Whether to stream back partial message deltas as Server-Sent Events.
 
@@ -161,7 +161,7 @@ class ChatCreateParamsNonStreaming(ChatCreateParamsBase, total=False):
     """
 
 
-class ChatCreateParamsStreaming(ChatCreateParamsBase):
+class CompletionCreateParamsStreaming(CompletionCreateParamsBase):
     stream: Required[Literal[True]]
     """Whether to stream back partial message deltas as Server-Sent Events.
 
@@ -169,4 +169,4 @@ class ChatCreateParamsStreaming(ChatCreateParamsBase):
     """
 
 
-ChatCreateParams = Union[ChatCreateParamsNonStreaming, ChatCreateParamsStreaming]
+CompletionCreateParams = Union[CompletionCreateParamsNonStreaming, CompletionCreateParamsStreaming]

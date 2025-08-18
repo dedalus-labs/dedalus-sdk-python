@@ -37,10 +37,12 @@ Methods:
 
 # Chat
 
+## Completions
+
 Types:
 
 ```python
-from dedalus_labs.types import (
+from dedalus_labs.types.chat import (
     ChatCompletionTokenLogprob,
     Completion,
     CompletionRequest,
@@ -51,4 +53,4 @@ from dedalus_labs.types import (
 
 Methods:
 
-- <code title="post /v1/chat/completions">client.chat.<a href="./src/dedalus_labs/resources/chat.py">create</a>(\*\*<a href="src/dedalus_labs/types/chat_create_params.py">params</a>) -> <a href="./src/dedalus_labs/types/stream_chunk.py">StreamChunk</a></code>
+- <code title="post /v1/chat/completions">client.chat.completions.<a href="./src/dedalus_labs/resources/chat/completions.py">create</a>(\*\*<a href="src/dedalus_labs/types/chat/completion_create_params.py">params</a>) -> <a href="./src/dedalus_labs/types/chat/stream_chunk.py">StreamChunk</a></code>

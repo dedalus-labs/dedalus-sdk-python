@@ -9,24 +9,24 @@ import pytest
 
 from tests.utils import assert_matches_type
 from dedalus_labs import Dedalus, AsyncDedalus
-from dedalus_labs.types import StreamChunk
+from dedalus_labs.types.chat import StreamChunk
 
 base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 
 
-class TestChat:
+class TestCompletions:
     parametrize = pytest.mark.parametrize("client", [False, True], indirect=True, ids=["loose", "strict"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     def test_method_create_overload_1(self, client: Dedalus) -> None:
-        chat = client.chat.create()
-        assert_matches_type(StreamChunk, chat, path=["response"])
+        completion = client.chat.completions.create()
+        assert_matches_type(StreamChunk, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     def test_method_create_with_all_params_overload_1(self, client: Dedalus) -> None:
-        chat = client.chat.create(
+        completion = client.chat.completions.create(
             agent_attributes={
                 "accuracy": 0.9,
                 "complexity": 0.8,
@@ -78,42 +78,42 @@ class TestChat:
             top_p=0.1,
             user="user-123",
         )
-        assert_matches_type(StreamChunk, chat, path=["response"])
+        assert_matches_type(StreamChunk, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     def test_raw_response_create_overload_1(self, client: Dedalus) -> None:
-        response = client.chat.with_raw_response.create()
+        response = client.chat.completions.with_raw_response.create()
 
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
-        chat = response.parse()
-        assert_matches_type(StreamChunk, chat, path=["response"])
+        completion = response.parse()
+        assert_matches_type(StreamChunk, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     def test_streaming_response_create_overload_1(self, client: Dedalus) -> None:
-        with client.chat.with_streaming_response.create() as response:
+        with client.chat.completions.with_streaming_response.create() as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
-            chat = response.parse()
-            assert_matches_type(StreamChunk, chat, path=["response"])
+            completion = response.parse()
+            assert_matches_type(StreamChunk, completion, path=["response"])
 
         assert cast(Any, response.is_closed) is True
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     def test_method_create_overload_2(self, client: Dedalus) -> None:
-        chat_stream = client.chat.create(
+        completion_stream = client.chat.completions.create(
             stream=True,
         )
-        chat_stream.response.close()
+        completion_stream.response.close()
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     def test_method_create_with_all_params_overload_2(self, client: Dedalus) -> None:
-        chat_stream = client.chat.create(
+        completion_stream = client.chat.completions.create(
             stream=True,
             agent_attributes={
                 "accuracy": 0.9,
@@ -165,12 +165,12 @@ class TestChat:
             top_p=0.1,
             user="user-123",
         )
-        chat_stream.response.close()
+        completion_stream.response.close()
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     def test_raw_response_create_overload_2(self, client: Dedalus) -> None:
-        response = client.chat.with_raw_response.create(
+        response = client.chat.completions.with_raw_response.create(
             stream=True,
         )
 
@@ -181,7 +181,7 @@ class TestChat:
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     def test_streaming_response_create_overload_2(self, client: Dedalus) -> None:
-        with client.chat.with_streaming_response.create(
+        with client.chat.completions.with_streaming_response.create(
             stream=True,
         ) as response:
             assert not response.is_closed
@@ -193,7 +193,7 @@ class TestChat:
         assert cast(Any, response.is_closed) is True
 
 
-class TestAsyncChat:
+class TestAsyncCompletions:
     parametrize = pytest.mark.parametrize(
         "async_client", [False, True, {"http_client": "aiohttp"}], indirect=True, ids=["loose", "strict", "aiohttp"]
     )
@@ -201,13 +201,13 @@ class TestAsyncChat:
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     async def test_method_create_overload_1(self, async_client: AsyncDedalus) -> None:
-        chat = await async_client.chat.create()
-        assert_matches_type(StreamChunk, chat, path=["response"])
+        completion = await async_client.chat.completions.create()
+        assert_matches_type(StreamChunk, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     async def test_method_create_with_all_params_overload_1(self, async_client: AsyncDedalus) -> None:
-        chat = await async_client.chat.create(
+        completion = await async_client.chat.completions.create(
             agent_attributes={
                 "accuracy": 0.9,
                 "complexity": 0.8,
@@ -259,42 +259,42 @@ class TestAsyncChat:
             top_p=0.1,
             user="user-123",
         )
-        assert_matches_type(StreamChunk, chat, path=["response"])
+        assert_matches_type(StreamChunk, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     async def test_raw_response_create_overload_1(self, async_client: AsyncDedalus) -> None:
-        response = await async_client.chat.with_raw_response.create()
+        response = await async_client.chat.completions.with_raw_response.create()
 
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
-        chat = await response.parse()
-        assert_matches_type(StreamChunk, chat, path=["response"])
+        completion = await response.parse()
+        assert_matches_type(StreamChunk, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     async def test_streaming_response_create_overload_1(self, async_client: AsyncDedalus) -> None:
-        async with async_client.chat.with_streaming_response.create() as response:
+        async with async_client.chat.completions.with_streaming_response.create() as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
-            chat = await response.parse()
-            assert_matches_type(StreamChunk, chat, path=["response"])
+            completion = await response.parse()
+            assert_matches_type(StreamChunk, completion, path=["response"])
 
         assert cast(Any, response.is_closed) is True
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     async def test_method_create_overload_2(self, async_client: AsyncDedalus) -> None:
-        chat_stream = await async_client.chat.create(
+        completion_stream = await async_client.chat.completions.create(
             stream=True,
         )
-        await chat_stream.response.aclose()
+        await completion_stream.response.aclose()
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     async def test_method_create_with_all_params_overload_2(self, async_client: AsyncDedalus) -> None:
-        chat_stream = await async_client.chat.create(
+        completion_stream = await async_client.chat.completions.create(
             stream=True,
             agent_attributes={
                 "accuracy": 0.9,
@@ -346,12 +346,12 @@ class TestAsyncChat:
             top_p=0.1,
             user="user-123",
         )
-        await chat_stream.response.aclose()
+        await completion_stream.response.aclose()
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     async def test_raw_response_create_overload_2(self, async_client: AsyncDedalus) -> None:
-        response = await async_client.chat.with_raw_response.create(
+        response = await async_client.chat.completions.with_raw_response.create(
             stream=True,
         )
 
@@ -362,7 +362,7 @@ class TestAsyncChat:
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     async def test_streaming_response_create_overload_2(self, async_client: AsyncDedalus) -> None:
-        async with async_client.chat.with_streaming_response.create(
+        async with async_client.chat.completions.with_streaming_response.create(
             stream=True,
         ) as response:
             assert not response.is_closed

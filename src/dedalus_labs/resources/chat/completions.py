@@ -7,43 +7,43 @@ from typing_extensions import Literal, overload
 
 import httpx
 
-from ..types import chat_create_params
-from .._types import NOT_GIVEN, Body, Query, Headers, NotGiven
-from .._utils import maybe_transform, async_maybe_transform
-from .._compat import cached_property
-from .._resource import SyncAPIResource, AsyncAPIResource
-from .._response import (
+from ..._types import NOT_GIVEN, Body, Query, Headers, NotGiven
+from ..._utils import maybe_transform, async_maybe_transform
+from ..._compat import cached_property
+from ..._resource import SyncAPIResource, AsyncAPIResource
+from ..._response import (
     to_raw_response_wrapper,
     to_streamed_response_wrapper,
     async_to_raw_response_wrapper,
     async_to_streamed_response_wrapper,
 )
-from .._streaming import Stream, AsyncStream
-from .._base_client import make_request_options
-from ..types.stream_chunk import StreamChunk
+from ..._streaming import Stream, AsyncStream
+from ...types.chat import completion_create_params
+from ..._base_client import make_request_options
+from ...types.chat.stream_chunk import StreamChunk
 
-__all__ = ["ChatResource", "AsyncChatResource"]
+__all__ = ["CompletionsResource", "AsyncCompletionsResource"]
 
 
-class ChatResource(SyncAPIResource):
+class CompletionsResource(SyncAPIResource):
     @cached_property
-    def with_raw_response(self) -> ChatResourceWithRawResponse:
+    def with_raw_response(self) -> CompletionsResourceWithRawResponse:
         """
         This property can be used as a prefix for any HTTP method call to return
         the raw response object instead of the parsed content.
 
         For more information, see https://www.github.com/dedalus-labs/dedalus-sdk-python#accessing-raw-response-data-eg-headers
         """
-        return ChatResourceWithRawResponse(self)
+        return CompletionsResourceWithRawResponse(self)
 
     @cached_property
-    def with_streaming_response(self) -> ChatResourceWithStreamingResponse:
+    def with_streaming_response(self) -> CompletionsResourceWithStreamingResponse:
         """
         An alternative to `.with_raw_response` that doesn't eagerly read the response body.
 
         For more information, see https://www.github.com/dedalus-labs/dedalus-sdk-python#with_streaming_response
         """
-        return ChatResourceWithStreamingResponse(self)
+        return CompletionsResourceWithStreamingResponse(self)
 
     @overload
     def create(
@@ -58,7 +58,7 @@ class ChatResource(SyncAPIResource):
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
         messages: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
-        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
+        model: Optional[completion_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -263,7 +263,7 @@ class ChatResource(SyncAPIResource):
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
         messages: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
-        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
+        model: Optional[completion_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -467,7 +467,7 @@ class ChatResource(SyncAPIResource):
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
         messages: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
-        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
+        model: Optional[completion_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -669,7 +669,7 @@ class ChatResource(SyncAPIResource):
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
         messages: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
-        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
+        model: Optional[completion_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -713,9 +713,9 @@ class ChatResource(SyncAPIResource):
                     "top_p": top_p,
                     "user": user,
                 },
-                chat_create_params.ChatCreateParamsStreaming
+                completion_create_params.CompletionCreateParamsStreaming
                 if stream
-                else chat_create_params.ChatCreateParamsNonStreaming,
+                else completion_create_params.CompletionCreateParamsNonStreaming,
             ),
             options=make_request_options(
                 extra_headers=extra_headers,
@@ -730,25 +730,25 @@ class ChatResource(SyncAPIResource):
         )
 
 
-class AsyncChatResource(AsyncAPIResource):
+class AsyncCompletionsResource(AsyncAPIResource):
     @cached_property
-    def with_raw_response(self) -> AsyncChatResourceWithRawResponse:
+    def with_raw_response(self) -> AsyncCompletionsResourceWithRawResponse:
         """
         This property can be used as a prefix for any HTTP method call to return
         the raw response object instead of the parsed content.
 
         For more information, see https://www.github.com/dedalus-labs/dedalus-sdk-python#accessing-raw-response-data-eg-headers
         """
-        return AsyncChatResourceWithRawResponse(self)
+        return AsyncCompletionsResourceWithRawResponse(self)
 
     @cached_property
-    def with_streaming_response(self) -> AsyncChatResourceWithStreamingResponse:
+    def with_streaming_response(self) -> AsyncCompletionsResourceWithStreamingResponse:
         """
         An alternative to `.with_raw_response` that doesn't eagerly read the response body.
 
         For more information, see https://www.github.com/dedalus-labs/dedalus-sdk-python#with_streaming_response
         """
-        return AsyncChatResourceWithStreamingResponse(self)
+        return AsyncCompletionsResourceWithStreamingResponse(self)
 
     @overload
     async def create(
@@ -763,7 +763,7 @@ class AsyncChatResource(AsyncAPIResource):
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
         messages: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
-        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
+        model: Optional[completion_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -968,7 +968,7 @@ class AsyncChatResource(AsyncAPIResource):
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
         messages: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
-        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
+        model: Optional[completion_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -1172,7 +1172,7 @@ class AsyncChatResource(AsyncAPIResource):
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
         messages: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
-        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
+        model: Optional[completion_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -1374,7 +1374,7 @@ class AsyncChatResource(AsyncAPIResource):
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
         messages: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
-        model: Optional[chat_create_params.Model] | NotGiven = NOT_GIVEN,
+        model: Optional[completion_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
         presence_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -1418,9 +1418,9 @@ class AsyncChatResource(AsyncAPIResource):
                     "top_p": top_p,
                     "user": user,
                 },
-                chat_create_params.ChatCreateParamsStreaming
+                completion_create_params.CompletionCreateParamsStreaming
                 if stream
-                else chat_create_params.ChatCreateParamsNonStreaming,
+                else completion_create_params.CompletionCreateParamsNonStreaming,
             ),
             options=make_request_options(
                 extra_headers=extra_headers,
@@ -1435,37 +1435,37 @@ class AsyncChatResource(AsyncAPIResource):
         )
 
 
-class ChatResourceWithRawResponse:
-    def __init__(self, chat: ChatResource) -> None:
-        self._chat = chat
+class CompletionsResourceWithRawResponse:
+    def __init__(self, completions: CompletionsResource) -> None:
+        self._completions = completions
 
         self.create = to_raw_response_wrapper(
-            chat.create,
+            completions.create,
         )
 
 
-class AsyncChatResourceWithRawResponse:
-    def __init__(self, chat: AsyncChatResource) -> None:
-        self._chat = chat
+class AsyncCompletionsResourceWithRawResponse:
+    def __init__(self, completions: AsyncCompletionsResource) -> None:
+        self._completions = completions
 
         self.create = async_to_raw_response_wrapper(
-            chat.create,
+            completions.create,
         )
 
 
-class ChatResourceWithStreamingResponse:
-    def __init__(self, chat: ChatResource) -> None:
-        self._chat = chat
+class CompletionsResourceWithStreamingResponse:
+    def __init__(self, completions: CompletionsResource) -> None:
+        self._completions = completions
 
         self.create = to_streamed_response_wrapper(
-            chat.create,
+            completions.create,
         )
 
 
-class AsyncChatResourceWithStreamingResponse:
-    def __init__(self, chat: AsyncChatResource) -> None:
-        self._chat = chat
+class AsyncCompletionsResourceWithStreamingResponse:
+    def __init__(self, completions: AsyncCompletionsResource) -> None:
+        self._completions = completions
 
         self.create = async_to_streamed_response_wrapper(
-            chat.create,
+            completions.create,
         )
