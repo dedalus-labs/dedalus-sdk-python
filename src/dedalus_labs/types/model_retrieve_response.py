@@ -5,10 +5,10 @@ from typing import Dict, List, Optional
 
 from .._models import BaseModel
 
-__all__ = ["ModelsResponse", "Data"]
+__all__ = ["ModelRetrieveResponse"]
 
 
-class Data(BaseModel):
+class ModelRetrieveResponse(BaseModel):
     id: str
     """Model identifier"""
 
@@ -29,11 +29,3 @@ class Data(BaseModel):
 
     root: Optional[str] = None
     """Root model"""
-
-
-class ModelsResponse(BaseModel):
-    data: List[Data]
-    """List of models"""
-
-    object: Optional[str] = None
-    """Object type"""
