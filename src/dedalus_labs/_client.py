@@ -30,6 +30,7 @@ from ._base_client import (
     SyncAPIClient,
     AsyncAPIClient,
 )
+from .resources.chat import chat
 
 __all__ = [
     "ENVIRONMENTS",
@@ -54,6 +55,7 @@ class Dedalus(SyncAPIClient):
     root: root.RootResource
     health: health.HealthResource
     models: models.ModelsResource
+    chat: chat.ChatResource
     with_raw_response: DedalusWithRawResponse
     with_streaming_response: DedalusWithStreamedResponse
 
@@ -153,6 +155,7 @@ class Dedalus(SyncAPIClient):
         self.root = root.RootResource(self)
         self.health = health.HealthResource(self)
         self.models = models.ModelsResource(self)
+        self.chat = chat.ChatResource(self)
         self.with_raw_response = DedalusWithRawResponse(self)
         self.with_streaming_response = DedalusWithStreamedResponse(self)
 
@@ -302,6 +305,7 @@ class AsyncDedalus(AsyncAPIClient):
     root: root.AsyncRootResource
     health: health.AsyncHealthResource
     models: models.AsyncModelsResource
+    chat: chat.AsyncChatResource
     with_raw_response: AsyncDedalusWithRawResponse
     with_streaming_response: AsyncDedalusWithStreamedResponse
 
@@ -401,6 +405,7 @@ class AsyncDedalus(AsyncAPIClient):
         self.root = root.AsyncRootResource(self)
         self.health = health.AsyncHealthResource(self)
         self.models = models.AsyncModelsResource(self)
+        self.chat = chat.AsyncChatResource(self)
         self.with_raw_response = AsyncDedalusWithRawResponse(self)
         self.with_streaming_response = AsyncDedalusWithStreamedResponse(self)
 
@@ -551,6 +556,7 @@ class DedalusWithRawResponse:
         self.root = root.RootResourceWithRawResponse(client.root)
         self.health = health.HealthResourceWithRawResponse(client.health)
         self.models = models.ModelsResourceWithRawResponse(client.models)
+        self.chat = chat.ChatResourceWithRawResponse(client.chat)
 
 
 class AsyncDedalusWithRawResponse:
@@ -558,6 +564,7 @@ class AsyncDedalusWithRawResponse:
         self.root = root.AsyncRootResourceWithRawResponse(client.root)
         self.health = health.AsyncHealthResourceWithRawResponse(client.health)
         self.models = models.AsyncModelsResourceWithRawResponse(client.models)
+        self.chat = chat.AsyncChatResourceWithRawResponse(client.chat)
 
 
 class DedalusWithStreamedResponse:
@@ -565,6 +572,7 @@ class DedalusWithStreamedResponse:
         self.root = root.RootResourceWithStreamingResponse(client.root)
         self.health = health.HealthResourceWithStreamingResponse(client.health)
         self.models = models.ModelsResourceWithStreamingResponse(client.models)
+        self.chat = chat.ChatResourceWithStreamingResponse(client.chat)
 
 
 class AsyncDedalusWithStreamedResponse:
@@ -572,6 +580,7 @@ class AsyncDedalusWithStreamedResponse:
         self.root = root.AsyncRootResourceWithStreamingResponse(client.root)
         self.health = health.AsyncHealthResourceWithStreamingResponse(client.health)
         self.models = models.AsyncModelsResourceWithStreamingResponse(client.models)
+        self.chat = chat.AsyncChatResourceWithStreamingResponse(client.chat)
 
 
 Client = Dedalus
