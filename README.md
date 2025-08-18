@@ -11,7 +11,7 @@ It is generated with [Stainless](https://www.stainless.com/).
 
 ## Documentation
 
-The full API of this library can be found in [api.md](api.md).
+The REST API documentation can be found on [docs.dedaluslabs.ai](https://docs.dedaluslabs.ai). The full API of this library can be found in [api.md](api.md).
 
 ## Installation
 
@@ -30,18 +30,20 @@ from dedalus_labs import Dedalus
 
 client = Dedalus(
     api_key=os.environ.get("DEDALUS_API_KEY"),  # This is the default and can be omitted
+    # or 'production' | 'development'; defaults to "production".
+    environment="staging",
 )
 
-completion = client.chat.create(
+stream_chunk = client.chat.create(
     input=[
         {
             "role": "user",
-            "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+            "content": "Hello, how can you help me today?",
         }
     ],
-    model="gpt-4o-mini",
+    model="openai/gpt-5",
 )
-print(completion.id)
+print(stream_chunk.id)
 ```
 
 While you can provide an `api_key` keyword argument,
@@ -60,20 +62,22 @@ from dedalus_labs import AsyncDedalus
 
 client = AsyncDedalus(
     api_key=os.environ.get("DEDALUS_API_KEY"),  # This is the default and can be omitted
+    # or 'production' | 'development'; defaults to "production".
+    environment="staging",
 )
 
 
 async def main() -> None:
-    completion = await client.chat.create(
+    stream_chunk = await client.chat.create(
         input=[
             {
                 "role": "user",
-                "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+                "content": "Hello, how can you help me today?",
             }
         ],
-        model="gpt-4o-mini",
+        model="openai/gpt-5",
     )
-    print(completion.id)
+    print(stream_chunk.id)
 
 
 asyncio.run(main())
@@ -105,19 +109,71 @@ async def main() -> None:
         api_key="My API Key",
         http_client=DefaultAioHttpClient(),
     ) as client:
-        completion = await client.chat.create(
+        stream_chunk = await client.chat.create(
             input=[
                 {
                     "role": "user",
-                    "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+                    "content": "Hello, how can you help me today?",
                 }
             ],
-            model="gpt-4o-mini",
+            model="openai/gpt-5",
         )
-        print(completion.id)
+        print(stream_chunk.id)
 
 
 asyncio.run(main())
+```
+
+## Streaming responses
+
+We provide support for streaming responses using Server Side Events (SSE).
+
+```python
+from dedalus_labs import Dedalus
+
+client = Dedalus()
+
+stream = client.chat.create(
+    stream=True,
+    input=[
+        {
+            "role": "system",
+            "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+        },
+        {
+            "role": "user",
+            "content": "What do you think of artificial intelligence?",
+        },
+    ],
+    model="openai/gpt-5",
+)
+for stream_chunk in stream:
+    print(stream_chunk.id)
+```
+
+The async client uses the exact same interface.
+
+```python
+from dedalus_labs import AsyncDedalus
+
+client = AsyncDedalus()
+
+stream = await client.chat.create(
+    stream=True,
+    input=[
+        {
+            "role": "system",
+            "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+        },
+        {
+            "role": "user",
+            "content": "What do you think of artificial intelligence?",
+        },
+    ],
+    model="openai/gpt-5",
+)
+async for stream_chunk in stream:
+    print(stream_chunk.id)
 ```
 
 ## Using types
@@ -217,6 +273,25 @@ client.with_options(timeout=5.0).health.check()
 On timeout, an `APITimeoutError` is thrown.
 
 Note that requests that time out are [retried twice by default](#retries).
+
+## Default Headers
+
+We automatically send the following headers with all requests.
+
+| Header          | Value         |
+| --------------- | ------------- |
+| `User-Agent`    | `Dedalus-SDK` |
+| `X-SDK-Version` | `1.0.0`       |
+
+If you need to, you can override these headers by setting default headers per-request or on the client object.
+
+```python
+from dedalus_labs import Dedalus
+
+client = Dedalus(
+    default_headers={"User-Agent": "My-Custom-Value"},
+)
+```
 
 ## Advanced
 

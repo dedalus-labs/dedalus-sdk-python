@@ -1,103 +1,104 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
+from __future__ import annotations
+
 import builtins
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Union, Iterable, Optional
+from typing_extensions import TypedDict
 
-from .._models import BaseModel
-
-__all__ = ["Model"]
+__all__ = ["ModelParam"]
 
 
-class Model(BaseModel):
-    id: Optional[str] = None
+class ModelParam(TypedDict, total=False):
+    id: Optional[str]
     """Model identifier"""
 
-    attributes: Optional[Dict[str, float]] = None
+    attributes: Optional[Dict[str, float]]
     """
     [Dedalus] Custom attributes for intelligent model routing (e.g., intelligence,
     speed, creativity, cost).
     """
 
-    created: Optional[int] = None
+    created: Optional[int]
     """Creation timestamp"""
 
-    frequency_penalty: Optional[float] = None
+    frequency_penalty: Optional[float]
     """Penalize new tokens based on their frequency in the text so far."""
 
-    logit_bias: Optional[Dict[str, float]] = None
+    logit_bias: Optional[Dict[str, float]]
     """Modify the likelihood of specified tokens appearing."""
 
-    logprobs: Optional[bool] = None
+    logprobs: Optional[bool]
     """Whether to return log probabilities of the output tokens."""
 
-    max_completion_tokens: Optional[int] = None
+    max_completion_tokens: Optional[int]
     """An upper bound for the number of tokens that can be generated for a completion."""
 
-    max_tokens: Optional[int] = None
+    max_tokens: Optional[int]
     """Maximum number of tokens to generate."""
 
-    metadata: Optional[Dict[str, str]] = None
+    metadata: Optional[Dict[str, str]]
     """[Dedalus] Additional metadata for request tracking and debugging."""
 
-    n: Optional[int] = None
+    n: Optional[int]
     """Number of completions to generate for each prompt."""
 
-    name: Optional[str] = None
+    name: Optional[str]
     """Model name (alias for id in chat requests)"""
 
-    object: Optional[str] = None
+    object: str
     """Object type"""
 
-    owned_by: Optional[str] = None
+    owned_by: str
     """Model owner"""
 
-    parallel_tool_calls: Optional[bool] = None
+    parallel_tool_calls: Optional[bool]
     """Whether to enable parallel function calling."""
 
-    parent: Optional[str] = None
+    parent: Optional[str]
     """Parent model"""
 
-    permission: Optional[List[Dict[str, builtins.object]]] = None
+    permission: Optional[Iterable[Dict[str, builtins.object]]]
     """Permissions"""
 
-    presence_penalty: Optional[float] = None
+    presence_penalty: Optional[float]
     """Penalize new tokens based on whether they appear in the text so far."""
 
-    response_format: Optional[Dict[str, builtins.object]] = None
+    response_format: Optional[Dict[str, builtins.object]]
     """Format for the model output (e.g., {'type': 'json_object'})."""
 
-    root: Optional[str] = None
+    root: Optional[str]
     """Root model"""
 
-    seed: Optional[int] = None
+    seed: Optional[int]
     """Seed for deterministic sampling."""
 
-    service_tier: Optional[str] = None
+    service_tier: Optional[str]
     """Latency tier for the request (e.g., 'auto', 'default')."""
 
-    stop: Union[str, List[str], None] = None
+    stop: Union[str, List[str], None]
     """Up to 4 sequences where the API will stop generating further tokens."""
 
-    stream: Optional[bool] = None
+    stream: Optional[bool]
     """Whether to stream back partial progress."""
 
-    stream_options: Optional[Dict[str, builtins.object]] = None
+    stream_options: Optional[Dict[str, builtins.object]]
     """Options for streaming responses."""
 
-    temperature: Optional[float] = None
+    temperature: Optional[float]
     """Sampling temperature (0 to 2). Higher values make output more random."""
 
-    tool_choice: Union[str, Dict[str, builtins.object], None] = None
+    tool_choice: Union[str, Dict[str, builtins.object], None]
     """Controls which tool is called by the model."""
 
-    tools: Optional[List[Dict[str, builtins.object]]] = None
+    tools: Optional[Iterable[Dict[str, builtins.object]]]
     """List of tools the model may call."""
 
-    top_logprobs: Optional[int] = None
+    top_logprobs: Optional[int]
     """Number of most likely tokens to return at each token position."""
 
-    top_p: Optional[float] = None
+    top_p: Optional[float]
     """Nucleus sampling parameter. Alternative to temperature."""
 
-    user: Optional[str] = None
+    user: Optional[str]
     """A unique identifier representing your end-user."""
