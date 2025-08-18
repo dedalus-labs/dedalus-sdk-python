@@ -3,12 +3,20 @@
 from __future__ import annotations
 
 from typing import Dict, List, Union, Iterable, Optional
-from typing_extensions import Literal, Required, TypedDict
+from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
-__all__ = ["ChatCreateParamsBase", "ChatCreateParamsNonStreaming", "ChatCreateParamsStreaming"]
+from ..model_param import ModelParam
+
+__all__ = [
+    "CompletionCreateParamsBase",
+    "Model",
+    "ModelModelList",
+    "CompletionCreateParamsNonStreaming",
+    "CompletionCreateParamsStreaming",
+]
 
 
-class ChatCreateParamsBase(TypedDict, total=False):
+class CompletionCreateParamsBase(TypedDict, total=False):
     agent_attributes: Optional[Dict[str, float]]
     """Attributes for the agent itself, influencing behavior and model selection.
 
@@ -34,13 +42,6 @@ class ChatCreateParamsBase(TypedDict, total=False):
     """Configuration for multi-model handoffs and agent orchestration.
 
     Reserved for future use - handoff configuration format not yet finalized.
-    """
-
-    input: Optional[Iterable[Dict[str, object]]]
-    """Input to the model - can be messages, images, or other modalities.
-
-    Supports OpenAI chat format with role/content structure. For multimodal inputs,
-    content can include text, images, or other media types.
     """
 
     logit_bias: Optional[Dict[str, int]]
@@ -71,13 +72,20 @@ class ChatCreateParamsBase(TypedDict, total=False):
     separately.
     """
 
-    model: Union[str, List[str], None]
+    messages: Optional[Iterable[Dict[str, object]]]
+    """Messages to the model - accepts either 'messages' (OpenAI) or 'input' (Dedalus).
+
+    Supports role/content structure and multimodal content arrays.
+    """
+
+    model: Optional[Model]
     """Model(s) to use for completion.
 
-    Can be a single model ID or a list for multi-model routing. Single model:
-    'gpt-4', 'claude-3-5-sonnet-20241022', 'gpt-4o-mini'. Multi-model routing:
-    ['gpt-4o-mini', 'gpt-4', 'claude-3-5-sonnet'] - agent will choose optimal model
-    based on task complexity.
+    Can be a single model ID, a DedalusModel object, or a list for multi-model
+    routing. Single model: 'openai/gpt-4', 'anthropic/claude-3-5-sonnet-20241022',
+    'openai/gpt-4o-mini', or a DedalusModel instance. Multi-model routing:
+    ['openai/gpt-4o-mini', 'openai/gpt-4', 'anthropic/claude-3-5-sonnet'] or list of
+    DedalusModel objects - agent will choose optimal model based on task complexity.
     """
 
     model_attributes: Optional[Dict[str, Dict[str, float]]]
@@ -119,7 +127,7 @@ class ChatCreateParamsBase(TypedDict, total=False):
     """
 
     tools: Optional[Iterable[Dict[str, object]]]
-    """List of tools available to the model in OpenAI function calling format.
+    """list of tools available to the model in OpenAI function calling format.
 
     Tools are executed client-side and returned as JSON for the application to
     handle. Use 'mcp_servers' for server-side tool execution.
@@ -140,20 +148,25 @@ class ChatCreateParamsBase(TypedDict, total=False):
     """
 
 
-class ChatCreateParamsNonStreaming(ChatCreateParamsBase, total=False):
-    stream: Optional[Literal[False]]
+ModelModelList: TypeAlias = Union[str, ModelParam]
+
+Model: TypeAlias = Union[str, ModelParam, List[ModelModelList]]
+
+
+class CompletionCreateParamsNonStreaming(CompletionCreateParamsBase, total=False):
+    stream: Literal[False]
     """Whether to stream back partial message deltas as Server-Sent Events.
 
-    When true, partial message deltas will be sent as chunks in OpenAI format.
+    When true, partial message deltas will be sent as OpenAI-compatible chunks.
     """
 
 
-class ChatCreateParamsStreaming(ChatCreateParamsBase):
+class CompletionCreateParamsStreaming(CompletionCreateParamsBase):
     stream: Required[Literal[True]]
     """Whether to stream back partial message deltas as Server-Sent Events.
 
-    When true, partial message deltas will be sent as chunks in OpenAI format.
+    When true, partial message deltas will be sent as OpenAI-compatible chunks.
     """
 
 
-ChatCreateParams = Union[ChatCreateParamsNonStreaming, ChatCreateParamsStreaming]
+CompletionCreateParams = Union[CompletionCreateParamsNonStreaming, CompletionCreateParamsStreaming]

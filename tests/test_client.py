@@ -25,7 +25,7 @@ from dedalus_labs import Dedalus, AsyncDedalus, APIResponseValidationError
 from dedalus_labs._types import Omit
 from dedalus_labs._models import BaseModel, FinalRequestOptions
 from dedalus_labs._streaming import Stream, AsyncStream
-from dedalus_labs._exceptions import DedalusError, APIStatusError, APITimeoutError, APIResponseValidationError
+from dedalus_labs._exceptions import APIStatusError, APITimeoutError, APIResponseValidationError
 from dedalus_labs._base_client import (
     DEFAULT_TIMEOUT,
     HTTPX_DEFAULT_TIMEOUT,
@@ -340,10 +340,19 @@ class TestDedalus:
         request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
         assert request.headers.get("Authorization") == f"Bearer {api_key}"
 
-        with pytest.raises(DedalusError):
-            with update_env(**{"DEDALUS_API_KEY": Omit()}):
-                client2 = Dedalus(base_url=base_url, api_key=None, _strict_response_validation=True)
-            _ = client2
+        with update_env(**{"DEDALUS_API_KEY": Omit()}):
+            client2 = Dedalus(base_url=base_url, api_key=None, _strict_response_validation=True)
+
+        with pytest.raises(
+            TypeError,
+            match="Could not resolve authentication method. Expected either api_key or api_key_header to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted",
+        ):
+            client2._build_request(FinalRequestOptions(method="get", url="/foo"))
+
+        request2 = client2._build_request(
+            FinalRequestOptions(method="get", url="/foo", headers={"Authorization": Omit()})
+        )
+        assert request2.headers.get("Authorization") is None
 
     def test_default_query_option(self) -> None:
         client = Dedalus(
@@ -546,6 +555,37 @@ class TestDedalus:
         assert isinstance(response, Model)
         assert response.foo == 2
 
+    @pytest.mark.respx(base_url=base_url)
+    def test_idempotency_header_options(self, respx_mock: MockRouter) -> None:
+        respx_mock.post("/foo").mock(return_value=httpx.Response(200, json={}))
+
+        response = self.client.post("/foo", cast_to=httpx.Response)
+
+        header = response.request.headers.get("Idempotency-Key")
+        assert header is not None
+        assert header.startswith("stainless-python-retry")
+
+        # explicit header
+        response = self.client.post(
+            "/foo",
+            cast_to=httpx.Response,
+            options=make_request_options(extra_headers={"Idempotency-Key": "custom-key"}),
+        )
+        assert response.request.headers.get("Idempotency-Key") == "custom-key"
+
+        response = self.client.post(
+            "/foo",
+            cast_to=httpx.Response,
+            options=make_request_options(extra_headers={"idempotency-key": "custom-key"}),
+        )
+        assert response.request.headers.get("Idempotency-Key") == "custom-key"
+
+        # custom argument
+        response = self.client.post(
+            "/foo", cast_to=httpx.Response, options=make_request_options(idempotency_key="custom-key")
+        )
+        assert response.request.headers.get("Idempotency-Key") == "custom-key"
+
     def test_base_url_setter(self) -> None:
         client = Dedalus(base_url="https://example.com/from_init", api_key=api_key, _strict_response_validation=True)
         assert client.base_url == "https://example.com/from_init/"
@@ -558,6 +598,14 @@ class TestDedalus:
         with update_env(DEDALUS_BASE_URL="http://localhost:5000/from/env"):
             client = Dedalus(api_key=api_key, _strict_response_validation=True)
             assert client.base_url == "http://localhost:5000/from/env/"
+
+        # explicit environment arg requires explicitness
+        with update_env(DEDALUS_BASE_URL="http://localhost:5000/from/env"):
+            with pytest.raises(ValueError, match=r"you must pass base_url=None"):
+                Dedalus(api_key=api_key, _strict_response_validation=True, environment="production")
+
+            client = Dedalus(base_url=None, api_key=api_key, _strict_response_validation=True, environment="production")
+            assert str(client.base_url).startswith("https://api.dedaluslabs.ai")
 
     @pytest.mark.parametrize(
         "client",
@@ -1152,10 +1200,19 @@ class TestAsyncDedalus:
         request = client._build_request(FinalRequestOptions(method="get", url="/foo"))
         assert request.headers.get("Authorization") == f"Bearer {api_key}"
 
-        with pytest.raises(DedalusError):
-            with update_env(**{"DEDALUS_API_KEY": Omit()}):
-                client2 = AsyncDedalus(base_url=base_url, api_key=None, _strict_response_validation=True)
-            _ = client2
+        with update_env(**{"DEDALUS_API_KEY": Omit()}):
+            client2 = AsyncDedalus(base_url=base_url, api_key=None, _strict_response_validation=True)
+
+        with pytest.raises(
+            TypeError,
+            match="Could not resolve authentication method. Expected either api_key or api_key_header to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted",
+        ):
+            client2._build_request(FinalRequestOptions(method="get", url="/foo"))
+
+        request2 = client2._build_request(
+            FinalRequestOptions(method="get", url="/foo", headers={"Authorization": Omit()})
+        )
+        assert request2.headers.get("Authorization") is None
 
     def test_default_query_option(self) -> None:
         client = AsyncDedalus(
@@ -1358,6 +1415,37 @@ class TestAsyncDedalus:
         assert isinstance(response, Model)
         assert response.foo == 2
 
+    @pytest.mark.respx(base_url=base_url)
+    async def test_idempotency_header_options(self, respx_mock: MockRouter) -> None:
+        respx_mock.post("/foo").mock(return_value=httpx.Response(200, json={}))
+
+        response = await self.client.post("/foo", cast_to=httpx.Response)
+
+        header = response.request.headers.get("Idempotency-Key")
+        assert header is not None
+        assert header.startswith("stainless-python-retry")
+
+        # explicit header
+        response = await self.client.post(
+            "/foo",
+            cast_to=httpx.Response,
+            options=make_request_options(extra_headers={"Idempotency-Key": "custom-key"}),
+        )
+        assert response.request.headers.get("Idempotency-Key") == "custom-key"
+
+        response = await self.client.post(
+            "/foo",
+            cast_to=httpx.Response,
+            options=make_request_options(extra_headers={"idempotency-key": "custom-key"}),
+        )
+        assert response.request.headers.get("Idempotency-Key") == "custom-key"
+
+        # custom argument
+        response = await self.client.post(
+            "/foo", cast_to=httpx.Response, options=make_request_options(idempotency_key="custom-key")
+        )
+        assert response.request.headers.get("Idempotency-Key") == "custom-key"
+
     def test_base_url_setter(self) -> None:
         client = AsyncDedalus(
             base_url="https://example.com/from_init", api_key=api_key, _strict_response_validation=True
@@ -1372,6 +1460,16 @@ class TestAsyncDedalus:
         with update_env(DEDALUS_BASE_URL="http://localhost:5000/from/env"):
             client = AsyncDedalus(api_key=api_key, _strict_response_validation=True)
             assert client.base_url == "http://localhost:5000/from/env/"
+
+        # explicit environment arg requires explicitness
+        with update_env(DEDALUS_BASE_URL="http://localhost:5000/from/env"):
+            with pytest.raises(ValueError, match=r"you must pass base_url=None"):
+                AsyncDedalus(api_key=api_key, _strict_response_validation=True, environment="production")
+
+            client = AsyncDedalus(
+                base_url=None, api_key=api_key, _strict_response_validation=True, environment="production"
+            )
+            assert str(client.base_url).startswith("https://api.dedaluslabs.ai")
 
     @pytest.mark.parametrize(
         "client",
