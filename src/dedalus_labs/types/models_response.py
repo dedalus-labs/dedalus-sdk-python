@@ -1,38 +1,15 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-import builtins
-from typing import Dict, List, Optional
+from typing import List, Optional
 
+from .model import Model
 from .._models import BaseModel
 
-__all__ = ["ModelsResponse", "Data"]
-
-
-class Data(BaseModel):
-    id: str
-    """Model identifier"""
-
-    created: Optional[int] = None
-    """Creation timestamp"""
-
-    object: Optional[str] = None
-    """Object type"""
-
-    owned_by: Optional[str] = None
-    """Model owner"""
-
-    parent: Optional[str] = None
-    """Parent model"""
-
-    permission: Optional[List[Dict[str, builtins.object]]] = None
-    """Permissions"""
-
-    root: Optional[str] = None
-    """Root model"""
+__all__ = ["ModelsResponse"]
 
 
 class ModelsResponse(BaseModel):
-    data: List[Data]
+    data: List[Model]
     """List of models"""
 
     object: Optional[str] = None
