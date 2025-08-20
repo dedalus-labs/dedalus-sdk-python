@@ -12,24 +12,24 @@ import json
 from typing import Any, Callable, Iterator, Protocol, Literal, AsyncIterator
 from dataclasses import dataclass, asdict, field
 
-from pydantic import create_model
 from dedalus_labs import Dedalus, AsyncDedalus
-from .runner_types import SchemaProcessingError
+from dedalus_labs._exceptions import SchemaProcessingError
 
 import logging
-logger = logging.getLogger(__name__)
 
-# Message and tool types (no external dependencies)
-MessageDict = dict[str, str | list[dict[str, str]]]  # role, content, tool_calls with string values
-ToolCall = dict[str, str | dict[str, str]]  # id, type, function: {name, arguments}
-ToolResult = dict[str, str | float | bool | None]  # tool execution result
-PolicyContext = dict[str, int | list[MessageDict] | str | list[str]]  # step, messages, model, etc
-JsonValue = (
-    str | int | float | bool | None | dict[str, str | int | float] | list[str | int | float]
-)  # JSON-serializable but narrowed
+logger = logging.getLogger("dedalus_labs.runner")
 
-# Policy processing types
-PolicyInput = Callable[[PolicyContext], dict[str, JsonValue]] | dict[str, JsonValue] | None
+from .types import (
+    Message,
+    ToolCall,
+    ToolResult,
+    PolicyContext,
+    PolicyInput,
+    JsonValue,
+)
+from .utils import to_schema
+
+MessageDict = Message
 
 
 def _process_policy(policy: PolicyInput, context: PolicyContext) -> dict[str, JsonValue]:
@@ -52,41 +52,6 @@ def _process_policy(policy: PolicyInput, context: PolicyContext) -> dict[str, Js
 
     return {}
 
-
-def to_schema(func: Callable) -> dict[str, JsonValue]:
-    """Convert a Python function's signature to an OpenAPI-compatible JSON schema using Pydantic."""
-    try:
-        sig = inspect.signature(func)
-        fields: dict[str, Any] = {}
-
-        for name, param in sig.parameters.items():
-            annotation = param.annotation if param.annotation != inspect.Parameter.empty else str
-            default = param.default if param.default != inspect.Parameter.empty else ...
-            fields[name] = (annotation, default)
-
-        if not fields:
-            fields["input"] = (str, ...)
-
-        DynamicModel = create_model(func.__name__, **fields)
-        schema = DynamicModel.model_json_schema()
-
-        return {
-            "type": "function",
-            "function": {
-                "name": func.__name__,
-                "description": func.__doc__ or f"Execute {func.__name__}",
-                "parameters": schema,
-            },
-        }
-    except Exception:
-        return {
-            "type": "function",
-            "function": {
-                "name": func.__name__,
-                "description": func.__doc__ or f"Execute {func.__name__}",
-                "parameters": {"type": "object", "properties": {}},
-            },
-        }
 
 
 class _ToolHandler(Protocol):
@@ -186,8 +151,8 @@ class _RunResult:
         return self.final_output
 
 
-class Runner:
-    """Unified tool execution runner supporting async/sync and streaming/non-streaming."""
+class DedalusRunner:
+    """Enhanced Dedalus client with tool execution capabilities."""
 
     def __init__(self, client: Dedalus | AsyncDedalus, verbose: bool = False):
         self.client = client
