@@ -160,8 +160,9 @@ class DedalusRunner:
 
     def run(
         self,
-        input: str,
+        input: str | list[Message] | None = None,
         tools: list[Callable] | None = None,
+        messages: list[Message] | None = None,
         model: str | list[str] | None = None,
         max_steps: int = 10,
         mcp_servers: list[str] | None = None,
@@ -230,31 +231,39 @@ class DedalusRunner:
         )
 
         tool_handler = _FunctionToolHandler(list(tools or []))
+        
+        # Normalize input: accept 'input' or 'messages' parameter
+        if messages is not None:
+            conversation = messages
+        elif input is not None:
+            conversation = [{"role": "user", "content": input}] if isinstance(input, str) else input
+        else:
+            raise ValueError("Either 'input' or 'messages' must be provided")
 
-        return self._execute_conversation(input, tool_handler, model_config, exec_config)
+        return self._execute_conversation(conversation, tool_handler, model_config, exec_config)
 
     def _execute_conversation(
-        self, input_text: str, tool_handler: _ToolHandler, model_config: _ModelConfig, exec_config: _ExecutionConfig
+        self, messages: list[Message], tool_handler: _ToolHandler, model_config: _ModelConfig, exec_config: _ExecutionConfig
     ):
         """Execute conversation with unified logic for all client/streaming combinations."""
         is_async = isinstance(self.client, AsyncDedalus)
 
         if is_async:
             if exec_config.stream:
-                return self._execute_streaming_async(input_text, tool_handler, model_config, exec_config)
+                return self._execute_streaming_async(messages, tool_handler, model_config, exec_config)
             else:
-                return self._execute_turns_async(input_text, tool_handler, model_config, exec_config)
+                return self._execute_turns_async(messages, tool_handler, model_config, exec_config)
         else:
             if exec_config.stream:
-                return self._execute_streaming_sync(input_text, tool_handler, model_config, exec_config)
+                return self._execute_streaming_sync(messages, tool_handler, model_config, exec_config)
             else:
-                return self._execute_turns_sync(input_text, tool_handler, model_config, exec_config)
+                return self._execute_turns_sync(messages, tool_handler, model_config, exec_config)
 
     async def _execute_turns_async(
-        self, input_text: str, tool_handler: _ToolHandler, model_config: _ModelConfig, exec_config: _ExecutionConfig
+        self, messages: list[Message], tool_handler: _ToolHandler, model_config: _ModelConfig, exec_config: _ExecutionConfig
     ) -> _RunResult:
         """Execute async non-streaming conversation."""
-        messages: list[MessageDict] = [{"role": "user", "content": input_text}]
+        messages = list(messages)
         steps = 0
         final_text = ""
         tool_results: list[ToolResult] = []
@@ -327,10 +336,10 @@ class DedalusRunner:
         )
 
     async def _execute_streaming_async(
-        self, input_text: str, tool_handler: _ToolHandler, model_config: _ModelConfig, exec_config: _ExecutionConfig
+        self, messages: list[Message], tool_handler: _ToolHandler, model_config: _ModelConfig, exec_config: _ExecutionConfig
     ) -> AsyncIterator[Any]:
         """Execute async streaming conversation."""
-        messages: list[MessageDict] = [{"role": "user", "content": input_text}]
+        messages = list(messages)
         steps = 0
 
         while steps < exec_config.max_steps:
@@ -532,10 +541,10 @@ class DedalusRunner:
             print(f"\n[DEBUG] Exited main loop after {steps} steps")
 
     def _execute_turns_sync(
-        self, input_text: str, tool_handler: _ToolHandler, model_config: _ModelConfig, exec_config: _ExecutionConfig
+        self, messages: list[Message], tool_handler: _ToolHandler, model_config: _ModelConfig, exec_config: _ExecutionConfig
     ) -> _RunResult:
         """Execute sync non-streaming conversation."""
-        messages: list[MessageDict] = [{"role": "user", "content": input_text}]
+        messages = list(messages)
         steps = 0
         final_text = ""
         tool_results: list[ToolResult] = []
@@ -595,10 +604,10 @@ class DedalusRunner:
         )
 
     def _execute_streaming_sync(
-        self, input_text: str, tool_handler: _ToolHandler, model_config: _ModelConfig, exec_config: _ExecutionConfig
+        self, messages: list[Message], tool_handler: _ToolHandler, model_config: _ModelConfig, exec_config: _ExecutionConfig
     ) -> Iterator[Any]:
         """Execute sync streaming conversation."""
-        messages: list[MessageDict] = [{"role": "user", "content": input_text}]
+        messages = list(messages)
         steps = 0
 
         while steps < exec_config.max_steps:
