@@ -30,8 +30,8 @@ from dedalus_labs import Dedalus
 
 client = Dedalus(
     api_key=os.environ.get("DEDALUS_API_KEY"),  # This is the default and can be omitted
-    # or 'production' | 'development'; defaults to "production".
-    environment="staging",
+    # defaults to "production".
+    environment="development",
 )
 
 stream_chunk = client.chat.completions.create(
@@ -62,8 +62,8 @@ from dedalus_labs import AsyncDedalus
 
 client = AsyncDedalus(
     api_key=os.environ.get("DEDALUS_API_KEY"),  # This is the default and can be omitted
-    # or 'production' | 'development'; defaults to "production".
-    environment="staging",
+    # defaults to "production".
+    environment="development",
 )
 
 
@@ -134,7 +134,6 @@ from dedalus_labs import Dedalus
 client = Dedalus()
 
 stream = client.chat.completions.create(
-    stream=True,
     messages=[
         {
             "role": "system",
@@ -145,6 +144,7 @@ stream = client.chat.completions.create(
             "content": "What do you think of artificial intelligence?",
         },
     ],
+    stream=True,
     model="openai/gpt-5",
 )
 for stream_chunk in stream:
@@ -159,7 +159,6 @@ from dedalus_labs import AsyncDedalus
 client = AsyncDedalus()
 
 stream = await client.chat.completions.create(
-    stream=True,
     messages=[
         {
             "role": "system",
@@ -170,6 +169,7 @@ stream = await client.chat.completions.create(
             "content": "What do you think of artificial intelligence?",
         },
     ],
+    stream=True,
     model="openai/gpt-5",
 )
 async for stream_chunk in stream:
