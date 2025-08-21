@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.0-alpha.7 (2025-08-21)
+
+Full Changelog: [v0.1.0-alpha.6...v0.1.0-alpha.7](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.6...v0.1.0-alpha.7)
+
+### Features
+
+* **api:** api update ([5375c71](https://github.com/dedalus-labs/dedalus-sdk-python/commit/5375c71f60a9647d4e106faf4b18e07ab48abb49))
+* **api:** decouple Model and DedalusModel ([5edd0e7](https://github.com/dedalus-labs/dedalus-sdk-python/commit/5edd0e78e58b523cb729a51a58a9b49a12091ab9))
+* **runner:** extract DedalusModel params and warn for unsupported ([#10](https://github.com/dedalus-labs/dedalus-sdk-python/issues/10)) ([905bdd8](https://github.com/dedalus-labs/dedalus-sdk-python/commit/905bdd89db17bcae0ba54f7a38c237f922836cb0))
+
 ## 0.1.0-alpha.6 (2025-08-21)
 
 Full Changelog: [v0.1.0-alpha.5...v0.1.0-alpha.6](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.5...v0.1.0-alpha.6)
