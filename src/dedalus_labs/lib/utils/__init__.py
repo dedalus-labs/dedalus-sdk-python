@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-from .schemas import to_schema
+from ._schemas import to_schema
 from .stream import stream_async, stream_sync
 
 __all__ = [
