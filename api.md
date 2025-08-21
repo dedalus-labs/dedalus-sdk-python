@@ -45,7 +45,7 @@ Types:
 from dedalus_labs.types.chat import (
     ChatCompletionTokenLogprob,
     Completion,
-    CompletionRequest,
+    CompletionRequestMessages,
     DedalusModelChoice,
     ModelID,
     Models,
