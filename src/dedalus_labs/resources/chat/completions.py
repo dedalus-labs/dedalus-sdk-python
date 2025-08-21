@@ -8,7 +8,7 @@ from typing_extensions import Literal, overload
 import httpx
 
 from ..._types import NOT_GIVEN, Body, Query, Headers, NotGiven
-from ..._utils import required_args, maybe_transform, async_maybe_transform
+from ..._utils import maybe_transform, async_maybe_transform
 from ..._compat import cached_property
 from ..._resource import SyncAPIResource, AsyncAPIResource
 from ..._response import (
@@ -49,7 +49,6 @@ class CompletionsResource(SyncAPIResource):
     def create(
         self,
         *,
-        messages: Iterable[Dict[str, object]],
         agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
@@ -58,6 +57,7 @@ class CompletionsResource(SyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
+        messages: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
         model: Optional[completion_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
@@ -162,9 +162,6 @@ class CompletionsResource(SyncAPIResource):
             ```
 
         Args:
-          messages: Messages to the model. Supports role/content structure and multimodal content
-              arrays.
-
           agent_attributes: Attributes for the agent itself, influencing behavior and model selection.
               Format: {'attribute': value}, where values are 0.0-1.0. Common attributes:
               'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
@@ -195,6 +192,9 @@ class CompletionsResource(SyncAPIResource):
               tool execution. Can be URLs (e.g., 'https://mcp.example.com') or slugs (e.g.,
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
+
+          messages: Messages to the model - accepts either 'messages' (OpenAI) or 'input' (Dedalus).
+              Supports role/content structure and multimodal content arrays.
 
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
               or a list for multi-model routing. Single model: 'openai/gpt-4',
@@ -253,7 +253,6 @@ class CompletionsResource(SyncAPIResource):
     def create(
         self,
         *,
-        messages: Iterable[Dict[str, object]],
         stream: Literal[True],
         agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -263,6 +262,7 @@ class CompletionsResource(SyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
+        messages: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
         model: Optional[completion_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
@@ -366,9 +366,6 @@ class CompletionsResource(SyncAPIResource):
             ```
 
         Args:
-          messages: Messages to the model. Supports role/content structure and multimodal content
-              arrays.
-
           stream: Whether to stream back partial message deltas as Server-Sent Events. When true,
               partial message deltas will be sent as OpenAI-compatible chunks.
 
@@ -402,6 +399,9 @@ class CompletionsResource(SyncAPIResource):
               tool execution. Can be URLs (e.g., 'https://mcp.example.com') or slugs (e.g.,
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
+
+          messages: Messages to the model - accepts either 'messages' (OpenAI) or 'input' (Dedalus).
+              Supports role/content structure and multimodal content arrays.
 
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
               or a list for multi-model routing. Single model: 'openai/gpt-4',
@@ -457,7 +457,6 @@ class CompletionsResource(SyncAPIResource):
     def create(
         self,
         *,
-        messages: Iterable[Dict[str, object]],
         stream: bool,
         agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -467,6 +466,7 @@ class CompletionsResource(SyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
+        messages: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
         model: Optional[completion_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
@@ -570,9 +570,6 @@ class CompletionsResource(SyncAPIResource):
             ```
 
         Args:
-          messages: Messages to the model. Supports role/content structure and multimodal content
-              arrays.
-
           stream: Whether to stream back partial message deltas as Server-Sent Events. When true,
               partial message deltas will be sent as OpenAI-compatible chunks.
 
@@ -606,6 +603,9 @@ class CompletionsResource(SyncAPIResource):
               tool execution. Can be URLs (e.g., 'https://mcp.example.com') or slugs (e.g.,
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
+
+          messages: Messages to the model - accepts either 'messages' (OpenAI) or 'input' (Dedalus).
+              Supports role/content structure and multimodal content arrays.
 
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
               or a list for multi-model routing. Single model: 'openai/gpt-4',
@@ -657,11 +657,9 @@ class CompletionsResource(SyncAPIResource):
         """
         ...
 
-    @required_args(["messages"], ["messages", "stream"])
     def create(
         self,
         *,
-        messages: Iterable[Dict[str, object]],
         agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
@@ -670,6 +668,7 @@ class CompletionsResource(SyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
+        messages: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
         model: Optional[completion_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
@@ -693,7 +692,6 @@ class CompletionsResource(SyncAPIResource):
             "/v1/chat/completions",
             body=maybe_transform(
                 {
-                    "messages": messages,
                     "agent_attributes": agent_attributes,
                     "frequency_penalty": frequency_penalty,
                     "guardrails": guardrails,
@@ -702,6 +700,7 @@ class CompletionsResource(SyncAPIResource):
                     "max_tokens": max_tokens,
                     "max_turns": max_turns,
                     "mcp_servers": mcp_servers,
+                    "messages": messages,
                     "model": model,
                     "model_attributes": model_attributes,
                     "n": n,
@@ -755,7 +754,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
-        messages: Iterable[Dict[str, object]],
         agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
@@ -764,6 +762,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
+        messages: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
         model: Optional[completion_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
@@ -868,9 +867,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
             ```
 
         Args:
-          messages: Messages to the model. Supports role/content structure and multimodal content
-              arrays.
-
           agent_attributes: Attributes for the agent itself, influencing behavior and model selection.
               Format: {'attribute': value}, where values are 0.0-1.0. Common attributes:
               'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
@@ -901,6 +897,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
               tool execution. Can be URLs (e.g., 'https://mcp.example.com') or slugs (e.g.,
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
+
+          messages: Messages to the model - accepts either 'messages' (OpenAI) or 'input' (Dedalus).
+              Supports role/content structure and multimodal content arrays.
 
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
               or a list for multi-model routing. Single model: 'openai/gpt-4',
@@ -959,7 +958,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
-        messages: Iterable[Dict[str, object]],
         stream: Literal[True],
         agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -969,6 +967,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
+        messages: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
         model: Optional[completion_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
@@ -1072,9 +1071,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
             ```
 
         Args:
-          messages: Messages to the model. Supports role/content structure and multimodal content
-              arrays.
-
           stream: Whether to stream back partial message deltas as Server-Sent Events. When true,
               partial message deltas will be sent as OpenAI-compatible chunks.
 
@@ -1108,6 +1104,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
               tool execution. Can be URLs (e.g., 'https://mcp.example.com') or slugs (e.g.,
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
+
+          messages: Messages to the model - accepts either 'messages' (OpenAI) or 'input' (Dedalus).
+              Supports role/content structure and multimodal content arrays.
 
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
               or a list for multi-model routing. Single model: 'openai/gpt-4',
@@ -1163,7 +1162,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
-        messages: Iterable[Dict[str, object]],
         stream: bool,
         agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
@@ -1173,6 +1171,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
+        messages: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
         model: Optional[completion_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
@@ -1276,9 +1275,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
             ```
 
         Args:
-          messages: Messages to the model. Supports role/content structure and multimodal content
-              arrays.
-
           stream: Whether to stream back partial message deltas as Server-Sent Events. When true,
               partial message deltas will be sent as OpenAI-compatible chunks.
 
@@ -1312,6 +1308,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
               tool execution. Can be URLs (e.g., 'https://mcp.example.com') or slugs (e.g.,
               'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
               separately.
+
+          messages: Messages to the model - accepts either 'messages' (OpenAI) or 'input' (Dedalus).
+              Supports role/content structure and multimodal content arrays.
 
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
               or a list for multi-model routing. Single model: 'openai/gpt-4',
@@ -1363,11 +1362,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
         """
         ...
 
-    @required_args(["messages"], ["messages", "stream"])
     async def create(
         self,
         *,
-        messages: Iterable[Dict[str, object]],
         agent_attributes: Optional[Dict[str, float]] | NotGiven = NOT_GIVEN,
         frequency_penalty: Optional[float] | NotGiven = NOT_GIVEN,
         guardrails: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
@@ -1376,6 +1373,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         max_tokens: Optional[int] | NotGiven = NOT_GIVEN,
         max_turns: Optional[int] | NotGiven = NOT_GIVEN,
         mcp_servers: Optional[List[str]] | NotGiven = NOT_GIVEN,
+        messages: Optional[Iterable[Dict[str, object]]] | NotGiven = NOT_GIVEN,
         model: Optional[completion_create_params.Model] | NotGiven = NOT_GIVEN,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | NotGiven = NOT_GIVEN,
         n: Optional[int] | NotGiven = NOT_GIVEN,
@@ -1399,7 +1397,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
             "/v1/chat/completions",
             body=await async_maybe_transform(
                 {
-                    "messages": messages,
                     "agent_attributes": agent_attributes,
                     "frequency_penalty": frequency_penalty,
                     "guardrails": guardrails,
@@ -1408,6 +1405,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
                     "max_tokens": max_tokens,
                     "max_turns": max_turns,
                     "mcp_servers": mcp_servers,
+                    "messages": messages,
                     "model": model,
                     "model_attributes": model_attributes,
                     "n": n,

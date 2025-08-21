@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import builtins
 from typing import Dict, List, Union, Iterable, Optional
 from typing_extensions import Required, TypedDict
 
@@ -9,14 +10,17 @@ __all__ = ["DedalusModelParam"]
 
 
 class DedalusModelParam(TypedDict, total=False):
-    name: Required[str]
-    """Model name (e.g., 'gpt-4', 'claude-3-5-sonnet')"""
+    id: Required[str]
+    """Model identifier"""
 
     attributes: Optional[Dict[str, float]]
     """
     [Dedalus] Custom attributes for intelligent model routing (e.g., intelligence,
     speed, creativity, cost).
     """
+
+    created: int
+    """Unix timestamp of model creation"""
 
     frequency_penalty: Optional[float]
     """Penalize new tokens based on their frequency in the text so far."""
@@ -39,13 +43,22 @@ class DedalusModelParam(TypedDict, total=False):
     n: Optional[int]
     """Number of completions to generate for each prompt."""
 
+    name: Optional[str]
+    """Model name (alias for id)"""
+
+    object: str
+    """Object type, always 'model'"""
+
+    owned_by: str
+    """Organization that owns this model"""
+
     parallel_tool_calls: Optional[bool]
     """Whether to enable parallel function calling."""
 
     presence_penalty: Optional[float]
     """Penalize new tokens based on whether they appear in the text so far."""
 
-    response_format: Optional[Dict[str, object]]
+    response_format: Optional[Dict[str, builtins.object]]
     """Format for the model output (e.g., {'type': 'json_object'})."""
 
     seed: Optional[int]
@@ -60,16 +73,16 @@ class DedalusModelParam(TypedDict, total=False):
     stream: Optional[bool]
     """Whether to stream back partial progress."""
 
-    stream_options: Optional[Dict[str, object]]
+    stream_options: Optional[Dict[str, builtins.object]]
     """Options for streaming responses."""
 
     temperature: Optional[float]
     """Sampling temperature (0 to 2). Higher values make output more random."""
 
-    tool_choice: Union[str, Dict[str, object], None]
+    tool_choice: Union[str, Dict[str, builtins.object], None]
     """Controls which tool is called by the model."""
 
-    tools: Optional[Iterable[Dict[str, object]]]
+    tools: Optional[Iterable[Dict[str, builtins.object]]]
     """List of tools the model may call."""
 
     top_logprobs: Optional[int]
