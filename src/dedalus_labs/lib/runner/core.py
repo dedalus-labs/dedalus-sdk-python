@@ -31,7 +31,6 @@ from .types import (
 )
 from ..utils import to_schema
 
-MessageDict = Message
 
 
 def _process_policy(policy: PolicyInput, context: PolicyContext) -> dict[str, JsonValue]:
