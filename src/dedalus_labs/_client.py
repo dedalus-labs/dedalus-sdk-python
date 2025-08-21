@@ -46,7 +46,6 @@ __all__ = [
 
 ENVIRONMENTS: Dict[str, str] = {
     "production": "https://api.dedaluslabs.ai",
-    "staging": "https://staging-api.dedaluslabs.ai",
     "development": "http://localhost:8080",
 }
 
@@ -64,7 +63,7 @@ class Dedalus(SyncAPIClient):
     api_key_header: str | None
     organization: str | None
 
-    _environment: Literal["production", "staging", "development"] | NotGiven
+    _environment: Literal["production", "development"] | NotGiven
 
     def __init__(
         self,
@@ -72,7 +71,7 @@ class Dedalus(SyncAPIClient):
         api_key: str | None = None,
         api_key_header: str | None = None,
         organization: str | None = None,
-        environment: Literal["production", "staging", "development"] | NotGiven = NOT_GIVEN,
+        environment: Literal["production", "development"] | NotGiven = NOT_GIVEN,
         base_url: str | httpx.URL | None | NotGiven = NOT_GIVEN,
         timeout: Union[float, Timeout, None, NotGiven] = NOT_GIVEN,
         max_retries: int = DEFAULT_MAX_RETRIES,
@@ -216,7 +215,7 @@ class Dedalus(SyncAPIClient):
         api_key: str | None = None,
         api_key_header: str | None = None,
         organization: str | None = None,
-        environment: Literal["production", "staging", "development"] | None = None,
+        environment: Literal["production", "development"] | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: float | Timeout | None | NotGiven = NOT_GIVEN,
         http_client: httpx.Client | None = None,
@@ -314,7 +313,7 @@ class AsyncDedalus(AsyncAPIClient):
     api_key_header: str | None
     organization: str | None
 
-    _environment: Literal["production", "staging", "development"] | NotGiven
+    _environment: Literal["production", "development"] | NotGiven
 
     def __init__(
         self,
@@ -322,7 +321,7 @@ class AsyncDedalus(AsyncAPIClient):
         api_key: str | None = None,
         api_key_header: str | None = None,
         organization: str | None = None,
-        environment: Literal["production", "staging", "development"] | NotGiven = NOT_GIVEN,
+        environment: Literal["production", "development"] | NotGiven = NOT_GIVEN,
         base_url: str | httpx.URL | None | NotGiven = NOT_GIVEN,
         timeout: Union[float, Timeout, None, NotGiven] = NOT_GIVEN,
         max_retries: int = DEFAULT_MAX_RETRIES,
@@ -466,7 +465,7 @@ class AsyncDedalus(AsyncAPIClient):
         api_key: str | None = None,
         api_key_header: str | None = None,
         organization: str | None = None,
-        environment: Literal["production", "staging", "development"] | None = None,
+        environment: Literal["production", "development"] | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: float | Timeout | None | NotGiven = NOT_GIVEN,
         http_client: httpx.AsyncClient | None = None,
