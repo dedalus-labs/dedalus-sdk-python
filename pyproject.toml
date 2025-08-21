@@ -1,6 +1,6 @@
 [project]
 name = "dedalus_labs"
-version = "0.1.0-alpha.7"
+version = "0.1.0-alpha.8"
 description = "The official Python library for the Dedalus API"
 dynamic = ["readme"]
 license = "MIT"
