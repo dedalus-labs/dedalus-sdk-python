@@ -218,6 +218,50 @@ class DedalusRunner:
                         frequency_penalty = frequency_penalty if frequency_penalty is not None else getattr(m, 'frequency_penalty', None)
                         presence_penalty = presence_penalty if presence_penalty is not None else getattr(m, 'presence_penalty', None)
                         logit_bias = logit_bias if logit_bias is not None else getattr(m, 'logit_bias', None)
+                        
+                        # Extract additional parameters from first DedalusModel
+                        stream = stream if stream is not False else getattr(m, 'stream', False)
+                        tool_choice = tool_choice if tool_choice is not None else getattr(m, 'tool_choice', None)
+                        
+                        # Extract Dedalus-specific extensions
+                        if hasattr(m, 'attributes') and m.attributes:
+                            agent_attributes = agent_attributes if agent_attributes is not None else m.attributes
+                        
+                        # Check for unsupported parameters (only warn once for first model)
+                        unsupported_params = []
+                        if hasattr(m, 'n') and m.n is not None:
+                            unsupported_params.append('n')
+                        if hasattr(m, 'stop') and m.stop is not None:
+                            unsupported_params.append('stop')
+                        if hasattr(m, 'stream_options') and m.stream_options is not None:
+                            unsupported_params.append('stream_options')
+                        if hasattr(m, 'logprobs') and m.logprobs is not None:
+                            unsupported_params.append('logprobs')
+                        if hasattr(m, 'top_logprobs') and m.top_logprobs is not None:
+                            unsupported_params.append('top_logprobs')
+                        if hasattr(m, 'response_format') and m.response_format is not None:
+                            unsupported_params.append('response_format')
+                        if hasattr(m, 'seed') and m.seed is not None:
+                            unsupported_params.append('seed')
+                        if hasattr(m, 'service_tier') and m.service_tier is not None:
+                            unsupported_params.append('service_tier')
+                        if hasattr(m, 'tools') and m.tools is not None:
+                            unsupported_params.append('tools')
+                        if hasattr(m, 'parallel_tool_calls') and m.parallel_tool_calls is not None:
+                            unsupported_params.append('parallel_tool_calls')
+                        if hasattr(m, 'user') and m.user is not None:
+                            unsupported_params.append('user')
+                        if hasattr(m, 'max_completion_tokens') and m.max_completion_tokens is not None:
+                            unsupported_params.append('max_completion_tokens')
+                            
+                        if unsupported_params:
+                            import warnings
+                            warnings.warn(
+                                f"The following DedalusModel parameters are not yet supported and will be ignored: {', '.join(unsupported_params)}. "
+                                f"Support for these parameters is coming soon.",
+                                UserWarning,
+                                stacklevel=2
+                            )
                 else:  # String
                     model_list.append(m)
                     if model_name is None:
@@ -232,6 +276,53 @@ class DedalusRunner:
             frequency_penalty = frequency_penalty if frequency_penalty is not None else getattr(model, 'frequency_penalty', None)
             presence_penalty = presence_penalty if presence_penalty is not None else getattr(model, 'presence_penalty', None)
             logit_bias = logit_bias if logit_bias is not None else getattr(model, 'logit_bias', None)
+            
+            # Extract additional supported parameters
+            stream = stream if stream is not False else getattr(model, 'stream', False)
+            tool_choice = tool_choice if tool_choice is not None else getattr(model, 'tool_choice', None)
+            
+            # Extract Dedalus-specific extensions
+            if hasattr(model, 'attributes') and model.attributes:
+                agent_attributes = agent_attributes if agent_attributes is not None else model.attributes
+            if hasattr(model, 'metadata') and model.metadata:
+                # metadata is stored but not yet fully utilized
+                pass
+                
+            # Log warnings for unsupported parameters
+            unsupported_params = []
+            if hasattr(model, 'n') and model.n is not None:
+                unsupported_params.append('n')
+            if hasattr(model, 'stop') and model.stop is not None:
+                unsupported_params.append('stop')
+            if hasattr(model, 'stream_options') and model.stream_options is not None:
+                unsupported_params.append('stream_options')
+            if hasattr(model, 'logprobs') and model.logprobs is not None:
+                unsupported_params.append('logprobs')
+            if hasattr(model, 'top_logprobs') and model.top_logprobs is not None:
+                unsupported_params.append('top_logprobs')
+            if hasattr(model, 'response_format') and model.response_format is not None:
+                unsupported_params.append('response_format')
+            if hasattr(model, 'seed') and model.seed is not None:
+                unsupported_params.append('seed')
+            if hasattr(model, 'service_tier') and model.service_tier is not None:
+                unsupported_params.append('service_tier')
+            if hasattr(model, 'tools') and model.tools is not None:
+                unsupported_params.append('tools')
+            if hasattr(model, 'parallel_tool_calls') and model.parallel_tool_calls is not None:
+                unsupported_params.append('parallel_tool_calls')
+            if hasattr(model, 'user') and model.user is not None:
+                unsupported_params.append('user')
+            if hasattr(model, 'max_completion_tokens') and model.max_completion_tokens is not None:
+                unsupported_params.append('max_completion_tokens')
+                
+            if unsupported_params:
+                import warnings
+                warnings.warn(
+                    f"The following DedalusModel parameters are not yet supported and will be ignored: {', '.join(unsupported_params)}. "
+                    f"Support for these parameters is coming soon.",
+                    UserWarning,
+                    stacklevel=2
+                )
         else:  # Single string
             model_name = model
             model_list = [model] if model else []
