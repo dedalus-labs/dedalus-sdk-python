@@ -6,7 +6,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, Protocol, TypeAlias
+from typing import Any, Dict, List, Union, Callable, Protocol
+from typing_extensions import TypeAlias
 
 __all__ = [
     "Tool",
@@ -16,14 +17,14 @@ __all__ = [
     "JsonValue",
 ]
 
-JsonValue: TypeAlias = str | int | float | bool | None | dict[str, Any] | list[Any]
+JsonValue: TypeAlias = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
 
 Tool = Callable[..., JsonValue]
-ToolCall = dict[str, str | dict[str, str]]
-ToolResult = dict[str, str | int | JsonValue]
+ToolCall = Dict[str, Union[str, Dict[str, str]]]
+ToolResult = Dict[str, Union[str, int, JsonValue]]
 
 
 class ToolHandler(Protocol):
     """Protocol for tool handlers."""
-    def schemas(self) -> list[dict[str, Any]]: ...
-    async def exec(self, name: str, args: dict[str, JsonValue]) -> JsonValue: ...
+    def schemas(self) -> List[Dict[str, Any]]: ...
+    async def exec(self, name: str, args: Dict[str, JsonValue]) -> JsonValue: ...

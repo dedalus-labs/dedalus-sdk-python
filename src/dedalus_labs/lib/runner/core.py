@@ -28,7 +28,6 @@ from .types import (
 )
 from ..utils import to_schema
 
-MessageDict = Message
 
 
 def _process_policy(policy: PolicyInput, context: PolicyContext) -> dict[str, JsonValue]:
@@ -56,6 +55,7 @@ def _process_policy(policy: PolicyInput, context: PolicyContext) -> dict[str, Js
 class _ToolHandler(Protocol):
     def schemas(self) -> list[dict]: ...
     async def exec(self, name: str, args: dict[str, JsonValue]) -> JsonValue: ...
+    def exec_sync(self, name: str, args: dict[str, JsonValue]) -> JsonValue: ...
 
 
 class _FunctionToolHandler:
@@ -79,7 +79,9 @@ class _FunctionToolHandler:
         fn = self._funcs[name]
         if inspect.iscoroutinefunction(fn):
             return await fn(**args)
-        return await asyncio.to_thread(fn, **args)
+        # asyncio.to_thread is Python 3.9+, use run_in_executor for 3.8 compat
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, fn, **args)
 
     def exec_sync(self, name: str, args: dict[str, JsonValue]) -> JsonValue:
         """Execute tool by name with given args (sync)."""
@@ -850,8 +852,8 @@ class DedalusRunner:
         return result
 
     def _build_messages(
-        self, messages: list[MessageDict], prepend: list[MessageDict], append: list[MessageDict]
-    ) -> list[MessageDict]:
+        self, messages: list[Message], prepend: list[Message], append: list[Message]
+    ) -> list[Message]:
         """Build final message list with prepend/append."""
         return (prepend + messages + append) if (prepend or append) else messages
 
@@ -887,7 +889,7 @@ class DedalusRunner:
         self,
         tool_calls: list[ToolCall],
         tool_handler: _ToolHandler,
-        messages: list[MessageDict],
+        messages: list[Message],
         tool_results: list[ToolResult],
         tools_called: list[str],
         step: int,
@@ -933,7 +935,7 @@ class DedalusRunner:
         self,
         tool_calls: list[ToolCall],
         tool_handler: _ToolHandler,
-        messages: list[MessageDict],
+        messages: list[Message],
         tool_results: list[ToolResult],
         tools_called: list[str],
         step: int,
