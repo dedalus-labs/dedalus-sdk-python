@@ -4,6 +4,8 @@
 #           github.com/dedalus-labs/dedalus-labs-python-sdk/LICENSE
 # ==============================================================================
 
+"""Public utilities for the Dedalus SDK."""
+
 from __future__ import annotations
 
 from ._schemas import to_schema
