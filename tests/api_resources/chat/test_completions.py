@@ -20,13 +20,26 @@ class TestCompletions:
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     def test_method_create_overload_1(self, client: Dedalus) -> None:
-        completion = client.chat.completions.create()
+        completion = client.chat.completions.create(
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
+        )
         assert_matches_type(StreamChunk, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     def test_method_create_with_all_params_overload_1(self, client: Dedalus) -> None:
         completion = client.chat.completions.create(
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
             agent_attributes={
                 "accuracy": 0.9,
                 "complexity": 0.8,
@@ -39,12 +52,6 @@ class TestCompletions:
             max_tokens=100,
             max_turns=5,
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
             model_attributes={
                 "anthropic/claude-3-5-sonnet": {
@@ -83,7 +90,14 @@ class TestCompletions:
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     def test_raw_response_create_overload_1(self, client: Dedalus) -> None:
-        response = client.chat.completions.with_raw_response.create()
+        response = client.chat.completions.with_raw_response.create(
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
+        )
 
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -93,7 +107,14 @@ class TestCompletions:
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     def test_streaming_response_create_overload_1(self, client: Dedalus) -> None:
-        with client.chat.completions.with_streaming_response.create() as response:
+        with client.chat.completions.with_streaming_response.create(
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
+        ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
@@ -106,6 +127,12 @@ class TestCompletions:
     @parametrize
     def test_method_create_overload_2(self, client: Dedalus) -> None:
         completion_stream = client.chat.completions.create(
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
             stream=True,
         )
         completion_stream.response.close()
@@ -114,6 +141,12 @@ class TestCompletions:
     @parametrize
     def test_method_create_with_all_params_overload_2(self, client: Dedalus) -> None:
         completion_stream = client.chat.completions.create(
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
             stream=True,
             agent_attributes={
                 "accuracy": 0.9,
@@ -127,12 +160,6 @@ class TestCompletions:
             max_tokens=100,
             max_turns=5,
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
             model_attributes={
                 "anthropic/claude-3-5-sonnet": {
@@ -171,6 +198,12 @@ class TestCompletions:
     @parametrize
     def test_raw_response_create_overload_2(self, client: Dedalus) -> None:
         response = client.chat.completions.with_raw_response.create(
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
             stream=True,
         )
 
@@ -182,6 +215,12 @@ class TestCompletions:
     @parametrize
     def test_streaming_response_create_overload_2(self, client: Dedalus) -> None:
         with client.chat.completions.with_streaming_response.create(
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
             stream=True,
         ) as response:
             assert not response.is_closed
@@ -201,13 +240,26 @@ class TestAsyncCompletions:
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     async def test_method_create_overload_1(self, async_client: AsyncDedalus) -> None:
-        completion = await async_client.chat.completions.create()
+        completion = await async_client.chat.completions.create(
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
+        )
         assert_matches_type(StreamChunk, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     async def test_method_create_with_all_params_overload_1(self, async_client: AsyncDedalus) -> None:
         completion = await async_client.chat.completions.create(
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
             agent_attributes={
                 "accuracy": 0.9,
                 "complexity": 0.8,
@@ -220,12 +272,6 @@ class TestAsyncCompletions:
             max_tokens=100,
             max_turns=5,
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
             model_attributes={
                 "anthropic/claude-3-5-sonnet": {
@@ -264,7 +310,14 @@ class TestAsyncCompletions:
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     async def test_raw_response_create_overload_1(self, async_client: AsyncDedalus) -> None:
-        response = await async_client.chat.completions.with_raw_response.create()
+        response = await async_client.chat.completions.with_raw_response.create(
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
+        )
 
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -274,7 +327,14 @@ class TestAsyncCompletions:
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
     async def test_streaming_response_create_overload_1(self, async_client: AsyncDedalus) -> None:
-        async with async_client.chat.completions.with_streaming_response.create() as response:
+        async with async_client.chat.completions.with_streaming_response.create(
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
+        ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
@@ -287,6 +347,12 @@ class TestAsyncCompletions:
     @parametrize
     async def test_method_create_overload_2(self, async_client: AsyncDedalus) -> None:
         completion_stream = await async_client.chat.completions.create(
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
             stream=True,
         )
         await completion_stream.response.aclose()
@@ -295,6 +361,12 @@ class TestAsyncCompletions:
     @parametrize
     async def test_method_create_with_all_params_overload_2(self, async_client: AsyncDedalus) -> None:
         completion_stream = await async_client.chat.completions.create(
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
             stream=True,
             agent_attributes={
                 "accuracy": 0.9,
@@ -308,12 +380,6 @@ class TestAsyncCompletions:
             max_tokens=100,
             max_turns=5,
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
             model_attributes={
                 "anthropic/claude-3-5-sonnet": {
@@ -352,6 +418,12 @@ class TestAsyncCompletions:
     @parametrize
     async def test_raw_response_create_overload_2(self, async_client: AsyncDedalus) -> None:
         response = await async_client.chat.completions.with_raw_response.create(
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
             stream=True,
         )
 
@@ -363,6 +435,12 @@ class TestAsyncCompletions:
     @parametrize
     async def test_streaming_response_create_overload_2(self, async_client: AsyncDedalus) -> None:
         async with async_client.chat.completions.with_streaming_response.create(
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
             stream=True,
         ) as response:
             assert not response.is_closed

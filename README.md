@@ -38,7 +38,7 @@ stream_chunk = client.chat.completions.create(
     messages=[
         {
             "role": "user",
-            "content": "Hello, how can you help me today?",
+            "content": "Hello, how are you today?",
         }
     ],
     model="openai/gpt-5",
@@ -72,7 +72,7 @@ async def main() -> None:
         messages=[
             {
                 "role": "user",
-                "content": "Hello, how can you help me today?",
+                "content": "Hello, how are you today?",
             }
         ],
         model="openai/gpt-5",
@@ -113,7 +113,7 @@ async def main() -> None:
             messages=[
                 {
                     "role": "user",
-                    "content": "Hello, how can you help me today?",
+                    "content": "Hello, how are you today?",
                 }
             ],
             model="openai/gpt-5",
@@ -134,7 +134,6 @@ from dedalus_labs import Dedalus
 client = Dedalus()
 
 stream = client.chat.completions.create(
-    stream=True,
     messages=[
         {
             "role": "system",
@@ -145,6 +144,7 @@ stream = client.chat.completions.create(
             "content": "What do you think of artificial intelligence?",
         },
     ],
+    stream=True,
     model="openai/gpt-5",
 )
 for stream_chunk in stream:
@@ -159,7 +159,6 @@ from dedalus_labs import AsyncDedalus
 client = AsyncDedalus()
 
 stream = await client.chat.completions.create(
-    stream=True,
     messages=[
         {
             "role": "system",
@@ -170,6 +169,7 @@ stream = await client.chat.completions.create(
             "content": "What do you think of artificial intelligence?",
         },
     ],
+    stream=True,
     model="openai/gpt-5",
 )
 async for stream_chunk in stream:
