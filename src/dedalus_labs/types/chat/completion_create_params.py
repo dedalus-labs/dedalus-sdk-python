@@ -18,6 +18,12 @@ __all__ = [
 
 
 class CompletionCreateParamsBase(TypedDict, total=False):
+    messages: Required[Iterable[Dict[str, object]]]
+    """Messages to the model.
+
+    Supports role/content structure and multimodal content arrays.
+    """
+
     agent_attributes: Optional[Dict[str, float]]
     """Attributes for the agent itself, influencing behavior and model selection.
 
@@ -71,12 +77,6 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     tool execution. Can be URLs (e.g., 'https://mcp.example.com') or slugs (e.g.,
     'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
     separately.
-    """
-
-    messages: Optional[Iterable[Dict[str, object]]]
-    """Messages to the model - accepts either 'messages' (OpenAI) or 'input' (Dedalus).
-
-    Supports role/content structure and multimodal content arrays.
     """
 
     model: Optional[Model]
