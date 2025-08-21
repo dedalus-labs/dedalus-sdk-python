@@ -1,7 +1,7 @@
 # ==============================================================================
 #                  © 2025 Dedalus Labs, Inc. and affiliates
 #                            Licensed under MIT
-#           github.com/dedalus-labs/dedalus-labs-python-sdk/LICENSE
+#           github.com/dedalus-labs/dedalus-sdk-python/LICENSE
 # ==============================================================================
 
 from __future__ import annotations
@@ -84,7 +84,9 @@ class _FunctionToolHandler:
             return await fn(**args)
         # asyncio.to_thread is Python 3.9+, use run_in_executor for 3.8 compat
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, fn, **args)
+        # Use partial to properly pass keyword arguments
+        from functools import partial
+        return await loop.run_in_executor(None, partial(fn, **args))
 
     def exec_sync(self, name: str, args: dict[str, JsonValue]) -> JsonValue:
         """Execute tool by name with given args (sync)."""
@@ -104,6 +106,7 @@ class _ModelConfig:
     """Model configuration parameters."""
 
     id: str
+    model_list: list[str] | None = None  # Store the full model list when provided
     temperature: float | None = None
     max_tokens: int | None = None
     top_p: float | None = None
@@ -237,6 +240,7 @@ class DedalusRunner:
 
         model_config = _ModelConfig(
             id=str(model_name),
+            model_list=model_list,  # Pass the full model list
             temperature=temperature,
             max_tokens=max_tokens,
             top_p=top_p,
@@ -327,7 +331,7 @@ class DedalusRunner:
             current_messages = self._build_messages(messages, policy_result["prepend"], policy_result["append"])
 
             response = await self.client.chat.completions.create(
-                model=policy_result["model_id"],
+                model=policy_result["model"],
                 messages=current_messages,
                 tools=tool_handler.schemas() or None,
                 mcp_servers=policy_result["mcp_servers"],
@@ -424,7 +428,7 @@ class DedalusRunner:
                 logger.debug(f" Local tools available: {list(getattr(tool_handler, '_funcs', {}).keys())}")
 
             stream = await self.client.chat.completions.create(
-                model=policy_result["model_id"],
+                model=policy_result["model"],
                 messages=current_messages,
                 tools=tool_handler.schemas() or None,
                 mcp_servers=policy_result["mcp_servers"],
@@ -608,7 +612,7 @@ class DedalusRunner:
             current_messages = self._build_messages(messages, policy_result["prepend"], policy_result["append"])
 
             response = self.client.chat.completions.create(
-                model=policy_result["model_id"],
+                model=policy_result["model"],
                 messages=current_messages,
                 tools=tool_handler.schemas() or None,
                 mcp_servers=policy_result["mcp_servers"],
@@ -692,7 +696,7 @@ class DedalusRunner:
                 logger.debug(f" Local tools available: {list(getattr(tool_handler, '_funcs', {}).keys())}")
 
             stream = self.client.chat.completions.create(
-                model=policy_result["model_id"],
+                model=policy_result["model"],
                 messages=current_messages,
                 tools=tool_handler.schemas() or None,
                 mcp_servers=policy_result["mcp_servers"],
@@ -851,6 +855,7 @@ class DedalusRunner:
         # Start with defaults
         result = {
             "model_id": model_config.id,
+            "model": model_config.model_list if model_config.model_list else model_config.id,  # Use full list when available
             "mcp_servers": list(exec_config.mcp_servers),
             "model_kwargs": {},
             "prepend": [],
@@ -861,13 +866,27 @@ class DedalusRunner:
             # Handle model override
             requested_model = pol.get("model")
             if requested_model and exec_config.strict_models and exec_config.available_models:
-                if requested_model not in exec_config.available_models:
+                if isinstance(requested_model, list):
+                    # Filter to only available models
+                    valid_models = [m for m in requested_model if m in exec_config.available_models]
+                    if valid_models:
+                        result["model"] = valid_models
+                        result["model_id"] = str(valid_models[0])
+                    elif exec_config.verbose:
+                        logger.debug(f"[RUNNER] Policy requested unavailable models {requested_model}, ignoring")
+                elif requested_model not in exec_config.available_models:
                     if exec_config.verbose:
                         logger.debug(f"[RUNNER] Policy requested unavailable model '{requested_model}', ignoring")
                 else:
                     result["model_id"] = str(requested_model)
+                    result["model"] = str(requested_model)
             elif requested_model:
-                result["model_id"] = str(requested_model)
+                if isinstance(requested_model, list):
+                    result["model"] = requested_model
+                    result["model_id"] = str(requested_model[0]) if requested_model else result["model_id"]
+                else:
+                    result["model_id"] = str(requested_model)
+                    result["model"] = str(requested_model)
 
             # Handle other policy settings
             result["mcp_servers"] = list(pol.get("mcp_servers", result["mcp_servers"]))
@@ -1019,4 +1038,5 @@ class DedalusRunner:
         """Convert model config to kwargs for client call."""
         d = asdict(mc)
         d.pop("id", None)  # Remove id since it's passed separately
+        d.pop("model_list", None)  # Remove model_list since it's not an API parameter
         return {k: v for k, v in d.items() if v is not None}
