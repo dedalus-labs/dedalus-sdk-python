@@ -11,8 +11,6 @@ from typing import Any, Callable
 
 from pydantic import create_model
 
-from ..types import JsonValue
-
 __all__ = [
     "to_schema",
 ]

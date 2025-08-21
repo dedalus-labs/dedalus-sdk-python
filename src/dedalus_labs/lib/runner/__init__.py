@@ -8,17 +8,17 @@ from __future__ import annotations
 
 from .core import DedalusRunner
 from .types import (
-    JsonValue,
+    Tool,
     Message,
+    ToolCall,
+    JsonValue,
+    ToolResult,
+    PolicyInput,
+    ToolHandler,
     PolicyContext,
     PolicyFunction,
-    PolicyInput,
-    Tool,
-    ToolCall,
-    ToolHandler,
-    ToolResult,
 )
-from .utils import to_schema
+from ..utils import to_schema
 
 __all__ = [
     "DedalusRunner",

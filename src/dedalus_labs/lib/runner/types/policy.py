@@ -8,8 +8,8 @@ from __future__ import annotations
 
 from typing import Callable
 
-from .messages import Message
 from .tools import JsonValue
+from .messages import Message
 
 __all__ = [
     "PolicyContext",
