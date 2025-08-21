@@ -27,12 +27,12 @@ Methods:
 Types:
 
 ```python
-from dedalus_labs.types import Model, ModelsResponse
+from dedalus_labs.types import DedalusModel, Model, ModelsResponse
 ```
 
 Methods:
 
-- <code title="get /v1/models/{model_id}">client.models.<a href="./src/dedalus_labs/resources/models.py">retrieve</a>(model_id) -> <a href="./src/dedalus_labs/types/model.py">Model</a></code>
+- <code title="get /v1/models/{model_id}">client.models.<a href="./src/dedalus_labs/resources/models.py">retrieve</a>(model_id) -> <a href="./src/dedalus_labs/types/dedalus_model.py">DedalusModel</a></code>
 - <code title="get /v1/models">client.models.<a href="./src/dedalus_labs/resources/models.py">list</a>() -> <a href="./src/dedalus_labs/types/models_response.py">ModelsResponse</a></code>
 
 # Chat
@@ -46,6 +46,9 @@ from dedalus_labs.types.chat import (
     ChatCompletionTokenLogprob,
     Completion,
     CompletionRequest,
+    DedalusModelChoice,
+    ModelID,
+    Models,
     StreamChunk,
     TopLogprob,
 )

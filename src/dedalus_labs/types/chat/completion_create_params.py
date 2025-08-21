@@ -5,12 +5,13 @@ from __future__ import annotations
 from typing import Dict, List, Union, Iterable, Optional
 from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
-from ..model_param import ModelParam
+from .model_id import ModelID
+from .models_param import ModelsParam
+from ..dedalus_model_param import DedalusModelParam
 
 __all__ = [
     "CompletionCreateParamsBase",
     "Model",
-    "ModelModelList",
     "CompletionCreateParamsNonStreaming",
     "CompletionCreateParamsStreaming",
 ]
@@ -148,9 +149,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     """
 
 
-ModelModelList: TypeAlias = Union[str, ModelParam]
-
-Model: TypeAlias = Union[str, ModelParam, List[ModelModelList]]
+Model: TypeAlias = Union[ModelID, DedalusModelParam, ModelsParam]
 
 
 class CompletionCreateParamsNonStreaming(CompletionCreateParamsBase, total=False):

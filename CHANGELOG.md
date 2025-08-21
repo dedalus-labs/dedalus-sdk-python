@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.0-alpha.6 (2025-08-21)
+
+Full Changelog: [v0.1.0-alpha.5...v0.1.0-alpha.6](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.5...v0.1.0-alpha.6)
+
+### Features
+
+* **api:** api update ([283500e](https://github.com/dedalus-labs/dedalus-sdk-python/commit/283500e638288e248715ac84092727884b0d404d))
+* **api:** api update ([769f6d2](https://github.com/dedalus-labs/dedalus-sdk-python/commit/769f6d24cf4458795a2d6a4a1ce5487e24d3b34b))
+* **api:** api update ([e8cce59](https://github.com/dedalus-labs/dedalus-sdk-python/commit/e8cce59df56ade2c3be785a4ab68be694b36b325))
+* **model:** add DedalusModel ([0bdc7ce](https://github.com/dedalus-labs/dedalus-sdk-python/commit/0bdc7ce32b8c0099d74fbd71afb6c20efc5c2618))
+
 ## 0.1.0-alpha.5 (2025-08-18)
 
 Full Changelog: [v0.1.0-alpha.4...v0.1.0-alpha.5](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.4...v0.1.0-alpha.5)

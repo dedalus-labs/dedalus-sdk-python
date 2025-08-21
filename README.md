@@ -38,7 +38,7 @@ stream_chunk = client.chat.completions.create(
     messages=[
         {
             "role": "user",
-            "content": "Hello, how are you today?",
+            "content": "Hello, how can you help me today?",
         }
     ],
     model="openai/gpt-5",
@@ -72,7 +72,7 @@ async def main() -> None:
         messages=[
             {
                 "role": "user",
-                "content": "Hello, how are you today?",
+                "content": "Hello, how can you help me today?",
             }
         ],
         model="openai/gpt-5",
@@ -113,7 +113,7 @@ async def main() -> None:
             messages=[
                 {
                     "role": "user",
-                    "content": "Hello, how are you today?",
+                    "content": "Hello, how can you help me today?",
                 }
             ],
             model="openai/gpt-5",
