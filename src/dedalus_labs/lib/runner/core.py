@@ -10,10 +10,13 @@ import json
 import asyncio
 import inspect
 import logging
-from typing import Any, Literal, Callable, Iterator, Protocol, AsyncIterator
+from typing import TYPE_CHECKING, Any, Literal, Callable, Iterator, Protocol, AsyncIterator
 from dataclasses import field, asdict, dataclass
 
 from dedalus_labs import Dedalus, AsyncDedalus
+
+if TYPE_CHECKING:
+    from ...types.dedalus_model import DedalusModel
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +30,6 @@ from .types import (
     PolicyContext,
 )
 from ..utils import to_schema
-
 
 
 def _process_policy(policy: PolicyInput, context: PolicyContext) -> dict[str, JsonValue]:
@@ -61,7 +63,7 @@ class _ToolHandler(Protocol):
 class _FunctionToolHandler:
     """Converts Python functions to tool handler via introspection."""
 
-    def __init__(self, funcs: list[Callable]):
+    def __init__(self, funcs: list[Callable[..., Any]]):
         self._funcs = {f.__name__: f for f in funcs}
 
     def schemas(self) -> list[dict]:
@@ -164,7 +166,7 @@ class DedalusRunner:
         input: str | list[Message] | None = None,
         tools: list[Callable] | None = None,
         messages: list[Message] | None = None,
-        model: str | list[str] | None = None,
+        model: str | list[str] | DedalusModel | list[DedalusModel] | None = None,
         max_steps: int = 10,
         mcp_servers: list[str] | None = None,
         temperature: float | None = None,
@@ -192,18 +194,48 @@ class DedalusRunner:
         if not model:
             raise ValueError("model must be provided")
 
-        # Parse model list to get primary and available models
+        # Parse model to extract name and config
+        model_name = None
+        model_list = []
+        
         if isinstance(model, list):
             if not model:
                 raise ValueError("model list cannot be empty")
-            primary_model = model[0]
-            available_models = model
-        else:
-            primary_model = model
-            available_models = [model] if available_models is None else available_models
+            # Handle list of DedalusModel or strings
+            for m in model:
+                if hasattr(m, 'name'):  # DedalusModel
+                    model_list.append(m.name)
+                    # Use config from first DedalusModel if params not explicitly set
+                    if model_name is None:
+                        model_name = m.name
+                        temperature = temperature if temperature is not None else getattr(m, 'temperature', None)
+                        max_tokens = max_tokens if max_tokens is not None else getattr(m, 'max_tokens', None)
+                        top_p = top_p if top_p is not None else getattr(m, 'top_p', None)
+                        frequency_penalty = frequency_penalty if frequency_penalty is not None else getattr(m, 'frequency_penalty', None)
+                        presence_penalty = presence_penalty if presence_penalty is not None else getattr(m, 'presence_penalty', None)
+                        logit_bias = logit_bias if logit_bias is not None else getattr(m, 'logit_bias', None)
+                else:  # String
+                    model_list.append(m)
+                    if model_name is None:
+                        model_name = m
+        elif hasattr(model, 'name'):  # Single DedalusModel
+            model_name = model.name
+            model_list = [model.name]
+            # Extract config from DedalusModel if params not explicitly set
+            temperature = temperature if temperature is not None else getattr(model, 'temperature', None)
+            max_tokens = max_tokens if max_tokens is not None else getattr(model, 'max_tokens', None)
+            top_p = top_p if top_p is not None else getattr(model, 'top_p', None)
+            frequency_penalty = frequency_penalty if frequency_penalty is not None else getattr(model, 'frequency_penalty', None)
+            presence_penalty = presence_penalty if presence_penalty is not None else getattr(model, 'presence_penalty', None)
+            logit_bias = logit_bias if logit_bias is not None else getattr(model, 'logit_bias', None)
+        else:  # Single string
+            model_name = model
+            model_list = [model] if model else []
+            
+        available_models = model_list if available_models is None else available_models
 
         model_config = _ModelConfig(
-            id=str(primary_model),
+            id=str(model_name),
             temperature=temperature,
             max_tokens=max_tokens,
             top_p=top_p,

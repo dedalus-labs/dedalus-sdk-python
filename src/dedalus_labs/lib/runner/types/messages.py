@@ -6,8 +6,10 @@
 
 from __future__ import annotations
 
+from typing import Union
+
 __all__ = [
     "Message",
 ]
 
-Message = dict[str, str | list[dict[str, str]]]
+Message = dict[str, Union[str, list[dict[str, str]]]]
