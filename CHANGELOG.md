@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0-alpha.9 (2025-08-22)
+
+Full Changelog: [v0.1.0-alpha.8...v0.1.0-alpha.9](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.8...v0.1.0-alpha.9)
+
+### Chores
+
+* update github action ([cb4fefd](https://github.com/dedalus-labs/dedalus-sdk-python/commit/cb4fefd026cd176f56d3b5b12cdaffd2d7ddbdc6))
+
 ## 0.1.0-alpha.8 (2025-08-21)
 
 Full Changelog: [v0.1.0-alpha.7...v0.1.0-alpha.8](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.7...v0.1.0-alpha.8)
