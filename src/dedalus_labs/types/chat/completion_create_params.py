@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Union, Iterable, Optional
+from typing import Dict, Union, Iterable, Optional
 from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
+from ..._types import SequenceNotStr
 from .model_id import ModelID
 from .models_param import ModelsParam
 from ..dedalus_model_param import DedalusModelParam
@@ -71,7 +72,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     reasoning but increase cost and latency.
     """
 
-    mcp_servers: Optional[List[str]]
+    mcp_servers: Optional[SequenceNotStr[str]]
     """
     MCP (Model Context Protocol) server addresses to make available for server-side
     tool execution. Can be URLs (e.g., 'https://mcp.example.com') or slugs (e.g.,
@@ -107,7 +108,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     far, encouraging the model to talk about new topics.
     """
 
-    stop: Optional[List[str]]
+    stop: Optional[SequenceNotStr[str]]
     """Up to 4 sequences where the API will stop generating further tokens.
 
     The model will stop as soon as it encounters any of these sequences.
