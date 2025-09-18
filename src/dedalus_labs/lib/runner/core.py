@@ -164,6 +164,27 @@ class DedalusRunner:
     def __init__(self, client: Dedalus | AsyncDedalus, verbose: bool = False):
         self.client = client
         self.verbose = verbose
+        
+        # Configure logger for verbose mode if needed
+        if self.verbose:
+            self._setup_verbose_logging()
+
+    def _setup_verbose_logging(self):
+        """Configure logger to show verbose output."""
+        # Get the logger for this module
+        runner_logger = logging.getLogger(__name__)
+        
+        # Only add handler if one doesn't exist to avoid duplicates
+        if not runner_logger.handlers:
+            handler = logging.StreamHandler()
+            handler.setLevel(logging.DEBUG)
+            # Use a simple format that looks like print statements
+            formatter = logging.Formatter('%(message)s')
+            handler.setFormatter(formatter)
+            runner_logger.addHandler(handler)
+        
+        # Set logger level to DEBUG
+        runner_logger.setLevel(logging.DEBUG)
 
     def run(
         self,
@@ -345,12 +366,18 @@ class DedalusRunner:
             handoff_config=handoff_config,
         )
 
+        # Setup verbose logging if needed
+        final_verbose = verbose if verbose is not None else self.verbose
+        if final_verbose and not self.verbose:
+            # Verbose was passed to run() but not to __init__, setup logging
+            self._setup_verbose_logging()
+        
         exec_config = _ExecutionConfig(
             mcp_servers=mcp_servers or [],
             max_steps=max_steps,
             stream=stream,
             transport=transport,
-            verbose=verbose if verbose is not None else self.verbose,
+            verbose=final_verbose,
             debug=debug or False,
             on_tool_event=on_tool_event,
             return_intent=return_intent,
@@ -401,7 +428,7 @@ class DedalusRunner:
         while steps < exec_config.max_steps:
             steps += 1
             if exec_config.verbose:
-                logger.debug(f"Step started: Step={steps}")
+                logger.debug(f"\n[RUNNER] Step={steps}")
 
             # Apply policy and get model params
             policy_result = self._apply_policy(
@@ -430,8 +457,8 @@ class DedalusRunner:
             )
             
             if exec_config.verbose:
-                logger.debug(f" Non-streaming response received")
-                logger.debug(f" Response type: {type(response)}")
+                logger.debug(f"[DEBUG] Non-streaming response received")
+                logger.debug(f"[DEBUG] Response type: {type(response)}")
 
             # Check if we have tool calls
             if not hasattr(response, "choices") or not response.choices:
@@ -444,9 +471,9 @@ class DedalusRunner:
             content = msg.get("content", "")
             
             if exec_config.verbose:
-                logger.debug(f" Response content: {content[:100] if content else '(none)'}...")
+                logger.debug(f"[DEBUG] Response content: {content[:100] if content else '(none)'}...")
                 if tool_calls:
-                    logger.debug(f" Tool calls in response: {[tc.get('function', {}).get('name', '?') for tc in tool_calls]}")
+                    logger.debug(f"[DEBUG] Tool calls in response: {[tc.get('function', {}).get('name', '?') for tc in tool_calls]}")
 
             if not tool_calls:
                 final_text = content or ""
@@ -455,9 +482,9 @@ class DedalusRunner:
             # Execute tools
             tool_calls = self._extract_tool_calls(response.choices[0])
             if exec_config.verbose:
-                logger.debug(f" Extracted {len(tool_calls)} tool calls")
+                logger.debug(f"[DEBUG] Extracted {len(tool_calls)} tool calls")
                 for tc in tool_calls:
-                    logger.debug(f"  - {tc.get('function', {}).get('name', '?')} (id: {tc.get('id', '?')})")
+                    logger.debug(f"[DEBUG]  - {tc.get('function', {}).get('name', '?')} (id: {tc.get('id', '?')})")
             await self._execute_tool_calls(tool_calls, tool_handler, messages, tool_results, tools_called, steps, verbose=exec_config.verbose)
 
         return _RunResult(
@@ -474,9 +501,9 @@ class DedalusRunner:
         while steps < exec_config.max_steps:
             steps += 1
             if exec_config.verbose:
-                logger.debug(f"Step started: Step={steps} (max_steps={exec_config.max_steps})")
-                logger.debug(f" Starting step {steps} with {len(messages)} messages in conversation")
-                logger.debug(f" Message history:")
+                logger.debug(f"\n[RUNNER] Step={steps} (max_steps={exec_config.max_steps})")
+                logger.debug(f"[DEBUG] Starting step {steps} with {len(messages)} messages in conversation")
+                logger.debug(f"[DEBUG] Message history:")
                 for i, msg in enumerate(messages):
                     role = msg.get('role')
                     content = str(msg.get('content', ''))[:50] + '...' if msg.get('content') else ''
@@ -486,7 +513,7 @@ class DedalusRunner:
                         tool_info = f" [calling: {', '.join(tool_names)}]"
                     elif msg.get('tool_call_id'):
                         tool_info = f" [response to: {msg.get('tool_call_id')[:8]}...]"
-                    logger.debug(f"  [{i}] {role}: {content}{tool_info}")
+                    logger.debug(f"[DEBUG]  [{i}] {role}: {content}{tool_info}")
 
             # Apply policy
             policy_result = self._apply_policy(
@@ -507,16 +534,16 @@ class DedalusRunner:
             current_messages = self._build_messages(messages, policy_result["prepend"], policy_result["append"])
             
             if exec_config.verbose:
-                logger.debug(f" Messages being sent to API:")
+                logger.debug(f"[DEBUG] Messages being sent to API:")
                 for i, msg in enumerate(current_messages):
                     content_preview = str(msg.get('content', ''))[:100]
                     tool_call_info = ""
                     if msg.get('tool_calls'):
                         tool_names = [tc.get('function', {}).get('name', 'unknown') for tc in msg.get('tool_calls', [])]
                         tool_call_info = f" tool_calls=[{', '.join(tool_names)}]"
-                    logger.debug(f"  [{i}] {msg.get('role')}: {content_preview}...{tool_call_info}")
-                logger.debug(f" MCP servers: {policy_result['mcp_servers']}")
-                logger.debug(f" Local tools available: {list(getattr(tool_handler, '_funcs', {}).keys())}")
+                    logger.debug(f"[DEBUG]  [{i}] {msg.get('role')}: {content_preview}...{tool_call_info}")
+                logger.debug(f"[DEBUG] MCP servers: {policy_result['mcp_servers']}")
+                logger.debug(f"[DEBUG] Local tools available: {list(getattr(tool_handler, '_funcs', {}).keys())}")
 
             stream = await self.client.chat.completions.create(
                 model=policy_result["model"],
@@ -535,7 +562,7 @@ class DedalusRunner:
             async for chunk in stream:
                 chunk_count += 1
                 if exec_config.verbose:
-                    logger.debug(f" Chunk {chunk_count} raw: {chunk}")
+                    logger.debug(f"[DEBUG] Chunk {chunk_count} raw: {chunk}")
                 if hasattr(chunk, "choices") and chunk.choices:
                     choice = chunk.choices[0]
                     delta = choice.delta
@@ -544,42 +571,42 @@ class DedalusRunner:
                     if hasattr(choice, "finish_reason") and choice.finish_reason:
                         finish_reason = choice.finish_reason
                         if exec_config.verbose:
-                            logger.debug(f" Chunk {chunk_count}: finish_reason = {finish_reason}")
+                            logger.debug(f"[DEBUG] Chunk {chunk_count}: finish_reason = {finish_reason}")
                     
                     # Check for tool calls
                     if hasattr(delta, "tool_calls") and delta.tool_calls:
                         tool_call_chunks += 1
                         self._accumulate_tool_calls(delta.tool_calls, tool_calls)
                         if exec_config.verbose:
-                            logger.debug(f" Chunk {chunk_count}: Tool call delta: {delta.tool_calls}")
+                            logger.debug(f"[DEBUG] Chunk {chunk_count}: Tool call delta: {delta.tool_calls}")
                     
                     # Check for content
                     if hasattr(delta, "content") and delta.content:
                         content_chunks += 1
                         if exec_config.verbose:
-                            logger.debug(f" Chunk {chunk_count}: Content: '{delta.content}'")
+                            logger.debug(f"[DEBUG] Chunk {chunk_count}: Content: '{delta.content}'")
                     
                     # Check for role
                     if hasattr(delta, "role") and delta.role:
                         if exec_config.verbose:
-                            logger.debug(f" Chunk {chunk_count}: Role: {delta.role}")
+                            logger.debug(f"[DEBUG] Chunk {chunk_count}: Role: {delta.role}")
                     
                     yield chunk
             
             if exec_config.verbose:
-                logger.debug(f" Stream ended:")
-                logger.debug(f"  - Total chunks: {chunk_count}")
-                logger.debug(f"  - Content chunks: {content_chunks}")
-                logger.debug(f"  - Tool call chunks: {tool_call_chunks}")
-                logger.debug(f"  - Final finish_reason: {finish_reason}")
-                logger.debug(f" Tool calls accumulated: {len(tool_calls)}")
+                logger.debug(f"[DEBUG] Stream ended:")
+                logger.debug(f"[DEBUG]  - Total chunks: {chunk_count}")
+                logger.debug(f"[DEBUG]  - Content chunks: {content_chunks}")
+                logger.debug(f"[DEBUG]  - Tool call chunks: {tool_call_chunks}")
+                logger.debug(f"[DEBUG]  - Final finish_reason: {finish_reason}")
+                logger.debug(f"[DEBUG] Tool calls accumulated: {len(tool_calls)}")
                 for tc in tool_calls:
-                    logger.debug(f"  - {tc.get('function', {}).get('name', 'unknown')} (id: {tc.get('id', 'unknown')})")
+                    logger.debug(f"[DEBUG]  - {tc.get('function', {}).get('name', 'unknown')} (id: {tc.get('id', 'unknown')})")
 
             # Execute any accumulated tool calls
             if tool_calls:
                 if exec_config.verbose:
-                    logger.debug(f" Processing {len(tool_calls)} tool calls")
+                    logger.debug(f"[DEBUG] Processing {len(tool_calls)} tool calls")
                 
                 # Categorize tools
                 local_names = [tc["function"]["name"] for tc in tool_calls if tc["function"]["name"] in getattr(tool_handler, "_funcs", {})]
@@ -595,21 +622,21 @@ class DedalusRunner:
                 has_streamed_content = content_chunks > 0
                 
                 if exec_config.verbose:
-                    logger.debug(f" Local tools: {local_names}")
-                    logger.debug(f" MCP tools: {mcp_names}") 
-                    logger.debug(f" All MCP? {all_mcp}")
-                    logger.debug(f" Stream had content? {has_streamed_content} (content_chunks={content_chunks})")
+                    logger.debug(f"[DEBUG] Local tools: {local_names}")
+                    logger.debug(f"[DEBUG] MCP tools: {mcp_names}") 
+                    logger.debug(f"[DEBUG] All MCP? {all_mcp}")
+                    logger.debug(f"[DEBUG] Stream had content? {has_streamed_content} (content_chunks={content_chunks})")
                 
                 # When MCP tools are involved and content was streamed, we're done
                 if mcp_names and has_streamed_content:
                     if exec_config.verbose:
-                        logger.debug(f" MCP tools called and content streamed - response complete, breaking loop")
+                        logger.debug(f"[DEBUG] MCP tools called and content streamed - response complete, breaking loop")
                     break
                 
                 if all_mcp:
                     # All tools are MCP - the response should be streamed
                     if exec_config.verbose:
-                        logger.debug(f" All tools are MCP, expecting streamed response")
+                        logger.debug(f"[DEBUG] All tools are MCP, expecting streamed response")
                     # Don't break here - let the next iteration handle it
                 else:
                     # We have at least one local tool
@@ -620,7 +647,7 @@ class DedalusRunner:
                     ]
                     messages.append({"role": "assistant", "tool_calls": local_only_tool_calls})
                     if exec_config.verbose:
-                        logger.debug(f" Added assistant message with {len(local_only_tool_calls)} local tool calls (filtered from {len(tool_calls)} total)")
+                        logger.debug(f"[DEBUG] Added assistant message with {len(local_only_tool_calls)} local tool calls (filtered from {len(tool_calls)} total)")
                     
                     # Execute only local tools
                     for tc in tool_calls:
@@ -638,32 +665,32 @@ class DedalusRunner:
                                 result = await tool_handler.exec(fn_name, fn_args)
                                 messages.append({"role": "tool", "tool_call_id": tc["id"], "content": str(result)})
                                 if exec_config.verbose:
-                                    logger.debug(f" Executed local tool {fn_name}: {str(result)[:50]}...")
+                                    logger.debug(f"[DEBUG] Executed local tool {fn_name}: {str(result)[:50]}...")
                             except Exception as e:
                                 messages.append({"role": "tool", "tool_call_id": tc["id"], "content": f"Error: {str(e)}"})
                                 if exec_config.verbose:
-                                    logger.debug(f" Error executing local tool {fn_name}: {e}")
+                                    logger.debug(f"[DEBUG] Error executing local tool {fn_name}: {e}")
                         else:
                             # MCP tool - DON'T add any message
                             # The API server should handle this
                             if exec_config.verbose:
-                                logger.debug(f" MCP tool {fn_name} - skipping (server will handle)")
+                                logger.debug(f"[DEBUG] MCP tool {fn_name} - skipping (server will handle)")
                     
                     if exec_config.verbose:
-                        logger.debug(f" Messages after tool execution: {len(messages)}")
+                        logger.debug(f"[DEBUG] Messages after tool execution: {len(messages)}")
                         
                         # Only continue if we have NO MCP tools
                         if not mcp_names:
-                            logger.debug(f" No MCP tools, continuing loop to step {steps + 1}...")
+                            logger.debug(f"[DEBUG] No MCP tools, continuing loop to step {steps + 1}...")
                         else:
-                            logger.debug(f" MCP tools present, expecting response in next iteration")
+                            logger.debug(f"[DEBUG] MCP tools present, expecting response in next iteration")
                 
                 # Continue loop only if we need another response
                 if exec_config.verbose:
-                    logger.debug(f" Tool processing complete")
+                    logger.debug(f"[DEBUG] Tool processing complete")
             else:
                 if exec_config.verbose:
-                    logger.debug(f" No tool calls found, breaking out of loop")
+                    logger.debug(f"[DEBUG] No tool calls found, breaking out of loop")
                 break
         
         if exec_config.verbose:
@@ -682,7 +709,7 @@ class DedalusRunner:
         while steps < exec_config.max_steps:
             steps += 1
             if exec_config.verbose:
-                logger.debug(f"Step started: Step={steps}")
+                logger.debug(f"\n[RUNNER] Step={steps}")
 
             # Apply policy
             policy_result = self._apply_policy(
@@ -742,9 +769,9 @@ class DedalusRunner:
         while steps < exec_config.max_steps:
             steps += 1
             if exec_config.verbose:
-                logger.debug(f"Step started: Step={steps} (max_steps={exec_config.max_steps})")
-                logger.debug(f" Starting step {steps} with {len(messages)} messages in conversation")
-                logger.debug(f" Message history:")
+                logger.debug(f"\n[RUNNER] Step={steps} (max_steps={exec_config.max_steps})")
+                logger.debug(f"[DEBUG] Starting step {steps} with {len(messages)} messages in conversation")
+                logger.debug(f"[DEBUG] Message history:")
                 for i, msg in enumerate(messages):
                     role = msg.get('role')
                     content = str(msg.get('content', ''))[:50] + '...' if msg.get('content') else ''
@@ -754,7 +781,7 @@ class DedalusRunner:
                         tool_info = f" [calling: {', '.join(tool_names)}]"
                     elif msg.get('tool_call_id'):
                         tool_info = f" [response to: {msg.get('tool_call_id')[:8]}...]"
-                    logger.debug(f"  [{i}] {role}: {content}{tool_info}")
+                    logger.debug(f"[DEBUG]  [{i}] {role}: {content}{tool_info}")
 
             # Apply policy
             policy_result = self._apply_policy(
@@ -775,16 +802,16 @@ class DedalusRunner:
             current_messages = self._build_messages(messages, policy_result["prepend"], policy_result["append"])
             
             if exec_config.verbose:
-                logger.debug(f" Messages being sent to API:")
+                logger.debug(f"[DEBUG] Messages being sent to API:")
                 for i, msg in enumerate(current_messages):
                     content_preview = str(msg.get('content', ''))[:100]
                     tool_call_info = ""
                     if msg.get('tool_calls'):
                         tool_names = [tc.get('function', {}).get('name', 'unknown') for tc in msg.get('tool_calls', [])]
                         tool_call_info = f" tool_calls=[{', '.join(tool_names)}]"
-                    logger.debug(f"  [{i}] {msg.get('role')}: {content_preview}...{tool_call_info}")
-                logger.debug(f" MCP servers: {policy_result['mcp_servers']}")
-                logger.debug(f" Local tools available: {list(getattr(tool_handler, '_funcs', {}).keys())}")
+                    logger.debug(f"[DEBUG]  [{i}] {msg.get('role')}: {content_preview}...{tool_call_info}")
+                logger.debug(f"[DEBUG] MCP servers: {policy_result['mcp_servers']}")
+                logger.debug(f"[DEBUG] Local tools available: {list(getattr(tool_handler, '_funcs', {}).keys())}")
 
             stream = self.client.chat.completions.create(
                 model=policy_result["model"],
@@ -803,7 +830,7 @@ class DedalusRunner:
             for chunk in stream:
                 chunk_count += 1
                 if exec_config.verbose:
-                    logger.debug(f" Chunk {chunk_count} raw: {chunk}")
+                    logger.debug(f"[DEBUG] Chunk {chunk_count} raw: {chunk}")
                 if hasattr(chunk, "choices") and chunk.choices:
                     choice = chunk.choices[0]
                     delta = choice.delta
@@ -812,42 +839,42 @@ class DedalusRunner:
                     if hasattr(choice, "finish_reason") and choice.finish_reason:
                         finish_reason = choice.finish_reason
                         if exec_config.verbose:
-                            logger.debug(f" Chunk {chunk_count}: finish_reason = {finish_reason}")
+                            logger.debug(f"[DEBUG] Chunk {chunk_count}: finish_reason = {finish_reason}")
                     
                     # Check for tool calls
                     if hasattr(delta, "tool_calls") and delta.tool_calls:
                         tool_call_chunks += 1
                         self._accumulate_tool_calls(delta.tool_calls, tool_calls)
                         if exec_config.verbose:
-                            logger.debug(f" Chunk {chunk_count}: Tool call delta: {delta.tool_calls}")
+                            logger.debug(f"[DEBUG] Chunk {chunk_count}: Tool call delta: {delta.tool_calls}")
                     
                     # Check for content
                     if hasattr(delta, "content") and delta.content:
                         content_chunks += 1
                         if exec_config.verbose:
-                            logger.debug(f" Chunk {chunk_count}: Content: '{delta.content}'")
+                            logger.debug(f"[DEBUG] Chunk {chunk_count}: Content: '{delta.content}'")
                     
                     # Check for role
                     if hasattr(delta, "role") and delta.role:
                         if exec_config.verbose:
-                            logger.debug(f" Chunk {chunk_count}: Role: {delta.role}")
+                            logger.debug(f"[DEBUG] Chunk {chunk_count}: Role: {delta.role}")
                     
                     yield chunk
             
             if exec_config.verbose:
-                logger.debug(f" Stream ended:")
-                logger.debug(f"  - Total chunks: {chunk_count}")
-                logger.debug(f"  - Content chunks: {content_chunks}")
-                logger.debug(f"  - Tool call chunks: {tool_call_chunks}")
-                logger.debug(f"  - Final finish_reason: {finish_reason}")
-                logger.debug(f" Tool calls accumulated: {len(tool_calls)}")
+                logger.debug(f"[DEBUG] Stream ended:")
+                logger.debug(f"[DEBUG]  - Total chunks: {chunk_count}")
+                logger.debug(f"[DEBUG]  - Content chunks: {content_chunks}")
+                logger.debug(f"[DEBUG]  - Tool call chunks: {tool_call_chunks}")
+                logger.debug(f"[DEBUG]  - Final finish_reason: {finish_reason}")
+                logger.debug(f"[DEBUG] Tool calls accumulated: {len(tool_calls)}")
                 for tc in tool_calls:
-                    logger.debug(f"  - {tc.get('function', {}).get('name', 'unknown')} (id: {tc.get('id', 'unknown')})")
+                    logger.debug(f"[DEBUG]  - {tc.get('function', {}).get('name', 'unknown')} (id: {tc.get('id', 'unknown')})")
             
             # Execute any accumulated tool calls
             if tool_calls:
                 if exec_config.verbose:
-                    logger.debug(f" Processing {len(tool_calls)} tool calls")
+                    logger.debug(f"[DEBUG] Processing {len(tool_calls)} tool calls")
                 
                 # Categorize tools
                 local_names = [tc["function"]["name"] for tc in tool_calls if tc["function"]["name"] in getattr(tool_handler, "_funcs", {})]
@@ -863,21 +890,21 @@ class DedalusRunner:
                 has_streamed_content = content_chunks > 0
                 
                 if exec_config.verbose:
-                    logger.debug(f" Local tools: {local_names}")
-                    logger.debug(f" MCP tools: {mcp_names}")
-                    logger.debug(f" All MCP? {all_mcp}")
-                    logger.debug(f" Stream had content? {has_streamed_content} (content_chunks={content_chunks})")
+                    logger.debug(f"[DEBUG] Local tools: {local_names}")
+                    logger.debug(f"[DEBUG] MCP tools: {mcp_names}")
+                    logger.debug(f"[DEBUG] All MCP? {all_mcp}")
+                    logger.debug(f"[DEBUG] Stream had content? {has_streamed_content} (content_chunks={content_chunks})")
                 
                 # When MCP tools are involved and content was streamed, we're done
                 if mcp_names and has_streamed_content:
                     if exec_config.verbose:
-                        logger.debug(f" MCP tools called and content streamed - response complete, breaking loop")
+                        logger.debug(f"[DEBUG] MCP tools called and content streamed - response complete, breaking loop")
                     break
                 
                 if all_mcp:
                     # All tools are MCP - the response should be streamed
                     if exec_config.verbose:
-                        logger.debug(f" All tools are MCP, expecting streamed response")
+                        logger.debug(f"[DEBUG] All tools are MCP, expecting streamed response")
                     # Don't break here - let the next iteration handle it
                 else:
                     # We have at least one local tool
@@ -888,7 +915,7 @@ class DedalusRunner:
                     ]
                     messages.append({"role": "assistant", "tool_calls": local_only_tool_calls})
                     if exec_config.verbose:
-                        logger.debug(f" Added assistant message with {len(local_only_tool_calls)} local tool calls (filtered from {len(tool_calls)} total)")
+                        logger.debug(f"[DEBUG] Added assistant message with {len(local_only_tool_calls)} local tool calls (filtered from {len(tool_calls)} total)")
                     
                     # Execute only local tools
                     for tc in tool_calls:
@@ -906,32 +933,32 @@ class DedalusRunner:
                                 result = tool_handler.exec_sync(fn_name, fn_args)
                                 messages.append({"role": "tool", "tool_call_id": tc["id"], "content": str(result)})
                                 if exec_config.verbose:
-                                    logger.debug(f" Executed local tool {fn_name}: {str(result)[:50]}...")
+                                    logger.debug(f"[DEBUG] Executed local tool {fn_name}: {str(result)[:50]}...")
                             except Exception as e:
                                 messages.append({"role": "tool", "tool_call_id": tc["id"], "content": f"Error: {str(e)}"})
                                 if exec_config.verbose:
-                                    logger.debug(f" Error executing local tool {fn_name}: {e}")
+                                    logger.debug(f"[DEBUG] Error executing local tool {fn_name}: {e}")
                         else:
                             # MCP tool - DON'T add any message
                             # The API server should handle this
                             if exec_config.verbose:
-                                logger.debug(f" MCP tool {fn_name} - skipping (server will handle)")
+                                logger.debug(f"[DEBUG] MCP tool {fn_name} - skipping (server will handle)")
                     
                     if exec_config.verbose:
-                        logger.debug(f" Messages after tool execution: {len(messages)}")
+                        logger.debug(f"[DEBUG] Messages after tool execution: {len(messages)}")
                         
                         # Only continue if we have NO MCP tools
                         if not mcp_names:
-                            logger.debug(f" No MCP tools, continuing loop to step {steps + 1}...")
+                            logger.debug(f"[DEBUG] No MCP tools, continuing loop to step {steps + 1}...")
                         else:
-                            logger.debug(f" MCP tools present, expecting response in next iteration")
+                            logger.debug(f"[DEBUG] MCP tools present, expecting response in next iteration")
                 
                 # Continue loop only if we need another response
                 if exec_config.verbose:
-                    logger.debug(f" Tool processing complete")
+                    logger.debug(f"[DEBUG] Tool processing complete")
             else:
                 if exec_config.verbose:
-                    logger.debug(f" No tool calls found, breaking out of loop")
+                    logger.debug(f"[DEBUG] No tool calls found, breaking out of loop")
                 break
         
         if exec_config.verbose:
@@ -1047,7 +1074,7 @@ class DedalusRunner:
             fn_args_str = tc["function"]["arguments"]
             
             if verbose:
-                logger.debug(f" Tool {i+1}/{len(tool_calls)}: {fn_name}")
+                logger.debug(f"[DEBUG] Tool {i+1}/{len(tool_calls)}: {fn_name}")
 
             try:
                 fn_args = json.loads(fn_args_str)
@@ -1064,15 +1091,15 @@ class DedalusRunner:
                 messages.append({"role": "tool", "tool_call_id": tc["id"], "content": str(result)})
                 
                 if verbose:
-                    logger.debug(f" Tool {fn_name} executed successfully: {str(result)[:50]}...")
+                    logger.debug(f"[DEBUG] Tool {fn_name} executed successfully: {str(result)[:50]}...")
             except Exception as e:
                 error_result = {"error": str(e), "name": fn_name, "step": step}
                 tool_results.append(error_result)
                 messages.append({"role": "tool", "tool_call_id": tc["id"], "content": f"Error: {str(e)}"})
                 
                 if verbose:
-                    logger.debug(f" Tool {fn_name} failed with error: {e}")
-                    logger.debug(f" Error type: {type(e).__name__}")
+                    logger.debug(f"[DEBUG] Tool {fn_name} failed with error: {e}")
+                    logger.debug(f"[DEBUG] Error type: {type(e).__name__}")
 
     def _execute_tool_calls_sync(
         self,
