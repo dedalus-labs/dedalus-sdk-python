@@ -30,13 +30,13 @@ def _process_policy(policy: PolicyInput, context: PolicyContext) -> Dict[str, Js
     if callable(policy):
         try:
             result = policy(context)
-            return result if isinstance(result, Dict) else {}
+            return result if isinstance(result, dict) else {}
         except Exception:
             return {}
 
-    if isinstance(policy, Dict):
+    if isinstance(policy, dict):
         try:
-            return Dict(policy)
+            return dict(policy)
         except Exception:
             return {}
 
