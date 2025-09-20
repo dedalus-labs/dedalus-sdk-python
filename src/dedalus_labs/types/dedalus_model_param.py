@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Union, Iterable, Optional
+from typing import Dict, Union, Iterable, Optional
 from typing_extensions import Required, TypedDict
+
+from .._types import SequenceNotStr
 
 __all__ = ["DedalusModelParam"]
 
@@ -54,7 +56,7 @@ class DedalusModelParam(TypedDict, total=False):
     service_tier: Optional[str]
     """Latency tier for the request (e.g., 'auto', 'default')."""
 
-    stop: Union[str, List[str], None]
+    stop: Union[str, SequenceNotStr[str], None]
     """Up to 4 sequences where the API will stop generating further tokens."""
 
     stream: Optional[bool]
