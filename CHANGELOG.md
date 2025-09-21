@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.1.0-alpha.9 (2025-09-20)
+
+Full Changelog: [v0.1.0-alpha.8...v0.1.0-alpha.9](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.8...v0.1.0-alpha.9)
+
+### Features
+
+* improve future compat with pydantic v3 ([a8fac0e](https://github.com/dedalus-labs/dedalus-sdk-python/commit/a8fac0ef8327430609f8bb15db096afecb3883ae))
+* **runner:** add conversation history access and instructions parameter ([#15](https://github.com/dedalus-labs/dedalus-sdk-python/issues/15)) ([80d431d](https://github.com/dedalus-labs/dedalus-sdk-python/commit/80d431d07a85d374c9f974e786395596f1ba87a7))
+* **types:** replace List[str] with SequenceNotStr in params ([470ee70](https://github.com/dedalus-labs/dedalus-sdk-python/commit/470ee7096075ac6298514ef751a8a6a6e296d0ab))
+
+
+### Bug Fixes
+
+* avoid newer type syntax ([4c2f6a5](https://github.com/dedalus-labs/dedalus-sdk-python/commit/4c2f6a5fb9de912f51eaceb129404ba2a7de57fc))
+
+
+### Chores
+
+* do not install brew dependencies in ./scripts/bootstrap by default ([b7e06d3](https://github.com/dedalus-labs/dedalus-sdk-python/commit/b7e06d307e626ae5d41189de50697f41c8bebfac))
+* **internal:** add Sequence related utils ([9745025](https://github.com/dedalus-labs/dedalus-sdk-python/commit/9745025a9810eebc01de9591d37a099a04184b84))
+* **internal:** change ci workflow machines ([733b93d](https://github.com/dedalus-labs/dedalus-sdk-python/commit/733b93d423e6ef1b4a33ae887ca472255afe4963))
+* **internal:** codegen related update ([3c37562](https://github.com/dedalus-labs/dedalus-sdk-python/commit/3c37562c59321946e9750170fcef203a9fe15266))
+* **internal:** move mypy configurations to `pyproject.toml` file ([ec3d564](https://github.com/dedalus-labs/dedalus-sdk-python/commit/ec3d56422bea912fafe9c43403dde7028fa97f75))
+* **internal:** update pydantic dependency ([70ab0cd](https://github.com/dedalus-labs/dedalus-sdk-python/commit/70ab0cdb89b9829a1203cb922dcc7f11474c2cd4))
+* **internal:** update pyright exclude list ([72ed0a3](https://github.com/dedalus-labs/dedalus-sdk-python/commit/72ed0a3bf91d86d18dddd90b3e95967cd3443f85))
+* **types:** change optional parameter type from NotGiven to Omit ([dc43898](https://github.com/dedalus-labs/dedalus-sdk-python/commit/dc438989d20a3501a99401ffc1f182b8d67672e5))
+* update github action ([cb4fefd](https://github.com/dedalus-labs/dedalus-sdk-python/commit/cb4fefd026cd176f56d3b5b12cdaffd2d7ddbdc6))
+
 ## 0.1.0-alpha.8 (2025-08-21)
 
 Full Changelog: [v0.1.0-alpha.7...v0.1.0-alpha.8](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.7...v0.1.0-alpha.8)

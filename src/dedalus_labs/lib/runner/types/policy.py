@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-from typing import Union, Callable
+from typing import Union, Callable, Dict, List
 
 from .tools import JsonValue
 from .messages import Message
@@ -17,6 +17,6 @@ __all__ = [
     "PolicyFunction",
 ]
 
-PolicyContext = dict[str, Union[int, list[Message], str, list[str]]]
-PolicyFunction = Callable[[PolicyContext], dict[str, JsonValue]]
-PolicyInput = Union[PolicyFunction, dict[str, JsonValue], None]
+PolicyContext = Dict[str, Union[int, List[Message], str, List[str]]]
+PolicyFunction = Callable[[PolicyContext], Dict[str, JsonValue]]
+PolicyInput = Union[PolicyFunction, Dict[str, JsonValue], None]

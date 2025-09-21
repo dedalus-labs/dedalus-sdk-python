@@ -6,10 +6,10 @@
 
 from __future__ import annotations
 
-from typing import Union
+from typing import Dict, List, Union
 
 __all__ = [
     "Message",
 ]
 
-Message = dict[str, Union[str, list[dict[str, str]]]]
+Message = Dict[str, Union[str, List[Dict[str, str]]]]
