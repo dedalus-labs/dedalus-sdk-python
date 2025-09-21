@@ -46,7 +46,7 @@ __all__ = [
 
 ENVIRONMENTS: Dict[str, str] = {
     "production": "https://api.dedaluslabs.ai",
-    "development": "http://localhost:8080",
+    "development": "http://localhost:4010",
 }
 
 
