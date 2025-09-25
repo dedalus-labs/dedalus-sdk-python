@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0-alpha.10 (2025-09-25)
+
+Full Changelog: [v0.1.0-alpha.9...v0.1.0-alpha.10](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.9...v0.1.0-alpha.10)
+
+### Bug Fixes
+
+* **compat:** compat with `pydantic&lt;2.8.0` when using additional fields ([3f3c02f](https://github.com/dedalus-labs/dedalus-sdk-python/commit/3f3c02f4cb5cc75bf9a6711ff4e48b9fe933ba2a))
+
 ## 0.1.0-alpha.9 (2025-09-20)
 
 Full Changelog: [v0.1.0-alpha.8...v0.1.0-alpha.9](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.8...v0.1.0-alpha.9)
