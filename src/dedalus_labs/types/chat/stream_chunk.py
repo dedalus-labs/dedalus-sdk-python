@@ -106,10 +106,10 @@ class ChoiceDelta(BaseModel):
 
 class ChoiceLogprobs(BaseModel):
     content: Optional[List[ChatCompletionTokenLogprob]] = None
-    """Log probabilities for the content tokens"""
+    """A list of message content tokens with log probability information."""
 
     refusal: Optional[List[ChatCompletionTokenLogprob]] = None
-    """Log probabilities for refusal tokens, if any"""
+    """A list of message refusal tokens with log probability information."""
 
 
 class Choice(BaseModel):

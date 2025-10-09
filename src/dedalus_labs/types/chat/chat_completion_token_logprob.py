@@ -10,13 +10,13 @@ __all__ = ["ChatCompletionTokenLogprob"]
 
 class ChatCompletionTokenLogprob(BaseModel):
     token: str
-    """The token"""
+    """The token."""
 
     logprob: float
-    """Log probability of this token"""
+    """Log probability of this token."""
 
     top_logprobs: List[TopLogprob]
-    """List of most likely tokens and their log probabilities"""
+    """List of the most likely tokens and their log probability information."""
 
     bytes: Optional[List[int]] = None
-    """Bytes representation of the token"""
+    """Bytes representation of the token."""

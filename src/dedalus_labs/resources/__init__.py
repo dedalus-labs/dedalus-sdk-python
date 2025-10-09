@@ -16,6 +16,14 @@ from .root import (
     RootResourceWithStreamingResponse,
     AsyncRootResourceWithStreamingResponse,
 )
+from .audio import (
+    AudioResource,
+    AsyncAudioResource,
+    AudioResourceWithRawResponse,
+    AsyncAudioResourceWithRawResponse,
+    AudioResourceWithStreamingResponse,
+    AsyncAudioResourceWithStreamingResponse,
+)
 from .health import (
     HealthResource,
     AsyncHealthResource,
@@ -24,6 +32,14 @@ from .health import (
     HealthResourceWithStreamingResponse,
     AsyncHealthResourceWithStreamingResponse,
 )
+from .images import (
+    ImagesResource,
+    AsyncImagesResource,
+    ImagesResourceWithRawResponse,
+    AsyncImagesResourceWithRawResponse,
+    ImagesResourceWithStreamingResponse,
+    AsyncImagesResourceWithStreamingResponse,
+)
 from .models import (
     ModelsResource,
     AsyncModelsResource,
@@ -31,6 +47,14 @@ from .models import (
     AsyncModelsResourceWithRawResponse,
     ModelsResourceWithStreamingResponse,
     AsyncModelsResourceWithStreamingResponse,
+)
+from .embeddings import (
+    EmbeddingsResource,
+    AsyncEmbeddingsResource,
+    EmbeddingsResourceWithRawResponse,
+    AsyncEmbeddingsResourceWithRawResponse,
+    EmbeddingsResourceWithStreamingResponse,
+    AsyncEmbeddingsResourceWithStreamingResponse,
 )
 
 __all__ = [
@@ -52,6 +76,24 @@ __all__ = [
     "AsyncModelsResourceWithRawResponse",
     "ModelsResourceWithStreamingResponse",
     "AsyncModelsResourceWithStreamingResponse",
+    "EmbeddingsResource",
+    "AsyncEmbeddingsResource",
+    "EmbeddingsResourceWithRawResponse",
+    "AsyncEmbeddingsResourceWithRawResponse",
+    "EmbeddingsResourceWithStreamingResponse",
+    "AsyncEmbeddingsResourceWithStreamingResponse",
+    "AudioResource",
+    "AsyncAudioResource",
+    "AudioResourceWithRawResponse",
+    "AsyncAudioResourceWithRawResponse",
+    "AudioResourceWithStreamingResponse",
+    "AsyncAudioResourceWithStreamingResponse",
+    "ImagesResource",
+    "AsyncImagesResource",
+    "ImagesResourceWithRawResponse",
+    "AsyncImagesResourceWithRawResponse",
+    "ImagesResourceWithStreamingResponse",
+    "AsyncImagesResourceWithStreamingResponse",
     "ChatResource",
     "AsyncChatResource",
     "ChatResourceWithRawResponse",

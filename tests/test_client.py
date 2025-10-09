@@ -345,7 +345,7 @@ class TestDedalus:
 
         with pytest.raises(
             TypeError,
-            match="Could not resolve authentication method. Expected either api_key or api_key_header to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted",
+            match="Could not resolve authentication method. Expected the api_key to be set. Or for the `Authorization` headers to be explicitly omitted",
         ):
             client2._build_request(FinalRequestOptions(method="get", url="/foo"))
 
@@ -1205,7 +1205,7 @@ class TestAsyncDedalus:
 
         with pytest.raises(
             TypeError,
-            match="Could not resolve authentication method. Expected either api_key or api_key_header to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted",
+            match="Could not resolve authentication method. Expected the api_key to be set. Or for the `Authorization` headers to be explicitly omitted",
         ):
             client2._build_request(FinalRequestOptions(method="get", url="/foo"))
 

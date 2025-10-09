@@ -22,7 +22,7 @@ from ._types import (
 )
 from ._utils import is_given, get_async_library
 from ._version import __version__
-from .resources import root, health, models
+from .resources import root, health, images, models, embeddings
 from ._streaming import Stream as Stream, AsyncStream as AsyncStream
 from ._exceptions import APIStatusError
 from ._base_client import (
@@ -31,6 +31,7 @@ from ._base_client import (
     AsyncAPIClient,
 )
 from .resources.chat import chat
+from .resources.audio import audio
 
 __all__ = [
     "ENVIRONMENTS",
@@ -54,13 +55,15 @@ class Dedalus(SyncAPIClient):
     root: root.RootResource
     health: health.HealthResource
     models: models.ModelsResource
+    embeddings: embeddings.EmbeddingsResource
+    audio: audio.AudioResource
+    images: images.ImagesResource
     chat: chat.ChatResource
     with_raw_response: DedalusWithRawResponse
     with_streaming_response: DedalusWithStreamedResponse
 
     # client options
     api_key: str | None
-    api_key_header: str | None
     organization: str | None
 
     _environment: Literal["production", "development"] | NotGiven
@@ -69,7 +72,6 @@ class Dedalus(SyncAPIClient):
         self,
         *,
         api_key: str | None = None,
-        api_key_header: str | None = None,
         organization: str | None = None,
         environment: Literal["production", "development"] | NotGiven = not_given,
         base_url: str | httpx.URL | None | NotGiven = not_given,
@@ -95,16 +97,11 @@ class Dedalus(SyncAPIClient):
 
         This automatically infers the following arguments from their corresponding environment variables if they are not provided:
         - `api_key` from `DEDALUS_API_KEY`
-        - `api_key_header` from `DEDALUS_API_KEY`
         - `organization` from `DEDALUS_ORG_ID`
         """
         if api_key is None:
             api_key = os.environ.get("DEDALUS_API_KEY")
         self.api_key = api_key
-
-        if api_key_header is None:
-            api_key_header = os.environ.get("DEDALUS_API_KEY")
-        self.api_key_header = api_key_header
 
         if organization is None:
             organization = os.environ.get("DEDALUS_ORG_ID")
@@ -154,6 +151,9 @@ class Dedalus(SyncAPIClient):
         self.root = root.RootResource(self)
         self.health = health.HealthResource(self)
         self.models = models.ModelsResource(self)
+        self.embeddings = embeddings.EmbeddingsResource(self)
+        self.audio = audio.AudioResource(self)
+        self.images = images.ImagesResource(self)
         self.chat = chat.ChatResource(self)
         self.with_raw_response = DedalusWithRawResponse(self)
         self.with_streaming_response = DedalusWithStreamedResponse(self)
@@ -166,21 +166,10 @@ class Dedalus(SyncAPIClient):
     @property
     @override
     def auth_headers(self) -> dict[str, str]:
-        return {**self._http_bearer, **self._api_key_auth}
-
-    @property
-    def _http_bearer(self) -> dict[str, str]:
         api_key = self.api_key
         if api_key is None:
             return {}
         return {"Authorization": f"Bearer {api_key}"}
-
-    @property
-    def _api_key_auth(self) -> dict[str, str]:
-        api_key_header = self.api_key_header
-        if api_key_header is None:
-            return {}
-        return {"x-api-key": api_key_header}
 
     @property
     @override
@@ -200,20 +189,14 @@ class Dedalus(SyncAPIClient):
         if isinstance(custom_headers.get("Authorization"), Omit):
             return
 
-        if self.api_key_header and headers.get("x-api-key"):
-            return
-        if isinstance(custom_headers.get("x-api-key"), Omit):
-            return
-
         raise TypeError(
-            '"Could not resolve authentication method. Expected either api_key or api_key_header to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted"'
+            '"Could not resolve authentication method. Expected the api_key to be set. Or for the `Authorization` headers to be explicitly omitted"'
         )
 
     def copy(
         self,
         *,
         api_key: str | None = None,
-        api_key_header: str | None = None,
         organization: str | None = None,
         environment: Literal["production", "development"] | None = None,
         base_url: str | httpx.URL | None = None,
@@ -250,7 +233,6 @@ class Dedalus(SyncAPIClient):
         http_client = http_client or self._client
         return self.__class__(
             api_key=api_key or self.api_key,
-            api_key_header=api_key_header or self.api_key_header,
             organization=organization or self.organization,
             base_url=base_url or self.base_url,
             environment=environment or self._environment,
@@ -304,13 +286,15 @@ class AsyncDedalus(AsyncAPIClient):
     root: root.AsyncRootResource
     health: health.AsyncHealthResource
     models: models.AsyncModelsResource
+    embeddings: embeddings.AsyncEmbeddingsResource
+    audio: audio.AsyncAudioResource
+    images: images.AsyncImagesResource
     chat: chat.AsyncChatResource
     with_raw_response: AsyncDedalusWithRawResponse
     with_streaming_response: AsyncDedalusWithStreamedResponse
 
     # client options
     api_key: str | None
-    api_key_header: str | None
     organization: str | None
 
     _environment: Literal["production", "development"] | NotGiven
@@ -319,7 +303,6 @@ class AsyncDedalus(AsyncAPIClient):
         self,
         *,
         api_key: str | None = None,
-        api_key_header: str | None = None,
         organization: str | None = None,
         environment: Literal["production", "development"] | NotGiven = not_given,
         base_url: str | httpx.URL | None | NotGiven = not_given,
@@ -345,16 +328,11 @@ class AsyncDedalus(AsyncAPIClient):
 
         This automatically infers the following arguments from their corresponding environment variables if they are not provided:
         - `api_key` from `DEDALUS_API_KEY`
-        - `api_key_header` from `DEDALUS_API_KEY`
         - `organization` from `DEDALUS_ORG_ID`
         """
         if api_key is None:
             api_key = os.environ.get("DEDALUS_API_KEY")
         self.api_key = api_key
-
-        if api_key_header is None:
-            api_key_header = os.environ.get("DEDALUS_API_KEY")
-        self.api_key_header = api_key_header
 
         if organization is None:
             organization = os.environ.get("DEDALUS_ORG_ID")
@@ -404,6 +382,9 @@ class AsyncDedalus(AsyncAPIClient):
         self.root = root.AsyncRootResource(self)
         self.health = health.AsyncHealthResource(self)
         self.models = models.AsyncModelsResource(self)
+        self.embeddings = embeddings.AsyncEmbeddingsResource(self)
+        self.audio = audio.AsyncAudioResource(self)
+        self.images = images.AsyncImagesResource(self)
         self.chat = chat.AsyncChatResource(self)
         self.with_raw_response = AsyncDedalusWithRawResponse(self)
         self.with_streaming_response = AsyncDedalusWithStreamedResponse(self)
@@ -416,21 +397,10 @@ class AsyncDedalus(AsyncAPIClient):
     @property
     @override
     def auth_headers(self) -> dict[str, str]:
-        return {**self._http_bearer, **self._api_key_auth}
-
-    @property
-    def _http_bearer(self) -> dict[str, str]:
         api_key = self.api_key
         if api_key is None:
             return {}
         return {"Authorization": f"Bearer {api_key}"}
-
-    @property
-    def _api_key_auth(self) -> dict[str, str]:
-        api_key_header = self.api_key_header
-        if api_key_header is None:
-            return {}
-        return {"x-api-key": api_key_header}
 
     @property
     @override
@@ -450,20 +420,14 @@ class AsyncDedalus(AsyncAPIClient):
         if isinstance(custom_headers.get("Authorization"), Omit):
             return
 
-        if self.api_key_header and headers.get("x-api-key"):
-            return
-        if isinstance(custom_headers.get("x-api-key"), Omit):
-            return
-
         raise TypeError(
-            '"Could not resolve authentication method. Expected either api_key or api_key_header to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted"'
+            '"Could not resolve authentication method. Expected the api_key to be set. Or for the `Authorization` headers to be explicitly omitted"'
         )
 
     def copy(
         self,
         *,
         api_key: str | None = None,
-        api_key_header: str | None = None,
         organization: str | None = None,
         environment: Literal["production", "development"] | None = None,
         base_url: str | httpx.URL | None = None,
@@ -500,7 +464,6 @@ class AsyncDedalus(AsyncAPIClient):
         http_client = http_client or self._client
         return self.__class__(
             api_key=api_key or self.api_key,
-            api_key_header=api_key_header or self.api_key_header,
             organization=organization or self.organization,
             base_url=base_url or self.base_url,
             environment=environment or self._environment,
@@ -555,6 +518,9 @@ class DedalusWithRawResponse:
         self.root = root.RootResourceWithRawResponse(client.root)
         self.health = health.HealthResourceWithRawResponse(client.health)
         self.models = models.ModelsResourceWithRawResponse(client.models)
+        self.embeddings = embeddings.EmbeddingsResourceWithRawResponse(client.embeddings)
+        self.audio = audio.AudioResourceWithRawResponse(client.audio)
+        self.images = images.ImagesResourceWithRawResponse(client.images)
         self.chat = chat.ChatResourceWithRawResponse(client.chat)
 
 
@@ -563,6 +529,9 @@ class AsyncDedalusWithRawResponse:
         self.root = root.AsyncRootResourceWithRawResponse(client.root)
         self.health = health.AsyncHealthResourceWithRawResponse(client.health)
         self.models = models.AsyncModelsResourceWithRawResponse(client.models)
+        self.embeddings = embeddings.AsyncEmbeddingsResourceWithRawResponse(client.embeddings)
+        self.audio = audio.AsyncAudioResourceWithRawResponse(client.audio)
+        self.images = images.AsyncImagesResourceWithRawResponse(client.images)
         self.chat = chat.AsyncChatResourceWithRawResponse(client.chat)
 
 
@@ -571,6 +540,9 @@ class DedalusWithStreamedResponse:
         self.root = root.RootResourceWithStreamingResponse(client.root)
         self.health = health.HealthResourceWithStreamingResponse(client.health)
         self.models = models.ModelsResourceWithStreamingResponse(client.models)
+        self.embeddings = embeddings.EmbeddingsResourceWithStreamingResponse(client.embeddings)
+        self.audio = audio.AudioResourceWithStreamingResponse(client.audio)
+        self.images = images.ImagesResourceWithStreamingResponse(client.images)
         self.chat = chat.ChatResourceWithStreamingResponse(client.chat)
 
 
@@ -579,6 +551,9 @@ class AsyncDedalusWithStreamedResponse:
         self.root = root.AsyncRootResourceWithStreamingResponse(client.root)
         self.health = health.AsyncHealthResourceWithStreamingResponse(client.health)
         self.models = models.AsyncModelsResourceWithStreamingResponse(client.models)
+        self.embeddings = embeddings.AsyncEmbeddingsResourceWithStreamingResponse(client.embeddings)
+        self.audio = audio.AsyncAudioResourceWithStreamingResponse(client.audio)
+        self.images = images.AsyncImagesResourceWithStreamingResponse(client.images)
         self.chat = chat.AsyncChatResourceWithStreamingResponse(client.chat)
 
 
