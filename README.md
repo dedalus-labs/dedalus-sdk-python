@@ -144,8 +144,8 @@ stream = client.chat.completions.create(
             "content": "What do you think of artificial intelligence?",
         },
     ],
-    stream=True,
     model="openai/gpt-5",
+    stream=True,
 )
 for stream_chunk in stream:
     print(stream_chunk.id)
@@ -169,8 +169,8 @@ stream = await client.chat.completions.create(
             "content": "What do you think of artificial intelligence?",
         },
     ],
-    stream=True,
     model="openai/gpt-5",
+    stream=True,
 )
 async for stream_chunk in stream:
     print(stream_chunk.id)
@@ -184,6 +184,24 @@ Nested request parameters are [TypedDicts](https://docs.python.org/3/library/typ
 - Converting to a dictionary, `model.to_dict()`
 
 Typed requests and responses provide autocomplete and documentation within your editor. If you would like to see type errors in VS Code to help catch bugs earlier, set `python.analysis.typeCheckingMode` to `basic`.
+
+## File uploads
+
+Request parameters that correspond to file uploads can be passed as `bytes`, or a [`PathLike`](https://docs.python.org/3/library/os.html#os.PathLike) instance or a tuple of `(filename, contents, media type)`.
+
+```python
+from pathlib import Path
+from dedalus_labs import Dedalus
+
+client = Dedalus()
+
+client.audio.transcriptions.create(
+    file=Path("/path/to/file"),
+    model="model",
+)
+```
+
+The async client uses the exact same interface. If you pass a [`PathLike`](https://docs.python.org/3/library/os.html#os.PathLike) instance, the file contents will be read asynchronously automatically.
 
 ## Handling errors
 

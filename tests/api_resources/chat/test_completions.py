@@ -27,6 +27,7 @@ class TestCompletions:
                     "role": "bar",
                 }
             ],
+            model="openai/gpt-4",
         )
         assert_matches_type(StreamChunk, completion, path=["response"])
 
@@ -40,19 +41,36 @@ class TestCompletions:
                     "role": "bar",
                 }
             ],
+            model="openai/gpt-4",
             agent_attributes={
                 "accuracy": 0.9,
                 "complexity": 0.8,
                 "efficiency": 0.7,
             },
+            audio={
+                "format": "bar",
+                "voice": "bar",
+            },
             frequency_penalty=-0.5,
+            function_call="string",
+            functions=[{"foo": "bar"}],
+            generation_config={
+                "candidateCount": "bar",
+                "responseMimeType": "bar",
+            },
             guardrails=[{"foo": "bar"}],
             handoff_config={"foo": "bar"},
             logit_bias={"50256": -100},
+            logprobs=True,
+            max_completion_tokens=1000,
             max_tokens=100,
             max_turns=5,
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
-            model="openai/gpt-4",
+            metadata={
+                "session": "abc",
+                "user_id": "123",
+            },
+            modalities=["text"],
             model_attributes={
                 "anthropic/claude-3-5-sonnet": {
                     "cost": 0.7,
@@ -71,19 +89,45 @@ class TestCompletions:
                 },
             },
             n=1,
+            parallel_tool_calls=True,
+            prediction={"foo": "bar"},
             presence_penalty=-0.5,
-            stop=["\\n", "END"],
+            prompt_cache_key="prompt_cache_key",
+            reasoning_effort="medium",
+            response_format={"type": "bar"},
+            safety_identifier="safety_identifier",
+            safety_settings=[
+                {
+                    "category": "bar",
+                    "threshold": "bar",
+                }
+            ],
+            seed=42,
+            service_tier="auto",
+            stop=["\n", "END"],
+            store=True,
             stream=False,
+            stream_options={"include_usage": "bar"},
+            system="You are a helpful assistant.",
             temperature=0,
+            thinking={
+                "budget_tokens": 2048,
+                "type": "enabled",
+            },
             tool_choice="auto",
+            tool_config={"function_calling_config": "bar"},
             tools=[
                 {
                     "function": "bar",
                     "type": "bar",
                 }
             ],
+            top_k=40,
+            top_logprobs=5,
             top_p=0.1,
             user="user-123",
+            verbosity="low",
+            web_search_options={"foo": "bar"},
         )
         assert_matches_type(StreamChunk, completion, path=["response"])
 
@@ -97,6 +141,7 @@ class TestCompletions:
                     "role": "bar",
                 }
             ],
+            model="openai/gpt-4",
         )
 
         assert response.is_closed is True
@@ -114,6 +159,7 @@ class TestCompletions:
                     "role": "bar",
                 }
             ],
+            model="openai/gpt-4",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -133,6 +179,7 @@ class TestCompletions:
                     "role": "bar",
                 }
             ],
+            model="openai/gpt-4",
             stream=True,
         )
         completion_stream.response.close()
@@ -147,20 +194,37 @@ class TestCompletions:
                     "role": "bar",
                 }
             ],
+            model="openai/gpt-4",
             stream=True,
             agent_attributes={
                 "accuracy": 0.9,
                 "complexity": 0.8,
                 "efficiency": 0.7,
             },
+            audio={
+                "format": "bar",
+                "voice": "bar",
+            },
             frequency_penalty=-0.5,
+            function_call="string",
+            functions=[{"foo": "bar"}],
+            generation_config={
+                "candidateCount": "bar",
+                "responseMimeType": "bar",
+            },
             guardrails=[{"foo": "bar"}],
             handoff_config={"foo": "bar"},
             logit_bias={"50256": -100},
+            logprobs=True,
+            max_completion_tokens=1000,
             max_tokens=100,
             max_turns=5,
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
-            model="openai/gpt-4",
+            metadata={
+                "session": "abc",
+                "user_id": "123",
+            },
+            modalities=["text"],
             model_attributes={
                 "anthropic/claude-3-5-sonnet": {
                     "cost": 0.7,
@@ -179,18 +243,44 @@ class TestCompletions:
                 },
             },
             n=1,
+            parallel_tool_calls=True,
+            prediction={"foo": "bar"},
             presence_penalty=-0.5,
-            stop=["\\n", "END"],
+            prompt_cache_key="prompt_cache_key",
+            reasoning_effort="medium",
+            response_format={"type": "bar"},
+            safety_identifier="safety_identifier",
+            safety_settings=[
+                {
+                    "category": "bar",
+                    "threshold": "bar",
+                }
+            ],
+            seed=42,
+            service_tier="auto",
+            stop=["\n", "END"],
+            store=True,
+            stream_options={"include_usage": "bar"},
+            system="You are a helpful assistant.",
             temperature=0,
+            thinking={
+                "budget_tokens": 2048,
+                "type": "enabled",
+            },
             tool_choice="auto",
+            tool_config={"function_calling_config": "bar"},
             tools=[
                 {
                     "function": "bar",
                     "type": "bar",
                 }
             ],
+            top_k=40,
+            top_logprobs=5,
             top_p=0.1,
             user="user-123",
+            verbosity="low",
+            web_search_options={"foo": "bar"},
         )
         completion_stream.response.close()
 
@@ -204,6 +294,7 @@ class TestCompletions:
                     "role": "bar",
                 }
             ],
+            model="openai/gpt-4",
             stream=True,
         )
 
@@ -221,6 +312,7 @@ class TestCompletions:
                     "role": "bar",
                 }
             ],
+            model="openai/gpt-4",
             stream=True,
         ) as response:
             assert not response.is_closed
@@ -247,6 +339,7 @@ class TestAsyncCompletions:
                     "role": "bar",
                 }
             ],
+            model="openai/gpt-4",
         )
         assert_matches_type(StreamChunk, completion, path=["response"])
 
@@ -260,19 +353,36 @@ class TestAsyncCompletions:
                     "role": "bar",
                 }
             ],
+            model="openai/gpt-4",
             agent_attributes={
                 "accuracy": 0.9,
                 "complexity": 0.8,
                 "efficiency": 0.7,
             },
+            audio={
+                "format": "bar",
+                "voice": "bar",
+            },
             frequency_penalty=-0.5,
+            function_call="string",
+            functions=[{"foo": "bar"}],
+            generation_config={
+                "candidateCount": "bar",
+                "responseMimeType": "bar",
+            },
             guardrails=[{"foo": "bar"}],
             handoff_config={"foo": "bar"},
             logit_bias={"50256": -100},
+            logprobs=True,
+            max_completion_tokens=1000,
             max_tokens=100,
             max_turns=5,
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
-            model="openai/gpt-4",
+            metadata={
+                "session": "abc",
+                "user_id": "123",
+            },
+            modalities=["text"],
             model_attributes={
                 "anthropic/claude-3-5-sonnet": {
                     "cost": 0.7,
@@ -291,19 +401,45 @@ class TestAsyncCompletions:
                 },
             },
             n=1,
+            parallel_tool_calls=True,
+            prediction={"foo": "bar"},
             presence_penalty=-0.5,
-            stop=["\\n", "END"],
+            prompt_cache_key="prompt_cache_key",
+            reasoning_effort="medium",
+            response_format={"type": "bar"},
+            safety_identifier="safety_identifier",
+            safety_settings=[
+                {
+                    "category": "bar",
+                    "threshold": "bar",
+                }
+            ],
+            seed=42,
+            service_tier="auto",
+            stop=["\n", "END"],
+            store=True,
             stream=False,
+            stream_options={"include_usage": "bar"},
+            system="You are a helpful assistant.",
             temperature=0,
+            thinking={
+                "budget_tokens": 2048,
+                "type": "enabled",
+            },
             tool_choice="auto",
+            tool_config={"function_calling_config": "bar"},
             tools=[
                 {
                     "function": "bar",
                     "type": "bar",
                 }
             ],
+            top_k=40,
+            top_logprobs=5,
             top_p=0.1,
             user="user-123",
+            verbosity="low",
+            web_search_options={"foo": "bar"},
         )
         assert_matches_type(StreamChunk, completion, path=["response"])
 
@@ -317,6 +453,7 @@ class TestAsyncCompletions:
                     "role": "bar",
                 }
             ],
+            model="openai/gpt-4",
         )
 
         assert response.is_closed is True
@@ -334,6 +471,7 @@ class TestAsyncCompletions:
                     "role": "bar",
                 }
             ],
+            model="openai/gpt-4",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -353,6 +491,7 @@ class TestAsyncCompletions:
                     "role": "bar",
                 }
             ],
+            model="openai/gpt-4",
             stream=True,
         )
         await completion_stream.response.aclose()
@@ -367,20 +506,37 @@ class TestAsyncCompletions:
                     "role": "bar",
                 }
             ],
+            model="openai/gpt-4",
             stream=True,
             agent_attributes={
                 "accuracy": 0.9,
                 "complexity": 0.8,
                 "efficiency": 0.7,
             },
+            audio={
+                "format": "bar",
+                "voice": "bar",
+            },
             frequency_penalty=-0.5,
+            function_call="string",
+            functions=[{"foo": "bar"}],
+            generation_config={
+                "candidateCount": "bar",
+                "responseMimeType": "bar",
+            },
             guardrails=[{"foo": "bar"}],
             handoff_config={"foo": "bar"},
             logit_bias={"50256": -100},
+            logprobs=True,
+            max_completion_tokens=1000,
             max_tokens=100,
             max_turns=5,
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
-            model="openai/gpt-4",
+            metadata={
+                "session": "abc",
+                "user_id": "123",
+            },
+            modalities=["text"],
             model_attributes={
                 "anthropic/claude-3-5-sonnet": {
                     "cost": 0.7,
@@ -399,18 +555,44 @@ class TestAsyncCompletions:
                 },
             },
             n=1,
+            parallel_tool_calls=True,
+            prediction={"foo": "bar"},
             presence_penalty=-0.5,
-            stop=["\\n", "END"],
+            prompt_cache_key="prompt_cache_key",
+            reasoning_effort="medium",
+            response_format={"type": "bar"},
+            safety_identifier="safety_identifier",
+            safety_settings=[
+                {
+                    "category": "bar",
+                    "threshold": "bar",
+                }
+            ],
+            seed=42,
+            service_tier="auto",
+            stop=["\n", "END"],
+            store=True,
+            stream_options={"include_usage": "bar"},
+            system="You are a helpful assistant.",
             temperature=0,
+            thinking={
+                "budget_tokens": 2048,
+                "type": "enabled",
+            },
             tool_choice="auto",
+            tool_config={"function_calling_config": "bar"},
             tools=[
                 {
                     "function": "bar",
                     "type": "bar",
                 }
             ],
+            top_k=40,
+            top_logprobs=5,
             top_p=0.1,
             user="user-123",
+            verbosity="low",
+            web_search_options={"foo": "bar"},
         )
         await completion_stream.response.aclose()
 
@@ -424,6 +606,7 @@ class TestAsyncCompletions:
                     "role": "bar",
                 }
             ],
+            model="openai/gpt-4",
             stream=True,
         )
 
@@ -441,6 +624,7 @@ class TestAsyncCompletions:
                     "role": "bar",
                 }
             ],
+            model="openai/gpt-4",
             stream=True,
         ) as response:
             assert not response.is_closed
