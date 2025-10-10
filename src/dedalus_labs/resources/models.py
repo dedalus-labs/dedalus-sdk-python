@@ -13,8 +13,8 @@ from .._response import (
     async_to_raw_response_wrapper,
     async_to_streamed_response_wrapper,
 )
-from ..types.model import Model
 from .._base_client import make_request_options
+from ..types.shared.model import Model
 from ..types.list_models_response import ListModelsResponse
 
 __all__ = ["ModelsResource", "AsyncModelsResource"]

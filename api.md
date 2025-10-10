@@ -1,3 +1,9 @@
+# Shared Types
+
+```python
+from dedalus_labs.types import DedalusModel, Model
+```
+
 # Root
 
 Types:
@@ -27,12 +33,12 @@ Methods:
 Types:
 
 ```python
-from dedalus_labs.types import DedalusModel, ListModelsResponse, Model
+from dedalus_labs.types import ListModelsResponse
 ```
 
 Methods:
 
-- <code title="get /v1/models/{model_id}">client.models.<a href="./src/dedalus_labs/resources/models.py">retrieve</a>(model_id) -> <a href="./src/dedalus_labs/types/model.py">Model</a></code>
+- <code title="get /v1/models/{model_id}">client.models.<a href="./src/dedalus_labs/resources/models.py">retrieve</a>(model_id) -> <a href="./src/dedalus_labs/types/shared/model.py">Model</a></code>
 - <code title="get /v1/models">client.models.<a href="./src/dedalus_labs/resources/models.py">list</a>() -> <a href="./src/dedalus_labs/types/list_models_response.py">ListModelsResponse</a></code>
 
 # Embeddings

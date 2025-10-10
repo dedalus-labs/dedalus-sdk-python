@@ -3,8 +3,8 @@
 from typing import List, Optional
 from typing_extensions import Literal
 
-from .model import Model
 from .._models import BaseModel
+from .shared.model import Model
 
 __all__ = ["ListModelsResponse"]
 
