@@ -26,11 +26,11 @@ __all__ = [
 
 
 class CompletionCreateParamsBase(TypedDict, total=False):
-    messages: Required[Iterable[Dict[str, object]]]
-    """A list of messages comprising the conversation so far.
+    messages: Required[Union[Iterable[Dict[str, object]], str]]
+    """Conversation history.
 
-    Depending on the model you use, different message types (modalities) are
-    supported, like text, images, and audio.
+    Accepts either a list of message objects or a string, which is treated as a
+    single user message.
     """
 
     model: Required[Model]
@@ -56,6 +56,12 @@ class CompletionCreateParamsBase(TypedDict, total=False):
 
     Required when requesting audio responses (for example, modalities including
     'audio').
+    """
+
+    disable_automatic_function_calling: Optional[bool]
+    """Google-only flag to disable the SDK's automatic function execution.
+
+    When true, the model returns function calls for the client to execute manually.
     """
 
     frequency_penalty: Optional[float]
@@ -94,6 +100,18 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     """Configuration for multi-model handoffs and agent orchestration.
 
     Reserved for future use - handoff configuration format not yet finalized.
+    """
+
+    input: Union[Iterable[Dict[str, object]], str, None]
+    """Convenience alias for Responses-style `input`.
+
+    Used when `messages` is omitted to provide the user prompt directly.
+    """
+
+    instructions: Union[str, Iterable[Dict[str, object]], None]
+    """Convenience alias for Responses-style `instructions`.
+
+    Takes precedence over `system` and over system-role messages when provided.
     """
 
     logit_bias: Optional[Dict[str, int]]
@@ -200,7 +218,9 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     """An object specifying the format that the model must output.
 
     Use {'type': 'json_schema', 'json_schema': {...}} for structured outputs or
-    {'type': 'json_object'} for the legacy JSON mode.
+    {'type': 'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed
+    models honour this field; Anthropic and Google requests will return an
+    invalid_request_error if it is supplied.
     """
 
     safety_identifier: Optional[str]

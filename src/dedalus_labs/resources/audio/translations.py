@@ -62,7 +62,7 @@ class TranslationsResource(SyncAPIResource):
         """
         Translate audio to English text.
 
-        OpenAI only endpoint.
+        OpenAI Whisper models only.
 
         Args:
           extra_headers: Send extra headers
@@ -143,7 +143,7 @@ class AsyncTranslationsResource(AsyncAPIResource):
         """
         Translate audio to English text.
 
-        OpenAI only endpoint.
+        OpenAI Whisper models only.
 
         Args:
           extra_headers: Send extra headers
