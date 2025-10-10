@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0-alpha.12 (2025-10-10)
+
+Full Changelog: [v0.1.0-alpha.11...v0.1.0-alpha.12](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.11...v0.1.0-alpha.12)
+
+### Chores
+
+* tidying ([354f95b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/354f95b1efde6b3df27275b3b8a36510f28d1858))
+
 ## 0.1.0-alpha.11 (2025-10-10)
 
 Full Changelog: [v0.1.0-alpha.10...v0.1.0-alpha.11](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.10...v0.1.0-alpha.11)
