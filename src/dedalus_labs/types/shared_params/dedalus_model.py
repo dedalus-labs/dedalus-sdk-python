@@ -5,15 +5,9 @@ from __future__ import annotations
 from typing import Dict, List, Union, Iterable, Optional
 from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
-from .._types import SequenceNotStr
+from ..._types import SequenceNotStr
 
-__all__ = [
-    "DedalusModelParam",
-    "Settings",
-    "SettingsReasoning",
-    "SettingsToolChoice",
-    "SettingsToolChoiceMCPToolChoice",
-]
+__all__ = ["DedalusModel", "Settings", "SettingsReasoning", "SettingsToolChoice", "SettingsToolChoiceMCPToolChoice"]
 
 
 class SettingsReasoningTyped(TypedDict, total=False):
@@ -153,7 +147,7 @@ class Settings(TypedDict, total=False):
     web_search_options: Optional[Dict[str, object]]
 
 
-class DedalusModelParam(TypedDict, total=False):
+class DedalusModel(TypedDict, total=False):
     model: Required[str]
     """
     Model identifier with provider prefix (e.g., 'openai/gpt-5',

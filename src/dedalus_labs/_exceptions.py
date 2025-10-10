@@ -15,17 +15,10 @@ __all__ = [
     "UnprocessableEntityError",
     "RateLimitError",
     "InternalServerError",
-    "SchemaProcessingError",
 ]
 
 
 class DedalusError(Exception):
-    pass
-
-
-class SchemaProcessingError(DedalusError):
-    """Base exception for schema processing errors during parsing or analysis."""
-
     pass
 
 

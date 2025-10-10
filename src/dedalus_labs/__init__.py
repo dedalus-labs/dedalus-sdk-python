@@ -21,7 +21,6 @@ from ._models import BaseModel
 from ._version import __title__, __version__
 from ._response import APIResponse as APIResponse, AsyncAPIResponse as AsyncAPIResponse
 from ._constants import DEFAULT_TIMEOUT, DEFAULT_MAX_RETRIES, DEFAULT_CONNECTION_LIMITS
-from .lib.runner import DedalusRunner
 from ._exceptions import (
     APIError,
     DedalusError,
@@ -35,13 +34,11 @@ from ._exceptions import (
     AuthenticationError,
     InternalServerError,
     PermissionDeniedError,
-    SchemaProcessingError,
     UnprocessableEntityError,
     APIResponseValidationError,
 )
 from ._base_client import DefaultHttpxClient, DefaultAioHttpClient, DefaultAsyncHttpxClient
 from ._utils._logs import setup_logging as _setup_logging
-from .types.dedalus_model import DedalusModel
 
 __all__ = [
     "types",
@@ -86,9 +83,6 @@ __all__ = [
     "DefaultHttpxClient",
     "DefaultAsyncHttpxClient",
     "DefaultAioHttpClient",
-    "DedalusRunner",
-    "DedalusModel",
-    "SchemaProcessingError",
 ]
 
 if not _t.TYPE_CHECKING:

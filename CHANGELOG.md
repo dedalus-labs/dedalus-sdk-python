@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.1.0-alpha.11 (2025-10-10)
+
+Full Changelog: [v0.1.0-alpha.10...v0.1.0-alpha.11](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.10...v0.1.0-alpha.11)
+
+### Features
+
+* **api:** auto exec tools ([780162b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/780162b01d27703bb873488702ebede232791ed2))
+* **api:** manual updates ([9b2851a](https://github.com/dedalus-labs/dedalus-sdk-python/commit/9b2851a6bdbf861c0db0b01aa3e7a8f5a45bfa77))
+
+
+### Bug Fixes
+
+* **types:** remove manual DedalusModel ([e1ce236](https://github.com/dedalus-labs/dedalus-sdk-python/commit/e1ce236b931b0715b9fa280ef329bfa451eb05c1))
+
+
+### Chores
+
+* **internal:** detect missing future annotations with ruff ([6909c09](https://github.com/dedalus-labs/dedalus-sdk-python/commit/6909c09996be7fe019ec6737a18b7e330b325c4a))
+* remove custom code ([81f922b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/81f922b8eabc571abf4cfd1b87e08517b4564128))
+
 ## 0.1.0-alpha.10 (2025-10-10)
 
 Full Changelog: [v0.1.0-alpha.9...v0.1.0-alpha.10](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.9...v0.1.0-alpha.10)

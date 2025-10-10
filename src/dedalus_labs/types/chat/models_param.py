@@ -6,10 +6,10 @@ from typing import List, Union
 from typing_extensions import TypeAlias
 
 from .model_id import ModelID
-from ..dedalus_model_param import DedalusModelParam
+from ..shared_params.dedalus_model import DedalusModel
 
 __all__ = ["ModelsParam", "DedalusModelChoiceParam"]
 
-DedalusModelChoiceParam: TypeAlias = Union[ModelID, DedalusModelParam]
+DedalusModelChoiceParam: TypeAlias = Union[ModelID, DedalusModel]
 
 ModelsParam: TypeAlias = List[DedalusModelChoiceParam]
