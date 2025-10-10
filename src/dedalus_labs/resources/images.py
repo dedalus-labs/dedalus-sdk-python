@@ -75,7 +75,8 @@ class ImagesResource(SyncAPIResource):
         """
         Generate images from text prompts.
 
-        Supports OpenAI (DALL-E, GPT Image) and Google (Nano Banana) models.
+        Pure image generation models only (DALL-E, GPT Image). For multimodal models
+        like gemini-2.5-flash-image, use /v1/chat/completions.
 
         Args:
           prompt: A text description of the desired image(s). The maximum length is 32000
@@ -238,7 +239,8 @@ class AsyncImagesResource(AsyncAPIResource):
         """
         Generate images from text prompts.
 
-        Supports OpenAI (DALL-E, GPT Image) and Google (Nano Banana) models.
+        Pure image generation models only (DALL-E, GPT Image). For multimodal models
+        like gemini-2.5-flash-image, use /v1/chat/completions.
 
         Args:
           prompt: A text description of the desired image(s). The maximum length is 32000

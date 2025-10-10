@@ -63,7 +63,7 @@ class TranscriptionsResource(SyncAPIResource):
         """
         Transcribe audio to text.
 
-        OpenAI only endpoint.
+        OpenAI Whisper models only.
 
         Args:
           extra_headers: Send extra headers
@@ -146,7 +146,7 @@ class AsyncTranscriptionsResource(AsyncAPIResource):
         """
         Transcribe audio to text.
 
-        OpenAI only endpoint.
+        OpenAI Whisper models only.
 
         Args:
           extra_headers: Send extra headers

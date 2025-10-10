@@ -49,16 +49,19 @@ class CompletionsResource(SyncAPIResource):
     def create(
         self,
         *,
-        messages: Iterable[Dict[str, object]],
+        messages: Union[Iterable[Dict[str, object]], str],
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
+        disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
         functions: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         generation_config: Optional[Dict[str, object]] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
+        input: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
+        instructions: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
@@ -182,9 +185,8 @@ class CompletionsResource(SyncAPIResource):
             ```
 
         Args:
-          messages: A list of messages comprising the conversation so far. Depending on the model
-              you use, different message types (modalities) are supported, like text, images,
-              and audio.
+          messages: Conversation history. Accepts either a list of message objects or a string,
+              which is treated as a single user message.
 
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
               or a list for multi-model routing. Single model: 'openai/gpt-4',
@@ -200,6 +202,9 @@ class CompletionsResource(SyncAPIResource):
 
           audio: Parameters for audio output. Required when requesting audio responses (for
               example, modalities including 'audio').
+
+          disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
+              the model returns function calls for the client to execute manually.
 
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing the model's likelihood to
@@ -219,6 +224,12 @@ class CompletionsResource(SyncAPIResource):
 
           handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
               future use - handoff configuration format not yet finalized.
+
+          input: Convenience alias for Responses-style `input`. Used when `messages` is omitted
+              to provide the user prompt directly.
+
+          instructions: Convenience alias for Responses-style `instructions`. Takes precedence over
+              `system` and over system-role messages when provided.
 
           logit_bias: Modify the likelihood of specified tokens appearing in the completion. Accepts a
               JSON object mapping token IDs (as strings) to bias values from -100 to 100. The
@@ -279,7 +290,9 @@ class CompletionsResource(SyncAPIResource):
           response_format:
               An object specifying the format that the model must output. Use {'type':
               'json_schema', 'json_schema': {...}} for structured outputs or {'type':
-              'json_object'} for the legacy JSON mode.
+              'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed models
+              honour this field; Anthropic and Google requests will return an
+              invalid_request_error if it is supplied.
 
           safety_identifier: Stable identifier used to help detect users who might violate OpenAI usage
               policies. Consider hashing end-user identifiers before sending.
@@ -363,17 +376,20 @@ class CompletionsResource(SyncAPIResource):
     def create(
         self,
         *,
-        messages: Iterable[Dict[str, object]],
+        messages: Union[Iterable[Dict[str, object]], str],
         model: completion_create_params.Model,
         stream: Literal[True],
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
+        disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
         functions: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         generation_config: Optional[Dict[str, object]] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
+        input: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
+        instructions: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
@@ -496,9 +512,8 @@ class CompletionsResource(SyncAPIResource):
             ```
 
         Args:
-          messages: A list of messages comprising the conversation so far. Depending on the model
-              you use, different message types (modalities) are supported, like text, images,
-              and audio.
+          messages: Conversation history. Accepts either a list of message objects or a string,
+              which is treated as a single user message.
 
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
               or a list for multi-model routing. Single model: 'openai/gpt-4',
@@ -518,6 +533,9 @@ class CompletionsResource(SyncAPIResource):
           audio: Parameters for audio output. Required when requesting audio responses (for
               example, modalities including 'audio').
 
+          disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
+              the model returns function calls for the client to execute manually.
+
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing the model's likelihood to
               repeat the same line verbatim.
@@ -536,6 +554,12 @@ class CompletionsResource(SyncAPIResource):
 
           handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
               future use - handoff configuration format not yet finalized.
+
+          input: Convenience alias for Responses-style `input`. Used when `messages` is omitted
+              to provide the user prompt directly.
+
+          instructions: Convenience alias for Responses-style `instructions`. Takes precedence over
+              `system` and over system-role messages when provided.
 
           logit_bias: Modify the likelihood of specified tokens appearing in the completion. Accepts a
               JSON object mapping token IDs (as strings) to bias values from -100 to 100. The
@@ -596,7 +620,9 @@ class CompletionsResource(SyncAPIResource):
           response_format:
               An object specifying the format that the model must output. Use {'type':
               'json_schema', 'json_schema': {...}} for structured outputs or {'type':
-              'json_object'} for the legacy JSON mode.
+              'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed models
+              honour this field; Anthropic and Google requests will return an
+              invalid_request_error if it is supplied.
 
           safety_identifier: Stable identifier used to help detect users who might violate OpenAI usage
               policies. Consider hashing end-user identifiers before sending.
@@ -677,17 +703,20 @@ class CompletionsResource(SyncAPIResource):
     def create(
         self,
         *,
-        messages: Iterable[Dict[str, object]],
+        messages: Union[Iterable[Dict[str, object]], str],
         model: completion_create_params.Model,
         stream: bool,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
+        disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
         functions: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         generation_config: Optional[Dict[str, object]] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
+        input: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
+        instructions: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
@@ -810,9 +839,8 @@ class CompletionsResource(SyncAPIResource):
             ```
 
         Args:
-          messages: A list of messages comprising the conversation so far. Depending on the model
-              you use, different message types (modalities) are supported, like text, images,
-              and audio.
+          messages: Conversation history. Accepts either a list of message objects or a string,
+              which is treated as a single user message.
 
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
               or a list for multi-model routing. Single model: 'openai/gpt-4',
@@ -832,6 +860,9 @@ class CompletionsResource(SyncAPIResource):
           audio: Parameters for audio output. Required when requesting audio responses (for
               example, modalities including 'audio').
 
+          disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
+              the model returns function calls for the client to execute manually.
+
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing the model's likelihood to
               repeat the same line verbatim.
@@ -850,6 +881,12 @@ class CompletionsResource(SyncAPIResource):
 
           handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
               future use - handoff configuration format not yet finalized.
+
+          input: Convenience alias for Responses-style `input`. Used when `messages` is omitted
+              to provide the user prompt directly.
+
+          instructions: Convenience alias for Responses-style `instructions`. Takes precedence over
+              `system` and over system-role messages when provided.
 
           logit_bias: Modify the likelihood of specified tokens appearing in the completion. Accepts a
               JSON object mapping token IDs (as strings) to bias values from -100 to 100. The
@@ -910,7 +947,9 @@ class CompletionsResource(SyncAPIResource):
           response_format:
               An object specifying the format that the model must output. Use {'type':
               'json_schema', 'json_schema': {...}} for structured outputs or {'type':
-              'json_object'} for the legacy JSON mode.
+              'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed models
+              honour this field; Anthropic and Google requests will return an
+              invalid_request_error if it is supplied.
 
           safety_identifier: Stable identifier used to help detect users who might violate OpenAI usage
               policies. Consider hashing end-user identifiers before sending.
@@ -991,16 +1030,19 @@ class CompletionsResource(SyncAPIResource):
     def create(
         self,
         *,
-        messages: Iterable[Dict[str, object]],
+        messages: Union[Iterable[Dict[str, object]], str],
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
+        disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
         functions: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         generation_config: Optional[Dict[str, object]] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
+        input: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
+        instructions: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
@@ -1053,12 +1095,15 @@ class CompletionsResource(SyncAPIResource):
                     "model": model,
                     "agent_attributes": agent_attributes,
                     "audio": audio,
+                    "disable_automatic_function_calling": disable_automatic_function_calling,
                     "frequency_penalty": frequency_penalty,
                     "function_call": function_call,
                     "functions": functions,
                     "generation_config": generation_config,
                     "guardrails": guardrails,
                     "handoff_config": handoff_config,
+                    "input": input,
+                    "instructions": instructions,
                     "logit_bias": logit_bias,
                     "logprobs": logprobs,
                     "max_completion_tokens": max_completion_tokens,
@@ -1137,16 +1182,19 @@ class AsyncCompletionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
-        messages: Iterable[Dict[str, object]],
+        messages: Union[Iterable[Dict[str, object]], str],
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
+        disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
         functions: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         generation_config: Optional[Dict[str, object]] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
+        input: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
+        instructions: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
@@ -1270,9 +1318,8 @@ class AsyncCompletionsResource(AsyncAPIResource):
             ```
 
         Args:
-          messages: A list of messages comprising the conversation so far. Depending on the model
-              you use, different message types (modalities) are supported, like text, images,
-              and audio.
+          messages: Conversation history. Accepts either a list of message objects or a string,
+              which is treated as a single user message.
 
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
               or a list for multi-model routing. Single model: 'openai/gpt-4',
@@ -1288,6 +1335,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           audio: Parameters for audio output. Required when requesting audio responses (for
               example, modalities including 'audio').
+
+          disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
+              the model returns function calls for the client to execute manually.
 
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing the model's likelihood to
@@ -1307,6 +1357,12 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
               future use - handoff configuration format not yet finalized.
+
+          input: Convenience alias for Responses-style `input`. Used when `messages` is omitted
+              to provide the user prompt directly.
+
+          instructions: Convenience alias for Responses-style `instructions`. Takes precedence over
+              `system` and over system-role messages when provided.
 
           logit_bias: Modify the likelihood of specified tokens appearing in the completion. Accepts a
               JSON object mapping token IDs (as strings) to bias values from -100 to 100. The
@@ -1367,7 +1423,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
           response_format:
               An object specifying the format that the model must output. Use {'type':
               'json_schema', 'json_schema': {...}} for structured outputs or {'type':
-              'json_object'} for the legacy JSON mode.
+              'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed models
+              honour this field; Anthropic and Google requests will return an
+              invalid_request_error if it is supplied.
 
           safety_identifier: Stable identifier used to help detect users who might violate OpenAI usage
               policies. Consider hashing end-user identifiers before sending.
@@ -1451,17 +1509,20 @@ class AsyncCompletionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
-        messages: Iterable[Dict[str, object]],
+        messages: Union[Iterable[Dict[str, object]], str],
         model: completion_create_params.Model,
         stream: Literal[True],
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
+        disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
         functions: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         generation_config: Optional[Dict[str, object]] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
+        input: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
+        instructions: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
@@ -1584,9 +1645,8 @@ class AsyncCompletionsResource(AsyncAPIResource):
             ```
 
         Args:
-          messages: A list of messages comprising the conversation so far. Depending on the model
-              you use, different message types (modalities) are supported, like text, images,
-              and audio.
+          messages: Conversation history. Accepts either a list of message objects or a string,
+              which is treated as a single user message.
 
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
               or a list for multi-model routing. Single model: 'openai/gpt-4',
@@ -1606,6 +1666,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
           audio: Parameters for audio output. Required when requesting audio responses (for
               example, modalities including 'audio').
 
+          disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
+              the model returns function calls for the client to execute manually.
+
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing the model's likelihood to
               repeat the same line verbatim.
@@ -1624,6 +1687,12 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
               future use - handoff configuration format not yet finalized.
+
+          input: Convenience alias for Responses-style `input`. Used when `messages` is omitted
+              to provide the user prompt directly.
+
+          instructions: Convenience alias for Responses-style `instructions`. Takes precedence over
+              `system` and over system-role messages when provided.
 
           logit_bias: Modify the likelihood of specified tokens appearing in the completion. Accepts a
               JSON object mapping token IDs (as strings) to bias values from -100 to 100. The
@@ -1684,7 +1753,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
           response_format:
               An object specifying the format that the model must output. Use {'type':
               'json_schema', 'json_schema': {...}} for structured outputs or {'type':
-              'json_object'} for the legacy JSON mode.
+              'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed models
+              honour this field; Anthropic and Google requests will return an
+              invalid_request_error if it is supplied.
 
           safety_identifier: Stable identifier used to help detect users who might violate OpenAI usage
               policies. Consider hashing end-user identifiers before sending.
@@ -1765,17 +1836,20 @@ class AsyncCompletionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
-        messages: Iterable[Dict[str, object]],
+        messages: Union[Iterable[Dict[str, object]], str],
         model: completion_create_params.Model,
         stream: bool,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
+        disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
         functions: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         generation_config: Optional[Dict[str, object]] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
+        input: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
+        instructions: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
@@ -1898,9 +1972,8 @@ class AsyncCompletionsResource(AsyncAPIResource):
             ```
 
         Args:
-          messages: A list of messages comprising the conversation so far. Depending on the model
-              you use, different message types (modalities) are supported, like text, images,
-              and audio.
+          messages: Conversation history. Accepts either a list of message objects or a string,
+              which is treated as a single user message.
 
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
               or a list for multi-model routing. Single model: 'openai/gpt-4',
@@ -1920,6 +1993,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
           audio: Parameters for audio output. Required when requesting audio responses (for
               example, modalities including 'audio').
 
+          disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
+              the model returns function calls for the client to execute manually.
+
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing the model's likelihood to
               repeat the same line verbatim.
@@ -1938,6 +2014,12 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
               future use - handoff configuration format not yet finalized.
+
+          input: Convenience alias for Responses-style `input`. Used when `messages` is omitted
+              to provide the user prompt directly.
+
+          instructions: Convenience alias for Responses-style `instructions`. Takes precedence over
+              `system` and over system-role messages when provided.
 
           logit_bias: Modify the likelihood of specified tokens appearing in the completion. Accepts a
               JSON object mapping token IDs (as strings) to bias values from -100 to 100. The
@@ -1998,7 +2080,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
           response_format:
               An object specifying the format that the model must output. Use {'type':
               'json_schema', 'json_schema': {...}} for structured outputs or {'type':
-              'json_object'} for the legacy JSON mode.
+              'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed models
+              honour this field; Anthropic and Google requests will return an
+              invalid_request_error if it is supplied.
 
           safety_identifier: Stable identifier used to help detect users who might violate OpenAI usage
               policies. Consider hashing end-user identifiers before sending.
@@ -2079,16 +2163,19 @@ class AsyncCompletionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
-        messages: Iterable[Dict[str, object]],
+        messages: Union[Iterable[Dict[str, object]], str],
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
+        disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
         functions: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         generation_config: Optional[Dict[str, object]] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
+        input: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
+        instructions: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
@@ -2141,12 +2228,15 @@ class AsyncCompletionsResource(AsyncAPIResource):
                     "model": model,
                     "agent_attributes": agent_attributes,
                     "audio": audio,
+                    "disable_automatic_function_calling": disable_automatic_function_calling,
                     "frequency_penalty": frequency_penalty,
                     "function_call": function_call,
                     "functions": functions,
                     "generation_config": generation_config,
                     "guardrails": guardrails,
                     "handoff_config": handoff_config,
+                    "input": input,
+                    "instructions": instructions,
                     "logit_bias": logit_bias,
                     "logprobs": logprobs,
                     "max_completion_tokens": max_completion_tokens,

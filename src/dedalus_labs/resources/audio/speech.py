@@ -65,10 +65,12 @@ class SpeechResource(SyncAPIResource):
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
     ) -> BinaryAPIResponse:
-        """
-        Generate audio from text using text-to-speech.
+        """Generate audio from text using text-to-speech.
 
-        OpenAI only endpoint.
+        OpenAI models only.
+
+        Gemini TTS uses different architecture (audio modalities in
+        chat).
 
         Args:
           input: The text to generate audio for. The maximum length is 4096 characters.
@@ -168,10 +170,12 @@ class AsyncSpeechResource(AsyncAPIResource):
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
     ) -> AsyncBinaryAPIResponse:
-        """
-        Generate audio from text using text-to-speech.
+        """Generate audio from text using text-to-speech.
 
-        OpenAI only endpoint.
+        OpenAI models only.
+
+        Gemini TTS uses different architecture (audio modalities in
+        chat).
 
         Args:
           input: The text to generate audio for. The maximum length is 4096 characters.

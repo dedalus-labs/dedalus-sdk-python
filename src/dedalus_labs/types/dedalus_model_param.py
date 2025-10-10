@@ -41,9 +41,9 @@ class Settings(TypedDict, total=False):
 
     audio: Optional[Dict[str, object]]
 
-    extra_args: Optional[Dict[str, object]]
+    disable_automatic_function_calling: bool
 
-    extra_body: Optional[Dict[str, object]]
+    extra_args: Optional[Dict[str, object]]
 
     extra_headers: Optional[Dict[str, str]]
 
@@ -81,6 +81,8 @@ class Settings(TypedDict, total=False):
 
     presence_penalty: Optional[float]
 
+    prompt_cache_key: Optional[str]
+
     reasoning: Optional[SettingsReasoning]
 
     reasoning_effort: Optional[str]
@@ -100,6 +102,8 @@ class Settings(TypedDict, total=False):
         ]
     ]
 
+    safety_identifier: Optional[str]
+
     safety_settings: Optional[Iterable[Dict[str, object]]]
 
     seed: Optional[int]
@@ -114,13 +118,19 @@ class Settings(TypedDict, total=False):
 
     stream_options: Optional[Dict[str, object]]
 
+    structured_output: object
+
     system_instruction: Optional[Dict[str, object]]
 
     temperature: Optional[float]
 
     thinking: Optional[Dict[str, object]]
 
+    timeout: Optional[float]
+
     tool_choice: Optional[SettingsToolChoice]
+
+    tool_config: Optional[Dict[str, object]]
 
     top_k: Optional[int]
 
@@ -136,7 +146,11 @@ class Settings(TypedDict, total=False):
 
     user: Optional[str]
 
+    verbosity: Optional[str]
+
     voice: Optional[str]
+
+    web_search_options: Optional[Dict[str, object]]
 
 
 class DedalusModelParam(TypedDict, total=False):
