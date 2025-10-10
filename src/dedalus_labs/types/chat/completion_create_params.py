@@ -13,16 +13,34 @@ from ..dedalus_model_param import DedalusModelParam
 __all__ = [
     "CompletionCreateParamsBase",
     "Model",
+    "MCPServers",
+    "MCPServersMCPServer",
+    "MCPServersMCPServerMCPServerSpec",
+    "MCPServersMCPServerSpec",
+    "Thinking",
+    "ThinkingThinkingConfigDisabled",
+    "ThinkingThinkingConfigEnabled",
     "CompletionCreateParamsNonStreaming",
     "CompletionCreateParamsStreaming",
 ]
 
 
 class CompletionCreateParamsBase(TypedDict, total=False):
-    messages: Required[Iterable[Dict[str, object]]]
-    """Messages to the model.
+    messages: Required[Union[Iterable[Dict[str, object]], str]]
+    """Conversation history.
 
-    Supports role/content structure and multimodal content arrays.
+    Accepts either a list of message objects or a string, which is treated as a
+    single user message.
+    """
+
+    model: Required[Model]
+    """Model(s) to use for completion.
+
+    Can be a single model ID, a DedalusModel object, or a list for multi-model
+    routing. Single model: 'openai/gpt-4', 'anthropic/claude-3-5-sonnet-20241022',
+    'openai/gpt-4o-mini', or a DedalusModel instance. Multi-model routing:
+    ['openai/gpt-4o-mini', 'openai/gpt-4', 'anthropic/claude-3-5-sonnet'] or list of
+    DedalusModel objects - agent will choose optimal model based on task complexity.
     """
 
     agent_attributes: Optional[Dict[str, float]]
@@ -33,11 +51,43 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     values indicate stronger preference for that characteristic.
     """
 
+    audio: Optional[Dict[str, object]]
+    """Parameters for audio output.
+
+    Required when requesting audio responses (for example, modalities including
+    'audio').
+    """
+
+    disable_automatic_function_calling: Optional[bool]
+    """Google-only flag to disable the SDK's automatic function execution.
+
+    When true, the model returns function calls for the client to execute manually.
+    """
+
     frequency_penalty: Optional[float]
-    """Frequency penalty (-2 to 2).
+    """Number between -2.0 and 2.0.
 
     Positive values penalize new tokens based on their existing frequency in the
-    text so far, decreasing likelihood of repeated phrases.
+    text so far, decreasing the model's likelihood to repeat the same line verbatim.
+    """
+
+    function_call: Union[str, Dict[str, object], None]
+    """Deprecated in favor of 'tool_choice'.
+
+    Controls which function is called by the model (none, auto, or specific name).
+    """
+
+    functions: Optional[Iterable[Dict[str, object]]]
+    """Deprecated in favor of 'tools'.
+
+    Legacy list of function definitions the model may generate JSON inputs for.
+    """
+
+    generation_config: Optional[Dict[str, object]]
+    """Google generationConfig object.
+
+    Merged with auto-generated config. Use for Google-specific params
+    (candidateCount, responseMimeType, etc.).
     """
 
     guardrails: Optional[Iterable[Dict[str, object]]]
@@ -52,17 +102,45 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     Reserved for future use - handoff configuration format not yet finalized.
     """
 
-    logit_bias: Optional[Dict[str, int]]
-    """Modify likelihood of specified tokens appearing in the completion.
+    input: Union[Iterable[Dict[str, object]], str, None]
+    """Convenience alias for Responses-style `input`.
 
-    Maps token IDs (as strings) to bias values (-100 to 100). -100 = completely ban
-    token, +100 = strongly favor token.
+    Used when `messages` is omitted to provide the user prompt directly.
+    """
+
+    instructions: Union[str, Iterable[Dict[str, object]], None]
+    """Convenience alias for Responses-style `instructions`.
+
+    Takes precedence over `system` and over system-role messages when provided.
+    """
+
+    logit_bias: Optional[Dict[str, int]]
+    """Modify the likelihood of specified tokens appearing in the completion.
+
+    Accepts a JSON object mapping token IDs (as strings) to bias values from -100
+    to 100. The bias is added to the logits before sampling; values between -1 and 1
+    nudge selection probability, while values like -100 or 100 effectively ban or
+    require a token.
+    """
+
+    logprobs: Optional[bool]
+    """Whether to return log probabilities of the output tokens.
+
+    If true, returns the log probabilities for each token in the response content.
+    """
+
+    max_completion_tokens: Optional[int]
+    """
+    An upper bound for the number of tokens that can be generated for a completion,
+    including visible output and reasoning tokens.
     """
 
     max_tokens: Optional[int]
-    """Maximum number of tokens to generate in the completion.
+    """The maximum number of tokens that can be generated in the chat completion.
 
-    Does not include tokens in the input messages.
+    This value can be used to control costs for text generated via API. This value
+    is now deprecated in favor of 'max_completion_tokens' and is not compatible with
+    o-series models.
     """
 
     max_turns: Optional[int]
@@ -72,22 +150,24 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     reasoning but increase cost and latency.
     """
 
-    mcp_servers: Optional[SequenceNotStr[str]]
+    mcp_servers: Optional[MCPServers]
     """
     MCP (Model Context Protocol) server addresses to make available for server-side
-    tool execution. Can be URLs (e.g., 'https://mcp.example.com') or slugs (e.g.,
-    'dedalus-labs/brave-search'). MCP tools are executed server-side and billed
-    separately.
+    tool execution. Entries can be URLs (e.g., 'https://mcp.example.com'), slugs
+    (e.g., 'dedalus-labs/brave-search'), or structured objects specifying
+    slug/version/url. MCP tools are executed server-side and billed separately.
     """
 
-    model: Optional[Model]
-    """Model(s) to use for completion.
+    metadata: Optional[Dict[str, str]]
+    """
+    Set of up to 16 key-value string pairs that can be attached to the request for
+    structured metadata.
+    """
 
-    Can be a single model ID, a DedalusModel object, or a list for multi-model
-    routing. Single model: 'openai/gpt-4', 'anthropic/claude-3-5-sonnet-20241022',
-    'openai/gpt-4o-mini', or a DedalusModel instance. Multi-model routing:
-    ['openai/gpt-4o-mini', 'openai/gpt-4', 'anthropic/claude-3-5-sonnet'] or list of
-    DedalusModel objects - agent will choose optimal model based on task complexity.
+    modalities: Optional[SequenceNotStr[str]]
+    """Output types you would like the model to generate.
+
+    Most models default to ['text']; some support ['text', 'audio'].
     """
 
     model_attributes: Optional[Dict[str, Dict[str, float]]]
@@ -99,73 +179,251 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     """
 
     n: Optional[int]
-    """Number of completions to generate. Note: only n=1 is currently supported."""
+    """How many chat completion choices to generate for each input message.
+
+    Keep 'n' as 1 to minimize costs.
+    """
+
+    parallel_tool_calls: Optional[bool]
+    """Whether to enable parallel function calling during tool use."""
+
+    prediction: Optional[Dict[str, object]]
+    """Configuration for predicted outputs.
+
+    Improves response times when you already know large portions of the response
+    content.
+    """
 
     presence_penalty: Optional[float]
-    """Presence penalty (-2 to 2).
+    """Number between -2.0 and 2.0.
 
     Positive values penalize new tokens based on whether they appear in the text so
-    far, encouraging the model to talk about new topics.
+    far, increasing the model's likelihood to talk about new topics.
+    """
+
+    prompt_cache_key: Optional[str]
+    """
+    Used by OpenAI to cache responses for similar requests and optimize cache hit
+    rates. Replaces the legacy 'user' field for caching.
+    """
+
+    reasoning_effort: Optional[Literal["low", "medium", "high"]]
+    """Constrains effort on reasoning for supported reasoning models.
+
+    Higher values use more compute, potentially improving reasoning quality at the
+    cost of latency and tokens.
+    """
+
+    response_format: Optional[Dict[str, object]]
+    """An object specifying the format that the model must output.
+
+    Use {'type': 'json_schema', 'json_schema': {...}} for structured outputs or
+    {'type': 'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed
+    models honour this field; Anthropic and Google requests will return an
+    invalid_request_error if it is supplied.
+    """
+
+    safety_identifier: Optional[str]
+    """
+    Stable identifier used to help detect users who might violate OpenAI usage
+    policies. Consider hashing end-user identifiers before sending.
+    """
+
+    safety_settings: Optional[Iterable[Dict[str, object]]]
+    """Google safety settings (harm categories and thresholds)."""
+
+    seed: Optional[int]
+    """If specified, system will make a best effort to sample deterministically.
+
+    Determinism is not guaranteed for the same seed across different models or API
+    versions.
+    """
+
+    service_tier: Optional[Literal["auto", "default"]]
+    """Specifies the processing tier used for the request.
+
+    'auto' uses project defaults, while 'default' forces standard pricing and
+    performance.
     """
 
     stop: Optional[SequenceNotStr[str]]
-    """Up to 4 sequences where the API will stop generating further tokens.
+    """Not supported with latest reasoning models 'o3' and 'o4-mini'.
 
-    The model will stop as soon as it encounters any of these sequences.
+            Up to 4 sequences where the API will stop generating further tokens; the returned text will not contain the stop sequence.
+    """
+
+    store: Optional[bool]
+    """
+    Whether to store the output of this chat completion request for OpenAI model
+    distillation or eval products. Image inputs over 8MB are dropped if storage is
+    enabled.
+    """
+
+    stream_options: Optional[Dict[str, object]]
+    """Options for streaming responses.
+
+    Only set when 'stream' is true (supports 'include_usage' and
+    'include_obfuscation').
+    """
+
+    system: Union[str, Iterable[Dict[str, object]], None]
+    """System prompt/instructions.
+
+    Anthropic: pass-through. Google: converted to systemInstruction. OpenAI:
+    extracted from messages.
     """
 
     temperature: Optional[float]
-    """Sampling temperature (0 to 2).
+    """What sampling temperature to use, between 0 and 2.
 
-    Higher values make output more random, lower values make it more focused and
-    deterministic. 0 = deterministic, 1 = balanced, 2 = very creative.
+    Higher values like 0.8 make the output more random, while lower values like 0.2
+    make it more focused and deterministic. We generally recommend altering this or
+    'top_p' but not both.
+    """
+
+    thinking: Optional[Thinking]
+    """Extended thinking configuration (Anthropic only).
+
+    Enables thinking blocks showing reasoning process. Requires min 1,024 token
+    budget.
     """
 
     tool_choice: Union[str, Dict[str, object], None]
-    """Controls which tool is called by the model.
+    """Controls which (if any) tool is called by the model.
 
-    Options: 'auto' (default), 'none', 'required', or specific tool name. Can also
-    be a dict specifying a particular tool.
+    'none' stops tool calling, 'auto' lets the model decide, and 'required' forces
+    at least one tool invocation. Specific tool payloads force that tool.
     """
 
-    tools: Optional[Iterable[Dict[str, object]]]
-    """list of tools available to the model in OpenAI function calling format.
+    tool_config: Optional[Dict[str, object]]
+    """Google tool configuration (function calling mode, etc.)."""
 
-    Tools are executed client-side and returned as JSON for the application to
-    handle. Use 'mcp_servers' for server-side tool execution.
+    tools: Optional[Iterable[Dict[str, object]]]
+    """A list of tools the model may call.
+
+    Supports OpenAI function tools and custom tools; use 'mcp_servers' for
+    Dedalus-managed server-side tools.
+    """
+
+    top_k: Optional[int]
+    """Top-k sampling.
+
+    Anthropic: pass-through. Google: injected into generationConfig.topK.
+    """
+
+    top_logprobs: Optional[int]
+    """
+    An integer between 0 and 20 specifying how many of the most likely tokens to
+    return at each position, with log probabilities. Requires 'logprobs' to be true.
     """
 
     top_p: Optional[float]
-    """Nucleus sampling parameter (0 to 1).
-
-    Alternative to temperature. 0.1 = only top 10% probability mass, 1.0 = consider
-    all tokens.
+    """
+    An alternative to sampling with temperature, called nucleus sampling, where the
+    model considers the results of the tokens with top_p probability mass. So 0.1
+    means only the tokens comprising the top 10% probability mass are considered. We
+    generally recommend altering this or 'temperature' but not both.
     """
 
     user: Optional[str]
-    """Unique identifier representing your end-user.
+    """Stable identifier for your end-users.
 
-    Used for monitoring and abuse detection. Should be consistent across requests
-    from the same user.
+    Helps OpenAI detect and prevent abuse and may boost cache hit rates. This field
+    is being replaced by 'safety_identifier' and 'prompt_cache_key'.
+    """
+
+    verbosity: Optional[Literal["low", "medium", "high"]]
+    """Constrains the verbosity of the model's response.
+
+    Lower values produce concise answers, higher values allow more detail.
+    """
+
+    web_search_options: Optional[Dict[str, object]]
+    """Configuration for OpenAI's web search tool.
+
+    Learn more at
+    https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat.
     """
 
 
 Model: TypeAlias = Union[ModelID, DedalusModelParam, ModelsParam]
 
 
+class MCPServersMCPServerMCPServerSpecTyped(TypedDict, total=False):
+    metadata: Optional[Dict[str, object]]
+    """Optional metadata associated with the MCP server entry."""
+
+    slug: Optional[str]
+    """Slug identifying an MCP server (e.g., 'dedalus-labs/brave-search')."""
+
+    url: Optional[str]
+    """Explicit MCP server URL."""
+
+    version: Optional[str]
+    """Optional explicit version to target when using a slug."""
+
+
+MCPServersMCPServerMCPServerSpec: TypeAlias = Union[MCPServersMCPServerMCPServerSpecTyped, Dict[str, object]]
+
+MCPServersMCPServer: TypeAlias = Union[str, MCPServersMCPServerMCPServerSpec]
+
+
+class MCPServersMCPServerSpecTyped(TypedDict, total=False):
+    metadata: Optional[Dict[str, object]]
+    """Optional metadata associated with the MCP server entry."""
+
+    slug: Optional[str]
+    """Slug identifying an MCP server (e.g., 'dedalus-labs/brave-search')."""
+
+    url: Optional[str]
+    """Explicit MCP server URL."""
+
+    version: Optional[str]
+    """Optional explicit version to target when using a slug."""
+
+
+MCPServersMCPServerSpec: TypeAlias = Union[MCPServersMCPServerSpecTyped, Dict[str, object]]
+
+MCPServers: TypeAlias = Union[SequenceNotStr[MCPServersMCPServer], str, MCPServersMCPServerSpec]
+
+
+class ThinkingThinkingConfigDisabled(TypedDict, total=False):
+    type: Required[Literal["disabled"]]
+
+
+class ThinkingThinkingConfigEnabled(TypedDict, total=False):
+    budget_tokens: Required[int]
+    """Determines how many tokens Claude can use for its internal reasoning process.
+
+    Larger budgets can enable more thorough analysis for complex problems, improving
+    response quality.
+
+    Must be ≥1024 and less than `max_tokens`.
+
+    See
+    [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+    for details.
+    """
+
+    type: Required[Literal["enabled"]]
+
+
+Thinking: TypeAlias = Union[ThinkingThinkingConfigDisabled, ThinkingThinkingConfigEnabled]
+
+
 class CompletionCreateParamsNonStreaming(CompletionCreateParamsBase, total=False):
     stream: Literal[False]
-    """Whether to stream back partial message deltas as Server-Sent Events.
-
-    When true, partial message deltas will be sent as OpenAI-compatible chunks.
+    """
+    If true, the model response data is streamed to the client as it is generated
+    using Server-Sent Events.
     """
 
 
 class CompletionCreateParamsStreaming(CompletionCreateParamsBase):
     stream: Required[Literal[True]]
-    """Whether to stream back partial message deltas as Server-Sent Events.
-
-    When true, partial message deltas will be sent as OpenAI-compatible chunks.
+    """
+    If true, the model response data is streamed to the client as it is generated
+    using Server-Sent Events.
     """
 
 

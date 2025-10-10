@@ -13,9 +13,9 @@ from .._response import (
     async_to_raw_response_wrapper,
     async_to_streamed_response_wrapper,
 )
+from ..types.model import Model
 from .._base_client import make_request_options
-from ..types.dedalus_model import DedalusModel
-from ..types.models_response import ModelsResponse
+from ..types.list_models_response import ListModelsResponse
 
 __all__ = ["ModelsResource", "AsyncModelsResource"]
 
@@ -50,7 +50,7 @@ class ModelsResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> DedalusModel:
+    ) -> Model:
         """
         Get information about a specific model.
 
@@ -61,7 +61,7 @@ class ModelsResource(SyncAPIResource):
         'anthropic/claude-3-5-sonnet-20241022') user: Authenticated user obtained from
         API key validation
 
-        Returns: DedalusModel: Information about the requested model
+        Returns: Model: Information about the requested model
 
         Raises: HTTPException: - 401 if authentication fails - 404 if model not found or
         not accessible with current API key - 500 if internal error occurs
@@ -103,7 +103,7 @@ class ModelsResource(SyncAPIResource):
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=DedalusModel,
+            cast_to=Model,
         )
 
     def list(
@@ -115,57 +115,21 @@ class ModelsResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> ModelsResponse:
+    ) -> ListModelsResponse:
         """
-        List available models.
+        List available models from OpenAI, Anthropic, and Google.
 
-        Returns a list of available models from all configured providers. Models are
-        filtered based on provider availability and API key configuration. Only models
-        from providers with valid API keys are returned.
+        Calls provider APIs to get live model lists, then combines into unified
+        response. Only returns models from providers with configured API keys.
 
-        Args: user: Authenticated user obtained from API key validation
-
-        Returns: ModelsResponse: Object containing list of available models
-
-        Raises: HTTPException: - 401 if authentication fails - 500 if internal error
-        occurs during model listing
-
-        Requires: Valid API key with 'read' scope permission
-
-        Example: ```python import dedalus_labs
-
-            client = dedalus_labs.Client(api_key="your-api-key")
-            models = client.models.list()
-
-            for model in models.data:
-                print(f"Model: {model.id} (Owner: {model.owned_by})")
-            ```
-
-            Response:
-            ```json
-            {
-                "object": "list",
-                "data": [
-                    {
-                        "id": "openai/gpt-4",
-                        "object": "model",
-                        "owned_by": "openai"
-                    },
-                    {
-                        "id": "anthropic/claude-3-5-sonnet-20241022",
-                        "object": "model",
-                        "owned_by": "anthropic"
-                    }
-                ]
-            }
-            ```
+        Returns: ModelsResponse: Combined list of models from all providers
         """
         return self._get(
             "/v1/models",
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=ModelsResponse,
+            cast_to=ListModelsResponse,
         )
 
 
@@ -199,7 +163,7 @@ class AsyncModelsResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> DedalusModel:
+    ) -> Model:
         """
         Get information about a specific model.
 
@@ -210,7 +174,7 @@ class AsyncModelsResource(AsyncAPIResource):
         'anthropic/claude-3-5-sonnet-20241022') user: Authenticated user obtained from
         API key validation
 
-        Returns: DedalusModel: Information about the requested model
+        Returns: Model: Information about the requested model
 
         Raises: HTTPException: - 401 if authentication fails - 404 if model not found or
         not accessible with current API key - 500 if internal error occurs
@@ -252,7 +216,7 @@ class AsyncModelsResource(AsyncAPIResource):
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=DedalusModel,
+            cast_to=Model,
         )
 
     async def list(
@@ -264,57 +228,21 @@ class AsyncModelsResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> ModelsResponse:
+    ) -> ListModelsResponse:
         """
-        List available models.
+        List available models from OpenAI, Anthropic, and Google.
 
-        Returns a list of available models from all configured providers. Models are
-        filtered based on provider availability and API key configuration. Only models
-        from providers with valid API keys are returned.
+        Calls provider APIs to get live model lists, then combines into unified
+        response. Only returns models from providers with configured API keys.
 
-        Args: user: Authenticated user obtained from API key validation
-
-        Returns: ModelsResponse: Object containing list of available models
-
-        Raises: HTTPException: - 401 if authentication fails - 500 if internal error
-        occurs during model listing
-
-        Requires: Valid API key with 'read' scope permission
-
-        Example: ```python import dedalus_labs
-
-            client = dedalus_labs.Client(api_key="your-api-key")
-            models = client.models.list()
-
-            for model in models.data:
-                print(f"Model: {model.id} (Owner: {model.owned_by})")
-            ```
-
-            Response:
-            ```json
-            {
-                "object": "list",
-                "data": [
-                    {
-                        "id": "openai/gpt-4",
-                        "object": "model",
-                        "owned_by": "openai"
-                    },
-                    {
-                        "id": "anthropic/claude-3-5-sonnet-20241022",
-                        "object": "model",
-                        "owned_by": "anthropic"
-                    }
-                ]
-            }
-            ```
+        Returns: ModelsResponse: Combined list of models from all providers
         """
         return await self._get(
             "/v1/models",
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=ModelsResponse,
+            cast_to=ListModelsResponse,
         )
 
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.1.0-alpha.10 (2025-10-10)
+
+Full Changelog: [v0.1.0-alpha.9...v0.1.0-alpha.10](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.9...v0.1.0-alpha.10)
+
+### Features
+
+* **api:** add endpoints ([dedc62a](https://github.com/dedalus-labs/dedalus-sdk-python/commit/dedc62a6d3ca926db8726db403c43e6e7bbb4681))
+* **api:** adjust parameters ([52b2c82](https://github.com/dedalus-labs/dedalus-sdk-python/commit/52b2c82366c2595e40b109c50e057d17de0ec6ef))
+
+
+### Bug Fixes
+
+* **compat:** compat with `pydantic&lt;2.8.0` when using additional fields ([3f3c02f](https://github.com/dedalus-labs/dedalus-sdk-python/commit/3f3c02f4cb5cc75bf9a6711ff4e48b9fe933ba2a))
+
 ## 0.1.0-alpha.9 (2025-09-20)
 
 Full Changelog: [v0.1.0-alpha.8...v0.1.0-alpha.9](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.8...v0.1.0-alpha.9)
