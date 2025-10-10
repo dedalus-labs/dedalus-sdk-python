@@ -58,6 +58,12 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     'audio').
     """
 
+    auto_execute_tools: bool
+    """
+    When False, skip server-side tool execution and return raw OpenAI-style
+    tool_calls in the response.
+    """
+
     disable_automatic_function_calling: Optional[bool]
     """Google-only flag to disable the SDK's automatic function execution.
 

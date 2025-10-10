@@ -53,6 +53,7 @@ class CompletionsResource(SyncAPIResource):
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
+        auto_execute_tools: bool | Omit = omit,
         disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
@@ -202,6 +203,9 @@ class CompletionsResource(SyncAPIResource):
 
           audio: Parameters for audio output. Required when requesting audio responses (for
               example, modalities including 'audio').
+
+          auto_execute_tools: When False, skip server-side tool execution and return raw OpenAI-style
+              tool_calls in the response.
 
           disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
               the model returns function calls for the client to execute manually.
@@ -381,6 +385,7 @@ class CompletionsResource(SyncAPIResource):
         stream: Literal[True],
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
+        auto_execute_tools: bool | Omit = omit,
         disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
@@ -533,6 +538,9 @@ class CompletionsResource(SyncAPIResource):
           audio: Parameters for audio output. Required when requesting audio responses (for
               example, modalities including 'audio').
 
+          auto_execute_tools: When False, skip server-side tool execution and return raw OpenAI-style
+              tool_calls in the response.
+
           disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
               the model returns function calls for the client to execute manually.
 
@@ -708,6 +716,7 @@ class CompletionsResource(SyncAPIResource):
         stream: bool,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
+        auto_execute_tools: bool | Omit = omit,
         disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
@@ -859,6 +868,9 @@ class CompletionsResource(SyncAPIResource):
 
           audio: Parameters for audio output. Required when requesting audio responses (for
               example, modalities including 'audio').
+
+          auto_execute_tools: When False, skip server-side tool execution and return raw OpenAI-style
+              tool_calls in the response.
 
           disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
               the model returns function calls for the client to execute manually.
@@ -1034,6 +1046,7 @@ class CompletionsResource(SyncAPIResource):
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
+        auto_execute_tools: bool | Omit = omit,
         disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
@@ -1095,6 +1108,7 @@ class CompletionsResource(SyncAPIResource):
                     "model": model,
                     "agent_attributes": agent_attributes,
                     "audio": audio,
+                    "auto_execute_tools": auto_execute_tools,
                     "disable_automatic_function_calling": disable_automatic_function_calling,
                     "frequency_penalty": frequency_penalty,
                     "function_call": function_call,
@@ -1186,6 +1200,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
+        auto_execute_tools: bool | Omit = omit,
         disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
@@ -1335,6 +1350,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           audio: Parameters for audio output. Required when requesting audio responses (for
               example, modalities including 'audio').
+
+          auto_execute_tools: When False, skip server-side tool execution and return raw OpenAI-style
+              tool_calls in the response.
 
           disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
               the model returns function calls for the client to execute manually.
@@ -1514,6 +1532,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         stream: Literal[True],
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
+        auto_execute_tools: bool | Omit = omit,
         disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
@@ -1665,6 +1684,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           audio: Parameters for audio output. Required when requesting audio responses (for
               example, modalities including 'audio').
+
+          auto_execute_tools: When False, skip server-side tool execution and return raw OpenAI-style
+              tool_calls in the response.
 
           disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
               the model returns function calls for the client to execute manually.
@@ -1841,6 +1863,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         stream: bool,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
+        auto_execute_tools: bool | Omit = omit,
         disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
@@ -1992,6 +2015,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           audio: Parameters for audio output. Required when requesting audio responses (for
               example, modalities including 'audio').
+
+          auto_execute_tools: When False, skip server-side tool execution and return raw OpenAI-style
+              tool_calls in the response.
 
           disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
               the model returns function calls for the client to execute manually.
@@ -2167,6 +2193,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
+        auto_execute_tools: bool | Omit = omit,
         disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
@@ -2228,6 +2255,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
                     "model": model,
                     "agent_attributes": agent_attributes,
                     "audio": audio,
+                    "auto_execute_tools": auto_execute_tools,
                     "disable_automatic_function_calling": disable_automatic_function_calling,
                     "frequency_penalty": frequency_penalty,
                     "function_call": function_call,
