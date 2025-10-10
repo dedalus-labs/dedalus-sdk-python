@@ -8,7 +8,7 @@ from typing_extensions import Literal, Required, TypeAlias, TypedDict
 from ..._types import SequenceNotStr
 from .model_id import ModelID
 from .models_param import ModelsParam
-from ..dedalus_model_param import DedalusModelParam
+from ..shared_params.dedalus_model import DedalusModel
 
 __all__ = [
     "CompletionCreateParamsBase",
@@ -352,7 +352,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     """
 
 
-Model: TypeAlias = Union[ModelID, DedalusModelParam, ModelsParam]
+Model: TypeAlias = Union[ModelID, DedalusModel, ModelsParam]
 
 
 class MCPServersMCPServerMCPServerSpecTyped(TypedDict, total=False):
