@@ -41,7 +41,6 @@ from ._exceptions import (
 )
 from ._base_client import DefaultHttpxClient, DefaultAioHttpClient, DefaultAsyncHttpxClient
 from ._utils._logs import setup_logging as _setup_logging
-from .types.dedalus_model import DedalusModel
 
 __all__ = [
     "types",
@@ -87,7 +86,6 @@ __all__ = [
     "DefaultAsyncHttpxClient",
     "DefaultAioHttpClient",
     "DedalusRunner",
-    "DedalusModel",
     "SchemaProcessingError",
 ]
 
