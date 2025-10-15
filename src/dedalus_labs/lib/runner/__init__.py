@@ -9,22 +9,23 @@ from __future__ import annotations
 from .core import (
     RunnerHooks,
     DedalusRunner,
+)
+
+from .guardrails import (
     GuardrailCheckResult,
     InputGuardrailTriggered,
     OutputGuardrailTriggered,
     input_guardrail,
     output_guardrail,
 )
+
 from .types import (
     Tool,
     Message,
     ToolCall,
     JsonValue,
     ToolResult,
-    PolicyInput,
     ToolHandler,
-    PolicyContext,
-    PolicyFunction,
 )
 from ..utils import to_schema
 
@@ -37,9 +38,6 @@ __all__ = [
     # Types
     "JsonValue",
     "Message",
-    "PolicyContext",
-    "PolicyFunction",
-    "PolicyInput",
     "Tool",
     "ToolCall",
     "ToolHandler",

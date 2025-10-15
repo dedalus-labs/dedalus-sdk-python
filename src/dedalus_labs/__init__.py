@@ -39,6 +39,16 @@ from ._exceptions import (
 )
 from ._base_client import DefaultHttpxClient, DefaultAioHttpClient, DefaultAsyncHttpxClient
 from ._utils._logs import setup_logging as _setup_logging
+from .lib.runner import (
+    DedalusRunner,
+    RunnerHooks,
+    GuardrailCheckResult,
+    InputGuardrailTriggered,
+    OutputGuardrailTriggered,
+    input_guardrail,
+    output_guardrail,
+)
+from .lib.utils import to_schema
 
 __all__ = [
     "types",
@@ -83,6 +93,14 @@ __all__ = [
     "DefaultHttpxClient",
     "DefaultAsyncHttpxClient",
     "DefaultAioHttpClient",
+    "DedalusRunner",
+    "RunnerHooks",
+    "GuardrailCheckResult",
+    "InputGuardrailTriggered",
+    "OutputGuardrailTriggered",
+    "input_guardrail",
+    "output_guardrail",
+    "to_schema",
 ]
 
 if not _t.TYPE_CHECKING:

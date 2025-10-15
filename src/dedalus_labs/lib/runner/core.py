@@ -10,7 +10,7 @@ import copy
 import json
 import asyncio
 import inspect
-from typing import TYPE_CHECKING, Any, Dict, Callable, Iterable, Protocol, Sequence
+from typing import TYPE_CHECKING, Any, Dict, Callable, Iterable, Iterator, Protocol, Sequence, Union
 from dataclasses import field, dataclass
 
 from dedalus_labs import Dedalus, AsyncDedalus
@@ -18,29 +18,9 @@ from dedalus_labs import Dedalus, AsyncDedalus
 if TYPE_CHECKING:  # pragma: no cover - optional runtime dependency
     from ...types.dedalus_model import DedalusModel
 
-from .types import Message, ToolCall, JsonValue, ToolResult, PolicyInput, PolicyContext
+from .types import Message, ToolCall, JsonValue, ToolResult
 from ..utils import to_schema
-
-
-@dataclass
-class GuardrailCheckResult:
-    tripwire_triggered: bool
-    info: Any = None
-
-
-GuardrailFunc = Callable[[Any], GuardrailCheckResult | bool | None]
-
-
-class InputGuardrailTriggered(RuntimeError):
-    def __init__(self, result: GuardrailCheckResult):
-        super().__init__("Input guardrail tripwire triggered")
-        self.result = result
-
-
-class OutputGuardrailTriggered(RuntimeError):
-    def __init__(self, result: GuardrailCheckResult):
-        super().__init__("Output guardrail tripwire triggered")
-        self.result = result
+from .guardrails import GuardrailCheckResult, GuardrailFunc, InputGuardrailTriggered, OutputGuardrailTriggered
 
 
 @dataclass
@@ -53,64 +33,9 @@ class RunnerHooks:
     on_after_tool: Callable[[str, JsonValue | Exception], None] | None = None
     on_guardrail_trigger: Callable[[str, GuardrailCheckResult], None] | None = None
 
-
-def input_guardrail(func: GuardrailFunc | None = None, *, name: str | None = None) -> GuardrailFunc | Callable[[GuardrailFunc], GuardrailFunc]:
-    """Decorator used to mark a callable as an input guardrail.
-
-    Usage mirrors the backend helpers but the callable is expected to accept the
-    pre-call conversation payload (list of messages) and return either a
-    `GuardrailCheckResult`, a tuple `(triggered, info)`, a boolean, or ``None``.
-    """
-
-    def decorator(fn: GuardrailFunc) -> GuardrailFunc:
-        fn._guardrail_name = name or getattr(fn, "__name__", "input_guardrail")
-        return fn
-
-    if func is not None:
-        return decorator(func)
-    return decorator
-
-
-def output_guardrail(func: GuardrailFunc | None = None, *, name: str | None = None) -> GuardrailFunc | Callable[[GuardrailFunc], GuardrailFunc]:
-    """Decorator used to mark a callable as an output guardrail.
-
-    The callable receives the final assistant message string.
-    """
-
-    def decorator(fn: GuardrailFunc) -> GuardrailFunc:
-        fn._guardrail_name = name or getattr(fn, "__name__", "output_guardrail")
-        return fn
-
-    if func is not None:
-        return decorator(func)
-    return decorator
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _process_policy(policy: PolicyInput, context: PolicyContext) -> Dict[str, JsonValue]:
-    """Safely execute/normalise a user-supplied policy callback/value."""
-
-    if policy is None:
-        return {}
-
-    if callable(policy):
-        try:
-            result = policy(context)
-        except Exception:  # pragma: no cover - user code
-            return {}
-        return result if isinstance(result, dict) else {}
-
-    if isinstance(policy, dict):
-        try:
-            return dict(policy)
-        except Exception:  # pragma: no cover - defensive protection
-            return {}
-
-    return {}
-
 
 def _render_model_spec(spec: str | Sequence[str]) -> str:
     if isinstance(spec, (list, tuple)):
@@ -131,7 +56,6 @@ def _jsonify(value: Any) -> str:
         return json.dumps(value, ensure_ascii=False)
     except TypeError:
         return str(value)
-
 
 def _parse_arguments(raw: Any) -> Dict[str, Any]:
     if isinstance(raw, dict):
@@ -192,10 +116,6 @@ class _DebugLogger:
             if prev != current:
                 self.log(f"Handoff to model: {current}")
 
-    def policy_delta(self, overrides: Dict[str, Any]) -> None:
-        if self.enabled and overrides:
-            self.log(f"Policy overrides: {overrides}")
-
     def tool_schema(self, tool_names: list[str]) -> None:
         if self.enabled and tool_names:
             self.log(f"Local tools available: {tool_names}")
@@ -231,15 +151,6 @@ class _DebugLogger:
 # Tool handling
 # ---------------------------------------------------------------------------
 
-
-class _ToolHandler(Protocol):
-    def schemas(self) -> list[Dict[str, Any]]: ...
-
-    async def exec(self, name: str, args: Dict[str, JsonValue]) -> JsonValue: ...
-
-    def exec_sync(self, name: str, args: Dict[str, JsonValue]) -> JsonValue: ...
-
-
 class _FunctionToolHandler:
     def __init__(self, funcs: Iterable[Callable[..., Any]]):
         self._funcs = {fn.__name__: fn for fn in funcs}
@@ -252,12 +163,6 @@ class _FunctionToolHandler:
             except Exception:  # pragma: no cover - best effort schema extraction
                 continue
         return out
-
-    async def exec(self, name: str, args: Dict[str, JsonValue]) -> JsonValue:
-        fn = self._funcs[name]
-        if inspect.iscoroutinefunction(fn):
-            return await fn(**args)
-        return await asyncio.to_thread(fn, **args)
 
     def exec_sync(self, name: str, args: Dict[str, JsonValue]) -> JsonValue:
         fn = self._funcs[name]
@@ -272,7 +177,7 @@ class _FunctionToolHandler:
 
 
 # ---------------------------------------------------------------------------
-# Runner state + policy decision
+# Runner state
 # ---------------------------------------------------------------------------
 
 
@@ -283,23 +188,12 @@ class _RunnerState:
     auto_execute_tools: bool
     max_steps: int
     mcp_servers: list[str]
-    policy: PolicyInput
     logger: _DebugLogger
     tool_handler: _FunctionToolHandler
     input_guardrails: list[GuardrailFunc]
     output_guardrails: list[GuardrailFunc]
     hooks: RunnerHooks
-
-
-@dataclass
-class _PolicyDecision:
-    model: str | list[str]
-    mcp_servers: list[str]
-    prepend: list[Message]
-    append: list[Message]
-    extra_kwargs: Dict[str, Any]
-    max_steps_override: int | None = None
-
+    stream: bool
 
 @dataclass
 class _RunResult:
@@ -363,23 +257,24 @@ class DedalusRunner:
         tool_choice: str | Dict[str, JsonValue] | None = None,
         guardrails: list[Dict[str, JsonValue]] | None = None,
         handoff_config: Dict[str, JsonValue] | None = None,
-        policy: PolicyInput = None,
         input_guardrails: Iterable[GuardrailFunc] | None = None,
         output_guardrails: Iterable[GuardrailFunc] | None = None,
         hooks: RunnerHooks | None = None,
         _available_models: Iterable[str] | None = None,  # legacy, ignored
         _strict_models: bool = True,  # legacy, ignored
-    ) -> _RunResult:
-        """Run the assistant until completion or tool-call deferral."""
+    ) -> Union[_RunResult, Iterator[Any]]:
+        """Run the assistant until completion or tool-call deferral.
+
+        When stream=True, returns an Iterator that yields chunks and can be passed to stream_sync().
+        When stream=False, returns a _RunResult with the final output.
+        """
 
         if model is None:
             raise ValueError("model must be provided")
 
-        if stream:
-            raise NotImplementedError(
-                "DedalusRunner no longer orchestrates streaming responses. "
-                "Call client.chat.completions.create(..., stream=True) for streaming support."
-            )
+        # Streaming is supported - when enabled, the runner will stream responses in real-time
+        # Note: Requires server-side SSE (Server-Sent Events) support
+        # If streaming fails with JSON decode errors, the server may not support SSE format
 
         if transport != "http":
             raise ValueError("DedalusRunner currently supports only HTTP transport")
@@ -422,17 +317,22 @@ class DedalusRunner:
             auto_execute_tools=auto_execute_tools,
             max_steps=max(1, max_steps),
             mcp_servers=list(mcp_servers or []),
-            policy=policy,
             logger=logger,
             tool_handler=tool_handler,
             input_guardrails=list(input_guardrails or []),
             output_guardrails=list(output_guardrails or []),
             hooks=hook_state,
+            stream=stream,
         )
 
         conversation = self._initial_messages(instructions=instructions, input=input, messages=messages)
         self._call_hook(state.hooks.on_before_run, copy.deepcopy(conversation))
         input_guardrail_results = self._run_input_guardrails(conversation, state)
+
+        # Branch to streaming or non-streaming implementation
+        if stream:
+            return self._run_streaming(conversation, state, input_guardrail_results)
+
         result = self._run_turns(conversation, state, input_guardrail_results)
 
         if on_tool_event is not None:
@@ -477,63 +377,115 @@ class DedalusRunner:
             state.logger.step(steps, state.max_steps)
             state.logger.messages_snapshot(history)
 
-            decision = self._apply_policy(state, history, steps)
-            state.logger.models(decision.model, previous_model)
-            state.logger.policy_delta({
-                k: v
-                for k, v in {
-                    "model_settings": decision.extra_kwargs,
-                    "message_prepend": decision.prepend,
-                    "message_append": decision.append,
-                    "max_steps": decision.max_steps_override,
-                }.items()
-                if v
-            })
+            state.logger.models(state.model, previous_model)
 
-            if decision.max_steps_override is not None:
-                try:
-                    state.max_steps = max(1, int(decision.max_steps_override))
-                except ValueError:  # pragma: no cover - defensive
-                    pass
-
-            payload = decision.prepend + history + decision.append
-            if state.logger.debug:
-                state.logger.messages_snapshot(payload)
-
-            request_kwargs = {**state.request_kwargs, **decision.extra_kwargs}
             self._call_hook(
                 state.hooks.on_before_model_call,
                 {
-                    "model": decision.model,
-                    "messages": payload,
-                    "kwargs": request_kwargs,
+                    "model": state.model,
+                    "messages": history,
+                    "kwargs": state.request_kwargs,
                 },
             )
-            response = self.client.chat.completions.create(
-                model=decision.model,
-                messages=payload,
-                tools=tool_schemas,
-                mcp_servers=decision.mcp_servers or None,
-                **request_kwargs,
-            )
-            self._call_hook(state.hooks.on_after_model_call, response)
+            # DEBUG: Log MCP servers before sending to client
+            print(f"[RUNNER DEBUG] state.mcp_servers = {state.mcp_servers}, type = {type(state.mcp_servers)}")
+            print(f"[RUNNER DEBUG] state.mcp_servers or None = {state.mcp_servers or None}")
 
-            models_used.append(_render_model_spec(decision.model))
-            previous_model = decision.model
+            # DEBUG: Log the actual parameters being passed
+            create_params = {
+                "model": state.model,
+                "messages": history,
+                "tools": tool_schemas,
+                "mcp_servers": state.mcp_servers or None,
+                "stream": state.stream,  # Use stream setting from state
+                **state.request_kwargs,
+            }
+            print(f"[RUNNER DEBUG] Full create() params keys: {list(create_params.keys())}")
+            print(f"[RUNNER DEBUG] mcp_servers param value: {create_params.get('mcp_servers')}")
 
-            if not getattr(response, "choices", None):
-                break
+            response = self.client.chat.completions.create(**create_params)
 
-            choice = response.choices[0]
-            message_dict = _message_to_dict(choice.message)
-            tool_calls = message_dict.get("tool_calls") or []
-            content = message_dict.get("content")
+            # Handle streaming response
+            if state.stream:
+                # Collect chunks (no printing - user should use stream_async/stream_sync)
+                collected_tool_calls: list[Dict[str, Any]] = []
+                collected_content = []
 
-            if not tool_calls:
-                final_text = content or ""
-                if final_text:
-                    history.append({"role": "assistant", "content": final_text})
-                break
+                for chunk in response:
+                    if chunk.choices:
+                        choice = chunk.choices[0]
+                        delta = getattr(choice, "delta", None)
+                        if delta:
+                            # Check for tool calls in delta
+                            tool_calls_delta = getattr(delta, "tool_calls", None)
+                            if tool_calls_delta:
+                                self._accumulate_tool_calls(tool_calls_delta, collected_tool_calls)
+
+                            # Check for content
+                            content_piece = getattr(delta, "content", None)
+                            if content_piece:
+                                collected_content.append(content_piece)
+
+                # Reconstruct response data from collected chunks
+                if collected_tool_calls:
+                    # Categorize tools into local vs MCP
+                    local_tool_names = set(state.tool_handler._funcs.keys())
+                    mcp_names = [
+                        tc["function"]["name"] for tc in collected_tool_calls
+                        if tc["function"]["name"] not in local_tool_names
+                    ]
+                    has_streamed_content = len(collected_content) > 0
+
+                    # If MCP tools were called AND content was streamed, server handled it - we're done
+                    if mcp_names and has_streamed_content:
+                        final_text = "".join(collected_content)
+                        if final_text:
+                            history.append({"role": "assistant", "content": final_text})
+                        break
+
+                    # Check if ALL tools are MCP (none are local)
+                    all_mcp = all(
+                        tc["function"]["name"] not in local_tool_names
+                        for tc in collected_tool_calls
+                    )
+
+                    if all_mcp:
+                        # All tools are MCP - continue loop to get server's response
+                        tool_calls = []
+                    else:
+                        # We have at least one local tool - filter and process only local tools
+                        tool_calls = [
+                            tc for tc in collected_tool_calls
+                            if tc["function"]["name"] in local_tool_names
+                        ]
+                else:
+                    # Final text response - no tool calls
+                    tool_calls = []
+                    final_text = "".join(collected_content)
+                    if final_text:
+                        history.append({"role": "assistant", "content": final_text})
+                    break
+            else:
+                # Non-streaming response
+                self._call_hook(state.hooks.on_after_model_call, response)
+
+                if not getattr(response, "choices", None):
+                    break
+
+                choice = response.choices[0]
+                message_dict = _message_to_dict(choice.message)
+                tool_calls = message_dict.get("tool_calls") or []
+                content = message_dict.get("content")
+
+                # No tool calls - this is the final response
+                if not tool_calls:
+                    final_text = content or ""
+                    if final_text:
+                        history.append({"role": "assistant", "content": final_text})
+                    break
+
+            models_used.append(_render_model_spec(state.model))
+            previous_model = state.model
 
             tool_payloads = [self._coerce_tool_call(tc) for tc in tool_calls]
             for name in (payload["function"].get("name") for payload in tool_payloads):
@@ -571,8 +523,198 @@ class DedalusRunner:
             output_guardrail_results=output_results,
         )
 
+    def _run_streaming(
+        self,
+        conversation: list[Message],
+        state: _RunnerState,
+        input_guardrail_results: list[GuardrailCheckResult],
+    ) -> Iterator[Any]:
+        """Execute conversation with streaming - yields chunks while processing tool calls."""
+        history = list(conversation)
+        tool_schemas = state.tool_handler.schemas() or None
+        previous_model: str | Sequence[str] | None = None
+        steps = 0
+
+        while steps < state.max_steps:
+            steps += 1
+            state.logger.step(steps, state.max_steps)
+            state.logger.messages_snapshot(history)
+            state.logger.models(state.model, previous_model)
+
+            self._call_hook(
+                state.hooks.on_before_model_call,
+                {
+                    "model": state.model,
+                    "messages": history,
+                    "kwargs": state.request_kwargs,
+                },
+            )
+
+            # DEBUG: Log MCP servers before sending to client
+            print(f"[RUNNER DEBUG] state.mcp_servers = {state.mcp_servers}, type = {type(state.mcp_servers)}")
+            print(f"[RUNNER DEBUG] state.mcp_servers or None = {state.mcp_servers or None}")
+
+            create_params = {
+                "model": state.model,
+                "messages": history,
+                "tools": tool_schemas,
+                "mcp_servers": state.mcp_servers or None,
+                "stream": True,  # Always stream
+                **state.request_kwargs,
+            }
+            print(f"[RUNNER DEBUG] Full create() params keys: {list(create_params.keys())}")
+            print(f"[RUNNER DEBUG] mcp_servers param value: {create_params.get('mcp_servers')}")
+
+            stream = self.client.chat.completions.create(**create_params)
+
+            # Yield chunks while accumulating tool calls and content
+            collected_tool_calls: list[Dict[str, Any]] = []
+            collected_content: list[str] = []
+
+            chunk_count = 0
+            for chunk in stream:
+                chunk_count += 1
+                if chunk.choices:
+                    choice = chunk.choices[0]
+                    delta = getattr(choice, "delta", None)
+                    if delta:
+                        # Check for tool calls in delta
+                        tool_calls_delta = getattr(delta, "tool_calls", None)
+                        if tool_calls_delta:
+                            self._accumulate_tool_calls(tool_calls_delta, collected_tool_calls)
+
+                        # Check for content
+                        content_piece = getattr(delta, "content", None)
+                        if content_piece:
+                            collected_content.append(content_piece)
+
+                # Yield the chunk to the user
+                yield chunk
+
+            print(f"[STREAMING DEBUG] Total chunks: {chunk_count}, Content chunks: {len(collected_content)}, Tool calls: {len(collected_tool_calls)}")
+            if collected_tool_calls:
+                print(f"[STREAMING DEBUG] Tool calls collected:")
+                for tc in collected_tool_calls:
+                    print(f"  - {tc['function']['name']}: {tc['function']['arguments'][:100]}")
+
+            # Process accumulated data after stream ends
+            if collected_tool_calls:
+                # Categorize tools into local vs MCP
+                local_tool_names = set(state.tool_handler._funcs.keys())
+                print(f"[STREAMING DEBUG] Local tool names: {local_tool_names}")
+                mcp_names = [
+                    tc["function"]["name"] for tc in collected_tool_calls
+                    if tc["function"]["name"] not in local_tool_names
+                ]
+                print(f"[STREAMING DEBUG] MCP tool names: {mcp_names}")
+                has_streamed_content = len(collected_content) > 0
+                print(f"[STREAMING DEBUG] Has streamed content: {has_streamed_content}")
+
+                # If MCP tools were called AND content was streamed
+                # Check if there are also local tools to execute
+                num_local = len(collected_tool_calls) - len(mcp_names)
+
+                if mcp_names and has_streamed_content:
+                    if num_local > 0:
+                        # Server streamed content but there are also local tool calls
+                        # Add the content to history first, then execute local tools
+                        print(f"[STREAMING DEBUG] MCP + content + {num_local} local tools → adding content, executing locals")
+                        final_text = "".join(collected_content)
+                        if final_text:
+                            history.append({"role": "assistant", "content": final_text})
+                        # Fall through to execute local tools below
+                    else:
+                        # Only MCP tools and content - server handled everything
+                        print(f"[STREAMING DEBUG] MCP + content (no locals) → breaking")
+                        final_text = "".join(collected_content)
+                        if final_text:
+                            history.append({"role": "assistant", "content": final_text})
+                        break
+
+                # OPTION 1: Add ALL tool calls to history, execute based on policy
+                # Server will handle MCP tools that don't have results
+
+                # Check if ALL tools are MCP (none are local)
+                all_mcp = all(
+                    tc["function"]["name"] not in local_tool_names
+                    for tc in collected_tool_calls
+                )
+
+                if all_mcp:
+                    # All MCP tools - add them to history, let server execute
+                    print(f"[STREAMING DEBUG] All MCP tools ({len(mcp_names)}) - adding to history for server execution")
+                    all_payloads = [self._coerce_tool_call(tc) for tc in collected_tool_calls]
+                    history.append({"role": "assistant", "tool_calls": all_payloads})
+                    continue
+
+                # Check if we have mixed tools (both MCP and local)
+                has_mixed = num_local > 0 and len(mcp_names) > 0
+
+                if has_mixed:
+                    # Mixed case: Add ALL tool calls, but execute based on first-tool-type
+                    first_tool = collected_tool_calls[0]
+                    first_is_mcp = first_tool["function"]["name"] not in local_tool_names
+
+                    # Add ALL tool calls to history
+                    all_payloads = [self._coerce_tool_call(tc) for tc in collected_tool_calls]
+                    history.append({"role": "assistant", "tool_calls": all_payloads})
+
+                    if first_is_mcp:
+                        # First is MCP - don't execute anything locally, let server handle MCP
+                        print(f"[STREAMING DEBUG] Mixed tools: First is MCP, added all to history, executing none (server will handle MCP)")
+                        continue
+
+                    # First is local - execute ONLY local tools
+                    print(f"[STREAMING DEBUG] Mixed tools: First is local, added all to history, executing {num_local} local (server will handle MCP)")
+                    local_only_tool_calls = [
+                        tc for tc in collected_tool_calls
+                        if tc["function"]["name"] in local_tool_names
+                    ]
+                else:
+                    # Only local tools
+                    print(f"[STREAMING DEBUG] Only local tools: executing {num_local} local")
+                    local_only_tool_calls = collected_tool_calls
+
+                    # Add local tool calls to history
+                    local_payloads = [self._coerce_tool_call(tc) for tc in local_only_tool_calls]
+                    history.append({"role": "assistant", "tool_calls": local_payloads})
+
+                if not state.auto_execute_tools:
+                    break
+
+                # Execute ONLY local tools
+                for tc in local_only_tool_calls:
+                    name = tc["function"].get("name", "")
+                    args = _parse_arguments(tc["function"].get("arguments"))
+
+                    self._call_hook(state.hooks.on_before_tool, name, args)
+                    try:
+                        result = state.tool_handler.exec_sync(name, args)
+                        history.append({
+                            "role": "tool",
+                            "tool_call_id": tc.get("id", ""),
+                            "content": _jsonify(result),
+                        })
+                        state.logger.tool_execution(name, result)
+                        self._call_hook(state.hooks.on_after_tool, name, result)
+                    except Exception as error:
+                        history.append({
+                            "role": "tool",
+                            "tool_call_id": tc.get("id", ""),
+                            "content": f"Error: {error}",
+                        })
+                        state.logger.tool_execution(name, error, error=True)
+                        self._call_hook(state.hooks.on_after_tool, name, error)
+
+                # Continue loop - if MCP tools were ignored, model will call them next turn
+            else:
+                # Final text response - no tool calls, we're done
+                break
+
+            previous_model = state.model
+
     # ------------------------------------------------------------------
-    # Policy + helpers
+    # Guardrail helpers
     # ------------------------------------------------------------------
 
     def _run_input_guardrails(
@@ -634,29 +776,6 @@ class DedalusRunner:
 
     def _guardrail_name(self, guardrail: GuardrailFunc) -> str:
         return getattr(guardrail, "_guardrail_name", getattr(guardrail, "__name__", guardrail.__class__.__name__))
-
-    def _apply_policy(self, state: _RunnerState, history: list[Message], step: int) -> _PolicyDecision:
-        base_context: PolicyContext = {
-            "step": step,
-            "messages": history,
-            "model": state.model,
-            "mcp_servers": state.mcp_servers,
-            "tools": list(state.tool_handler._funcs.keys()),
-        }
-        raw = _process_policy(state.policy, base_context)
-
-        model_override = raw.get("model")
-        mcp_override = raw.get("mcp_servers")
-
-        decision = _PolicyDecision(
-            model=model_override if model_override is not None else state.model,
-            mcp_servers=list(mcp_override) if mcp_override is not None else list(state.mcp_servers),
-            prepend=list(raw.get("message_prepend", [])),
-            append=list(raw.get("message_append", [])),
-            extra_kwargs=dict(raw.get("model_settings", {})),
-            max_steps_override=raw.get("max_steps"),
-        )
-        return decision
 
     def _initial_messages(
         self,
@@ -728,6 +847,24 @@ class DedalusRunner:
             },
         }
 
+    def _accumulate_tool_calls(self, deltas: Any, acc: list[Dict[str, Any]]) -> None:
+        """Accumulate streaming tool call deltas into complete tool calls."""
+        for delta in deltas:
+            index = getattr(delta, "index", 0)
+
+            # Ensure we have enough entries in acc
+            while len(acc) <= index:
+                acc.append({"id": "", "type": "function", "function": {"name": "", "arguments": ""}})
+
+            if hasattr(delta, "id") and delta.id:
+                acc[index]["id"] = delta.id
+            if hasattr(delta, "function"):
+                fn = delta.function
+                if hasattr(fn, "name") and fn.name:
+                    acc[index]["function"]["name"] = fn.name
+                if hasattr(fn, "arguments") and fn.arguments:
+                    acc[index]["function"]["arguments"] += fn.arguments
+
     def _execute_tool_calls_sync(
         self,
         tool_calls: list[Dict[str, Any]],
@@ -769,10 +906,5 @@ class DedalusRunner:
 
 __all__ = [
     "DedalusRunner",
-    "GuardrailCheckResult",
-    "InputGuardrailTriggered",
-    "OutputGuardrailTriggered",
     "RunnerHooks",
-    "input_guardrail",
-    "output_guardrail",
 ]
