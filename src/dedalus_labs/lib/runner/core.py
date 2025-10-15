@@ -631,8 +631,8 @@ class DedalusRunner:
                             history.append({"role": "assistant", "content": final_text})
                         break
 
-                # OPTION 1: Add ALL tool calls to history, execute based on policy
-                # Server will handle MCP tools that don't have results
+                # Local-first pattern: Filter to ONLY local tool calls when mixed
+                # This executes local tools first, ignores MCP - model will call MCP next turn
 
                 # Check if ALL tools are MCP (none are local)
                 all_mcp = all(
@@ -641,43 +641,27 @@ class DedalusRunner:
                 )
 
                 if all_mcp:
-                    # All MCP tools - add them to history, let server execute
-                    print(f"[STREAMING DEBUG] All MCP tools ({len(mcp_names)}) - adding to history for server execution")
-                    all_payloads = [self._coerce_tool_call(tc) for tc in collected_tool_calls]
-                    history.append({"role": "assistant", "tool_calls": all_payloads})
+                    # All MCP tools - don't add anything to history, continue
+                    # Server will handle them on next iteration
+                    print(f"[STREAMING DEBUG] All MCP tools ({len(mcp_names)}) - continuing for server execution")
                     continue
 
-                # Check if we have mixed tools (both MCP and local)
+                # We have at least one local tool
+                # Filter to ONLY include local tool calls (ignore MCP calls)
+                local_only_tool_calls = [
+                    tc for tc in collected_tool_calls
+                    if tc["function"]["name"] in local_tool_names
+                ]
+
                 has_mixed = num_local > 0 and len(mcp_names) > 0
-
                 if has_mixed:
-                    # Mixed case: Add ALL tool calls, but execute based on first-tool-type
-                    first_tool = collected_tool_calls[0]
-                    first_is_mcp = first_tool["function"]["name"] not in local_tool_names
-
-                    # Add ALL tool calls to history
-                    all_payloads = [self._coerce_tool_call(tc) for tc in collected_tool_calls]
-                    history.append({"role": "assistant", "tool_calls": all_payloads})
-
-                    if first_is_mcp:
-                        # First is MCP - don't execute anything locally, let server handle MCP
-                        print(f"[STREAMING DEBUG] Mixed tools: First is MCP, added all to history, executing none (server will handle MCP)")
-                        continue
-
-                    # First is local - execute ONLY local tools
-                    print(f"[STREAMING DEBUG] Mixed tools: First is local, added all to history, executing {num_local} local (server will handle MCP)")
-                    local_only_tool_calls = [
-                        tc for tc in collected_tool_calls
-                        if tc["function"]["name"] in local_tool_names
-                    ]
+                    print(f"[STREAMING DEBUG] Mixed tools: executing {len(local_only_tool_calls)} local, ignoring {len(mcp_names)} MCP")
                 else:
-                    # Only local tools
-                    print(f"[STREAMING DEBUG] Only local tools: executing {num_local} local")
-                    local_only_tool_calls = collected_tool_calls
+                    print(f"[STREAMING DEBUG] Only local tools: executing {len(local_only_tool_calls)} local")
 
-                    # Add local tool calls to history
-                    local_payloads = [self._coerce_tool_call(tc) for tc in local_only_tool_calls]
-                    history.append({"role": "assistant", "tool_calls": local_payloads})
+                # Add ONLY local tool calls to history
+                local_payloads = [self._coerce_tool_call(tc) for tc in local_only_tool_calls]
+                history.append({"role": "assistant", "tool_calls": local_payloads})
 
                 if not state.auto_execute_tools:
                     break
