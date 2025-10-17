@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0-alpha.13 (2025-10-17)
+
+Full Changelog: [v0.1.0-alpha.12...v0.1.0-alpha.13](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.12...v0.1.0-alpha.13)
+
+### Chores
+
+* bump `httpx-aiohttp` version to 0.1.9 ([bc125ce](https://github.com/dedalus-labs/dedalus-sdk-python/commit/bc125ce5a3d3ee8623ba2c48392e4c8e84627b15))
+
 ## 0.1.0-alpha.12 (2025-10-10)
 
 Full Changelog: [v0.1.0-alpha.11...v0.1.0-alpha.12](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.11...v0.1.0-alpha.12)
