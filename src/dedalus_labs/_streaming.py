@@ -76,9 +76,8 @@ class Stream(Generic[_T]):
             if sse.event is None:
                 yield process_data(data=sse.json(), cast_to=cast_to, response=response)
 
-        # Ensure the entire stream is consumed
-        for _sse in iterator:
-            ...
+        # As we might not fully consume the response stream, we need to close it explicitly
+        response.close()
 
     def __enter__(self) -> Self:
         return self
@@ -159,9 +158,8 @@ class AsyncStream(Generic[_T]):
             if sse.event is None:
                 yield process_data(data=sse.json(), cast_to=cast_to, response=response)
 
-        # Ensure the entire stream is consumed
-        async for _sse in iterator:
-            ...
+        # As we might not fully consume the response stream, we need to close it explicitly
+        await response.aclose()
 
     async def __aenter__(self) -> Self:
         return self
