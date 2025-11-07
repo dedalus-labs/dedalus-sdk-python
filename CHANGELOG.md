@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.1.0-alpha.10 (2025-11-07)
+
+Full Changelog: [v0.1.0-alpha.12...v0.1.0-alpha.10](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.12...v0.1.0-alpha.10)
+
+### Features
+
+* **api:** add endpoints ([45275c0](https://github.com/dedalus-labs/dedalus-sdk-python/commit/45275c00691132ecb50c7db0432fadf92472e5d4))
+* **api:** add streaming ([745c331](https://github.com/dedalus-labs/dedalus-sdk-python/commit/745c33166a671b79a978961d576064618cc80bcb))
+* **api:** add streaming configuration ([0172ad5](https://github.com/dedalus-labs/dedalus-sdk-python/commit/0172ad5175dd15650252a084f213b16c56b8befc))
+* **api:** api update ([280a595](https://github.com/dedalus-labs/dedalus-sdk-python/commit/280a595b3d3900625cfdf26be12027a88eff9618))
+* **api:** auto exec tools ([780162b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/780162b01d27703bb873488702ebede232791ed2))
+* **api:** manual updates ([9b2851a](https://github.com/dedalus-labs/dedalus-sdk-python/commit/9b2851a6bdbf861c0db0b01aa3e7a8f5a45bfa77))
+* **api:** revert streaming for now ([56d57d5](https://github.com/dedalus-labs/dedalus-sdk-python/commit/56d57d5a19034eec13d5a98a86d133d36ac2830a))
+* **api:** update via SDK Studio ([9407b44](https://github.com/dedalus-labs/dedalus-sdk-python/commit/9407b44fa8dbd4df7c18c36eab95a5573399810a))
+* **client:** support file upload requests ([caadecd](https://github.com/dedalus-labs/dedalus-sdk-python/commit/caadecdf5c75297819cd41fe3adcc5f7af3de772))
+
+
+### Bug Fixes
+
+* **client:** close streams without requiring full consumption ([f6d34db](https://github.com/dedalus-labs/dedalus-sdk-python/commit/f6d34dbcc4faf1d4c2164e040a395c180e3dad0e))
+* **types:** remove manual DedalusModel ([e1ce236](https://github.com/dedalus-labs/dedalus-sdk-python/commit/e1ce236b931b0715b9fa280ef329bfa451eb05c1))
+
+
+### Chores
+
+* bump `httpx-aiohttp` version to 0.1.9 ([bc125ce](https://github.com/dedalus-labs/dedalus-sdk-python/commit/bc125ce5a3d3ee8623ba2c48392e4c8e84627b15))
+* **internal/tests:** avoid race condition with implicit client cleanup ([2c1a8e4](https://github.com/dedalus-labs/dedalus-sdk-python/commit/2c1a8e43e890f3e27a6ccdb0639758dec6348eaa))
+* **internal:** detect missing future annotations with ruff ([6909c09](https://github.com/dedalus-labs/dedalus-sdk-python/commit/6909c09996be7fe019ec6737a18b7e330b325c4a))
+* **internal:** grammar fix (it's -&gt; its) ([89eea01](https://github.com/dedalus-labs/dedalus-sdk-python/commit/89eea0164709969f3545ba2baac25225829753fb))
+* remove custom code ([81f922b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/81f922b8eabc571abf4cfd1b87e08517b4564128))
+* tidying ([354f95b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/354f95b1efde6b3df27275b3b8a36510f28d1858))
+
 ## 0.1.0-alpha.12 (2025-10-10)
 
 Full Changelog: [v0.1.0-alpha.11...v0.1.0-alpha.12](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.11...v0.1.0-alpha.12)
