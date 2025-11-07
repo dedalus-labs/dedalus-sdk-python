@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Mapping, Optional, cast
+from typing import Any, Mapping, Optional, cast
 
 import httpx
 
@@ -61,9 +61,19 @@ class TranscriptionsResource(SyncAPIResource):
         idempotency_key: str | None = None,
     ) -> TranscriptionCreateResponse:
         """
-        Transcribe audio to text.
+        Transcribe audio into text.
 
-        OpenAI Whisper models only.
+        Transcribes audio files using OpenAI's Whisper model. Supports multiple audio
+        formats including mp3, mp4, mpeg, mpga, m4a, wav, and webm. Maximum file size is
+        25 MB.
+
+        Args: file: Audio file to transcribe (required) model: Model ID to use (e.g.,
+        "openai/whisper-1") language: ISO-639-1 language code (e.g., "en", "es") -
+        improves accuracy prompt: Optional text to guide the model's style
+        response_format: Format of the output (json, text, srt, verbose_json, vtt)
+        temperature: Sampling temperature between 0 and 1
+
+        Returns: Transcription object with the transcribed text
 
         Args:
           extra_headers: Send extra headers
@@ -91,18 +101,23 @@ class TranscriptionsResource(SyncAPIResource):
         # sent to the server will contain a `boundary` parameter, e.g.
         # multipart/form-data; boundary=---abc--
         extra_headers = {"Content-Type": "multipart/form-data", **(extra_headers or {})}
-        return self._post(
-            "/v1/audio/transcriptions",
-            body=maybe_transform(body, transcription_create_params.TranscriptionCreateParams),
-            files=files,
-            options=make_request_options(
-                extra_headers=extra_headers,
-                extra_query=extra_query,
-                extra_body=extra_body,
-                timeout=timeout,
-                idempotency_key=idempotency_key,
+        return cast(
+            TranscriptionCreateResponse,
+            self._post(
+                "/v1/audio/transcriptions",
+                body=maybe_transform(body, transcription_create_params.TranscriptionCreateParams),
+                files=files,
+                options=make_request_options(
+                    extra_headers=extra_headers,
+                    extra_query=extra_query,
+                    extra_body=extra_body,
+                    timeout=timeout,
+                    idempotency_key=idempotency_key,
+                ),
+                cast_to=cast(
+                    Any, TranscriptionCreateResponse
+                ),  # Union types cannot be passed in as arguments in the type system
             ),
-            cast_to=TranscriptionCreateResponse,
         )
 
 
@@ -144,9 +159,19 @@ class AsyncTranscriptionsResource(AsyncAPIResource):
         idempotency_key: str | None = None,
     ) -> TranscriptionCreateResponse:
         """
-        Transcribe audio to text.
+        Transcribe audio into text.
 
-        OpenAI Whisper models only.
+        Transcribes audio files using OpenAI's Whisper model. Supports multiple audio
+        formats including mp3, mp4, mpeg, mpga, m4a, wav, and webm. Maximum file size is
+        25 MB.
+
+        Args: file: Audio file to transcribe (required) model: Model ID to use (e.g.,
+        "openai/whisper-1") language: ISO-639-1 language code (e.g., "en", "es") -
+        improves accuracy prompt: Optional text to guide the model's style
+        response_format: Format of the output (json, text, srt, verbose_json, vtt)
+        temperature: Sampling temperature between 0 and 1
+
+        Returns: Transcription object with the transcribed text
 
         Args:
           extra_headers: Send extra headers
@@ -174,18 +199,23 @@ class AsyncTranscriptionsResource(AsyncAPIResource):
         # sent to the server will contain a `boundary` parameter, e.g.
         # multipart/form-data; boundary=---abc--
         extra_headers = {"Content-Type": "multipart/form-data", **(extra_headers or {})}
-        return await self._post(
-            "/v1/audio/transcriptions",
-            body=await async_maybe_transform(body, transcription_create_params.TranscriptionCreateParams),
-            files=files,
-            options=make_request_options(
-                extra_headers=extra_headers,
-                extra_query=extra_query,
-                extra_body=extra_body,
-                timeout=timeout,
-                idempotency_key=idempotency_key,
+        return cast(
+            TranscriptionCreateResponse,
+            await self._post(
+                "/v1/audio/transcriptions",
+                body=await async_maybe_transform(body, transcription_create_params.TranscriptionCreateParams),
+                files=files,
+                options=make_request_options(
+                    extra_headers=extra_headers,
+                    extra_query=extra_query,
+                    extra_body=extra_body,
+                    timeout=timeout,
+                    idempotency_key=idempotency_key,
+                ),
+                cast_to=cast(
+                    Any, TranscriptionCreateResponse
+                ),  # Union types cannot be passed in as arguments in the type system
             ),
-            cast_to=TranscriptionCreateResponse,
         )
 
 
