@@ -20,6 +20,7 @@ from ..._response import (
 from ..._streaming import Stream, AsyncStream
 from ...types.chat import completion_create_params
 from ..._base_client import make_request_options
+from ...types.chat.completion import Completion
 from ...types.chat.stream_chunk import StreamChunk
 
 __all__ = ["CompletionsResource", "AsyncCompletionsResource"]
@@ -54,6 +55,7 @@ class CompletionsResource(SyncAPIResource):
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
         auto_execute_tools: bool | Omit = omit,
+        deferred: Optional[bool] | Omit = omit,
         disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
@@ -68,7 +70,7 @@ class CompletionsResource(SyncAPIResource):
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
-        mcp_servers: Optional[completion_create_params.MCPServers] | Omit = omit,
+        mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
@@ -81,6 +83,7 @@ class CompletionsResource(SyncAPIResource):
         response_format: Optional[Dict[str, object]] | Omit = omit,
         safety_identifier: Optional[str] | Omit = omit,
         safety_settings: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        search_parameters: Optional[Dict[str, object]] | Omit = omit,
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[Literal["auto", "default"]] | Omit = omit,
         stop: Optional[SequenceNotStr[str]] | Omit = omit,
@@ -106,84 +109,70 @@ class CompletionsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
-    ) -> StreamChunk:
+    ) -> Completion:
         """
         Create a chat completion.
 
-        This endpoint provides a vendor-agnostic chat completions API that works with
-        thousands of LLMs. It supports MCP integration, multi-model routing with
-        intelligent agentic handoffs, client-side and server-side tool execution, and
-        streaming and non-streaming responses.
+        Unified chat-completions endpoint that works across many model providers.
+        Supports optional MCP integration, multi-model routing with agentic handoffs,
+        server- or client-executed tools, and both streaming and non-streaming delivery.
 
-        Args: request: Chat completion request with messages, model, and configuration.
-        http_request: FastAPI request object for accessing headers and state.
-        background_tasks: FastAPI background tasks for async billing operations. user:
-        Authenticated user with validated API key and sufficient balance.
+        Request body:
 
-        Returns: ChatCompletion: OpenAI-compatible completion response with usage data.
+        - messages: ordered list of chat turns.
+        - model: identifier or a list of identifiers for routing.
+        - tools: optional tool declarations available to the model.
+        - mcp_servers: optional list of MCP server slugs to enable during the run.
+        - stream: boolean to request incremental output.
+        - config: optional generation parameters (e.g., temperature, max_tokens,
+          metadata).
 
-        Raises: HTTPException: - 401 if authentication fails or insufficient balance. -
-        400 if request validation fails. - 500 if internal processing error occurs.
+        Headers:
 
-        Billing: - Token usage billed automatically based on model pricing - MCP tool
-        calls billed separately using credits system - Streaming responses billed after
-        completion via background task
+        - Authorization: bearer key for the calling account.
+        - Optional BYOK or provider headers if applicable.
 
-        Example: Basic chat completion: ```python from dedalus_labs import Dedalus
+        Behavior:
 
-            client = Dedalus(api_key="your-api-key")
+        - If multiple models are supplied, the router may select or hand off across
+          them.
+        - Tools may be invoked on the server or signaled for the client to run.
+        - Streaming responses emit incremental deltas; non-streaming returns a single
+          object.
+        - Usage metrics are computed when available and returned in the response.
 
-            completion = client.chat.completions.create(
-                model="openai/gpt-5",
-                messages=[{"role": "user", "content": "Hello, how are you?"}],
-            )
+        Responses:
 
-            print(completion.choices[0].message.content)
-            ```
+        - 200 OK: JSON completion object with choices, message content, and usage.
+        - 400 Bad Request: validation error.
+        - 401 Unauthorized: authentication failed.
+        - 402 Payment Required or 429 Too Many Requests: quota, balance, or rate limit
+          issue.
+        - 500 Internal Server Error: unexpected failure.
 
-            With tools and MCP servers:
-            ```python
-            completion = client.chat.completions.create(
-                model="openai/gpt-5",
-                messages=[{"role": "user", "content": "Search for recent AI news"}],
-                tools=[
-                    {
-                        "type": "function",
-                        "function": {
-                            "name": "search_web",
-                            "description": "Search the web for information",
-                        },
-                    }
-                ],
-                mcp_servers=["dedalus-labs/brave-search"],
-            )
-            ```
+        Billing:
 
-            Multi-model routing:
-            ```python
-            completion = client.chat.completions.create(
-                model=[
-                    "openai/gpt-4o-mini",
-                    "openai/gpt-5",
-                    "anthropic/claude-sonnet-4-20250514",
-                ],
-                messages=[{"role": "user", "content": "Analyze this complex data"}],
-                agent_attributes={"complexity": 0.8, "accuracy": 0.9},
-            )
-            ```
+        - Token usage metered by the selected model(s).
+        - Tool calls and MCP sessions may be billed separately.
+        - Streaming is settled after the stream ends via an async task.
 
-            Streaming response:
-            ```python
-            stream = client.chat.completions.create(
-                model="openai/gpt-5",
-                messages=[{"role": "user", "content": "Tell me a story"}],
-                stream=True,
-            )
+        Example (non-streaming HTTP): POST /v1/chat/completions Content-Type:
+        application/json Authorization: Bearer <key>
 
-            for chunk in stream:
-                if chunk.choices[0].delta.content:
-                    print(chunk.choices[0].delta.content, end="")
-            ```
+        { "model": "provider/model-name", "messages": [{"role": "user", "content":
+        "Hello"}] }
+
+        200 OK { "id": "cmpl_123", "object": "chat.completion", "choices": [ {"index":
+        0, "message": {"role": "assistant", "content": "Hi there!"}, "finish_reason":
+        "stop"} ], "usage": {"prompt_tokens": 3, "completion_tokens": 4, "total_tokens":
+        7} }
+
+        Example (streaming over SSE): POST /v1/chat/completions Accept:
+        text/event-stream
+
+        data: {"id":"cmpl_123","choices":[{"index":0,"delta":{"content":"Hi"}}]} data:
+        {"id":"cmpl_123","choices":[{"index":0,"delta":{"content":" there!"}}]} data:
+        [DONE]
 
         Args:
           messages: Conversation history. Accepts either a list of message objects or a string,
@@ -206,6 +195,9 @@ class CompletionsResource(SyncAPIResource):
 
           auto_execute_tools: When False, skip server-side tool execution and return raw OpenAI-style
               tool_calls in the response.
+
+          deferred: xAI-specific parameter. If set to true, the request returns a request_id for
+              async completion retrieval via GET /v1/chat/deferred-completion/{request_id}.
 
           disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
               the model returns function calls for the client to execute manually.
@@ -302,6 +294,9 @@ class CompletionsResource(SyncAPIResource):
               policies. Consider hashing end-user identifiers before sending.
 
           safety_settings: Google safety settings (harm categories and thresholds).
+
+          search_parameters: xAI-specific parameter for configuring web search data acquisition. If not set,
+              no data will be acquired by the model.
 
           seed: If specified, system will make a best effort to sample deterministically.
               Determinism is not guaranteed for the same seed across different models or API
@@ -386,6 +381,7 @@ class CompletionsResource(SyncAPIResource):
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
         auto_execute_tools: bool | Omit = omit,
+        deferred: Optional[bool] | Omit = omit,
         disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
@@ -400,7 +396,7 @@ class CompletionsResource(SyncAPIResource):
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
-        mcp_servers: Optional[completion_create_params.MCPServers] | Omit = omit,
+        mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
@@ -413,6 +409,7 @@ class CompletionsResource(SyncAPIResource):
         response_format: Optional[Dict[str, object]] | Omit = omit,
         safety_identifier: Optional[str] | Omit = omit,
         safety_settings: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        search_parameters: Optional[Dict[str, object]] | Omit = omit,
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[Literal["auto", "default"]] | Omit = omit,
         stop: Optional[SequenceNotStr[str]] | Omit = omit,
@@ -441,80 +438,66 @@ class CompletionsResource(SyncAPIResource):
         """
         Create a chat completion.
 
-        This endpoint provides a vendor-agnostic chat completions API that works with
-        thousands of LLMs. It supports MCP integration, multi-model routing with
-        intelligent agentic handoffs, client-side and server-side tool execution, and
-        streaming and non-streaming responses.
+        Unified chat-completions endpoint that works across many model providers.
+        Supports optional MCP integration, multi-model routing with agentic handoffs,
+        server- or client-executed tools, and both streaming and non-streaming delivery.
 
-        Args: request: Chat completion request with messages, model, and configuration.
-        http_request: FastAPI request object for accessing headers and state.
-        background_tasks: FastAPI background tasks for async billing operations. user:
-        Authenticated user with validated API key and sufficient balance.
+        Request body:
 
-        Returns: ChatCompletion: OpenAI-compatible completion response with usage data.
+        - messages: ordered list of chat turns.
+        - model: identifier or a list of identifiers for routing.
+        - tools: optional tool declarations available to the model.
+        - mcp_servers: optional list of MCP server slugs to enable during the run.
+        - stream: boolean to request incremental output.
+        - config: optional generation parameters (e.g., temperature, max_tokens,
+          metadata).
 
-        Raises: HTTPException: - 401 if authentication fails or insufficient balance. -
-        400 if request validation fails. - 500 if internal processing error occurs.
+        Headers:
 
-        Billing: - Token usage billed automatically based on model pricing - MCP tool
-        calls billed separately using credits system - Streaming responses billed after
-        completion via background task
+        - Authorization: bearer key for the calling account.
+        - Optional BYOK or provider headers if applicable.
 
-        Example: Basic chat completion: ```python from dedalus_labs import Dedalus
+        Behavior:
 
-            client = Dedalus(api_key="your-api-key")
+        - If multiple models are supplied, the router may select or hand off across
+          them.
+        - Tools may be invoked on the server or signaled for the client to run.
+        - Streaming responses emit incremental deltas; non-streaming returns a single
+          object.
+        - Usage metrics are computed when available and returned in the response.
 
-            completion = client.chat.completions.create(
-                model="openai/gpt-5",
-                messages=[{"role": "user", "content": "Hello, how are you?"}],
-            )
+        Responses:
 
-            print(completion.choices[0].message.content)
-            ```
+        - 200 OK: JSON completion object with choices, message content, and usage.
+        - 400 Bad Request: validation error.
+        - 401 Unauthorized: authentication failed.
+        - 402 Payment Required or 429 Too Many Requests: quota, balance, or rate limit
+          issue.
+        - 500 Internal Server Error: unexpected failure.
 
-            With tools and MCP servers:
-            ```python
-            completion = client.chat.completions.create(
-                model="openai/gpt-5",
-                messages=[{"role": "user", "content": "Search for recent AI news"}],
-                tools=[
-                    {
-                        "type": "function",
-                        "function": {
-                            "name": "search_web",
-                            "description": "Search the web for information",
-                        },
-                    }
-                ],
-                mcp_servers=["dedalus-labs/brave-search"],
-            )
-            ```
+        Billing:
 
-            Multi-model routing:
-            ```python
-            completion = client.chat.completions.create(
-                model=[
-                    "openai/gpt-4o-mini",
-                    "openai/gpt-5",
-                    "anthropic/claude-sonnet-4-20250514",
-                ],
-                messages=[{"role": "user", "content": "Analyze this complex data"}],
-                agent_attributes={"complexity": 0.8, "accuracy": 0.9},
-            )
-            ```
+        - Token usage metered by the selected model(s).
+        - Tool calls and MCP sessions may be billed separately.
+        - Streaming is settled after the stream ends via an async task.
 
-            Streaming response:
-            ```python
-            stream = client.chat.completions.create(
-                model="openai/gpt-5",
-                messages=[{"role": "user", "content": "Tell me a story"}],
-                stream=True,
-            )
+        Example (non-streaming HTTP): POST /v1/chat/completions Content-Type:
+        application/json Authorization: Bearer <key>
 
-            for chunk in stream:
-                if chunk.choices[0].delta.content:
-                    print(chunk.choices[0].delta.content, end="")
-            ```
+        { "model": "provider/model-name", "messages": [{"role": "user", "content":
+        "Hello"}] }
+
+        200 OK { "id": "cmpl_123", "object": "chat.completion", "choices": [ {"index":
+        0, "message": {"role": "assistant", "content": "Hi there!"}, "finish_reason":
+        "stop"} ], "usage": {"prompt_tokens": 3, "completion_tokens": 4, "total_tokens":
+        7} }
+
+        Example (streaming over SSE): POST /v1/chat/completions Accept:
+        text/event-stream
+
+        data: {"id":"cmpl_123","choices":[{"index":0,"delta":{"content":"Hi"}}]} data:
+        {"id":"cmpl_123","choices":[{"index":0,"delta":{"content":" there!"}}]} data:
+        [DONE]
 
         Args:
           messages: Conversation history. Accepts either a list of message objects or a string,
@@ -540,6 +523,9 @@ class CompletionsResource(SyncAPIResource):
 
           auto_execute_tools: When False, skip server-side tool execution and return raw OpenAI-style
               tool_calls in the response.
+
+          deferred: xAI-specific parameter. If set to true, the request returns a request_id for
+              async completion retrieval via GET /v1/chat/deferred-completion/{request_id}.
 
           disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
               the model returns function calls for the client to execute manually.
@@ -636,6 +622,9 @@ class CompletionsResource(SyncAPIResource):
               policies. Consider hashing end-user identifiers before sending.
 
           safety_settings: Google safety settings (harm categories and thresholds).
+
+          search_parameters: xAI-specific parameter for configuring web search data acquisition. If not set,
+              no data will be acquired by the model.
 
           seed: If specified, system will make a best effort to sample deterministically.
               Determinism is not guaranteed for the same seed across different models or API
@@ -717,6 +706,7 @@ class CompletionsResource(SyncAPIResource):
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
         auto_execute_tools: bool | Omit = omit,
+        deferred: Optional[bool] | Omit = omit,
         disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
@@ -731,7 +721,7 @@ class CompletionsResource(SyncAPIResource):
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
-        mcp_servers: Optional[completion_create_params.MCPServers] | Omit = omit,
+        mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
@@ -744,6 +734,7 @@ class CompletionsResource(SyncAPIResource):
         response_format: Optional[Dict[str, object]] | Omit = omit,
         safety_identifier: Optional[str] | Omit = omit,
         safety_settings: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        search_parameters: Optional[Dict[str, object]] | Omit = omit,
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[Literal["auto", "default"]] | Omit = omit,
         stop: Optional[SequenceNotStr[str]] | Omit = omit,
@@ -768,84 +759,70 @@ class CompletionsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
-    ) -> StreamChunk | Stream[StreamChunk]:
+    ) -> Completion | Stream[StreamChunk]:
         """
         Create a chat completion.
 
-        This endpoint provides a vendor-agnostic chat completions API that works with
-        thousands of LLMs. It supports MCP integration, multi-model routing with
-        intelligent agentic handoffs, client-side and server-side tool execution, and
-        streaming and non-streaming responses.
+        Unified chat-completions endpoint that works across many model providers.
+        Supports optional MCP integration, multi-model routing with agentic handoffs,
+        server- or client-executed tools, and both streaming and non-streaming delivery.
 
-        Args: request: Chat completion request with messages, model, and configuration.
-        http_request: FastAPI request object for accessing headers and state.
-        background_tasks: FastAPI background tasks for async billing operations. user:
-        Authenticated user with validated API key and sufficient balance.
+        Request body:
 
-        Returns: ChatCompletion: OpenAI-compatible completion response with usage data.
+        - messages: ordered list of chat turns.
+        - model: identifier or a list of identifiers for routing.
+        - tools: optional tool declarations available to the model.
+        - mcp_servers: optional list of MCP server slugs to enable during the run.
+        - stream: boolean to request incremental output.
+        - config: optional generation parameters (e.g., temperature, max_tokens,
+          metadata).
 
-        Raises: HTTPException: - 401 if authentication fails or insufficient balance. -
-        400 if request validation fails. - 500 if internal processing error occurs.
+        Headers:
 
-        Billing: - Token usage billed automatically based on model pricing - MCP tool
-        calls billed separately using credits system - Streaming responses billed after
-        completion via background task
+        - Authorization: bearer key for the calling account.
+        - Optional BYOK or provider headers if applicable.
 
-        Example: Basic chat completion: ```python from dedalus_labs import Dedalus
+        Behavior:
 
-            client = Dedalus(api_key="your-api-key")
+        - If multiple models are supplied, the router may select or hand off across
+          them.
+        - Tools may be invoked on the server or signaled for the client to run.
+        - Streaming responses emit incremental deltas; non-streaming returns a single
+          object.
+        - Usage metrics are computed when available and returned in the response.
 
-            completion = client.chat.completions.create(
-                model="openai/gpt-5",
-                messages=[{"role": "user", "content": "Hello, how are you?"}],
-            )
+        Responses:
 
-            print(completion.choices[0].message.content)
-            ```
+        - 200 OK: JSON completion object with choices, message content, and usage.
+        - 400 Bad Request: validation error.
+        - 401 Unauthorized: authentication failed.
+        - 402 Payment Required or 429 Too Many Requests: quota, balance, or rate limit
+          issue.
+        - 500 Internal Server Error: unexpected failure.
 
-            With tools and MCP servers:
-            ```python
-            completion = client.chat.completions.create(
-                model="openai/gpt-5",
-                messages=[{"role": "user", "content": "Search for recent AI news"}],
-                tools=[
-                    {
-                        "type": "function",
-                        "function": {
-                            "name": "search_web",
-                            "description": "Search the web for information",
-                        },
-                    }
-                ],
-                mcp_servers=["dedalus-labs/brave-search"],
-            )
-            ```
+        Billing:
 
-            Multi-model routing:
-            ```python
-            completion = client.chat.completions.create(
-                model=[
-                    "openai/gpt-4o-mini",
-                    "openai/gpt-5",
-                    "anthropic/claude-sonnet-4-20250514",
-                ],
-                messages=[{"role": "user", "content": "Analyze this complex data"}],
-                agent_attributes={"complexity": 0.8, "accuracy": 0.9},
-            )
-            ```
+        - Token usage metered by the selected model(s).
+        - Tool calls and MCP sessions may be billed separately.
+        - Streaming is settled after the stream ends via an async task.
 
-            Streaming response:
-            ```python
-            stream = client.chat.completions.create(
-                model="openai/gpt-5",
-                messages=[{"role": "user", "content": "Tell me a story"}],
-                stream=True,
-            )
+        Example (non-streaming HTTP): POST /v1/chat/completions Content-Type:
+        application/json Authorization: Bearer <key>
 
-            for chunk in stream:
-                if chunk.choices[0].delta.content:
-                    print(chunk.choices[0].delta.content, end="")
-            ```
+        { "model": "provider/model-name", "messages": [{"role": "user", "content":
+        "Hello"}] }
+
+        200 OK { "id": "cmpl_123", "object": "chat.completion", "choices": [ {"index":
+        0, "message": {"role": "assistant", "content": "Hi there!"}, "finish_reason":
+        "stop"} ], "usage": {"prompt_tokens": 3, "completion_tokens": 4, "total_tokens":
+        7} }
+
+        Example (streaming over SSE): POST /v1/chat/completions Accept:
+        text/event-stream
+
+        data: {"id":"cmpl_123","choices":[{"index":0,"delta":{"content":"Hi"}}]} data:
+        {"id":"cmpl_123","choices":[{"index":0,"delta":{"content":" there!"}}]} data:
+        [DONE]
 
         Args:
           messages: Conversation history. Accepts either a list of message objects or a string,
@@ -871,6 +848,9 @@ class CompletionsResource(SyncAPIResource):
 
           auto_execute_tools: When False, skip server-side tool execution and return raw OpenAI-style
               tool_calls in the response.
+
+          deferred: xAI-specific parameter. If set to true, the request returns a request_id for
+              async completion retrieval via GET /v1/chat/deferred-completion/{request_id}.
 
           disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
               the model returns function calls for the client to execute manually.
@@ -968,6 +948,9 @@ class CompletionsResource(SyncAPIResource):
 
           safety_settings: Google safety settings (harm categories and thresholds).
 
+          search_parameters: xAI-specific parameter for configuring web search data acquisition. If not set,
+              no data will be acquired by the model.
+
           seed: If specified, system will make a best effort to sample deterministically.
               Determinism is not guaranteed for the same seed across different models or API
               versions.
@@ -1047,6 +1030,7 @@ class CompletionsResource(SyncAPIResource):
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
         auto_execute_tools: bool | Omit = omit,
+        deferred: Optional[bool] | Omit = omit,
         disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
@@ -1061,7 +1045,7 @@ class CompletionsResource(SyncAPIResource):
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
-        mcp_servers: Optional[completion_create_params.MCPServers] | Omit = omit,
+        mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
@@ -1074,6 +1058,7 @@ class CompletionsResource(SyncAPIResource):
         response_format: Optional[Dict[str, object]] | Omit = omit,
         safety_identifier: Optional[str] | Omit = omit,
         safety_settings: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        search_parameters: Optional[Dict[str, object]] | Omit = omit,
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[Literal["auto", "default"]] | Omit = omit,
         stop: Optional[SequenceNotStr[str]] | Omit = omit,
@@ -1099,7 +1084,7 @@ class CompletionsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
-    ) -> StreamChunk | Stream[StreamChunk]:
+    ) -> Completion | Stream[StreamChunk]:
         return self._post(
             "/v1/chat/completions",
             body=maybe_transform(
@@ -1109,6 +1094,7 @@ class CompletionsResource(SyncAPIResource):
                     "agent_attributes": agent_attributes,
                     "audio": audio,
                     "auto_execute_tools": auto_execute_tools,
+                    "deferred": deferred,
                     "disable_automatic_function_calling": disable_automatic_function_calling,
                     "frequency_penalty": frequency_penalty,
                     "function_call": function_call,
@@ -1136,6 +1122,7 @@ class CompletionsResource(SyncAPIResource):
                     "response_format": response_format,
                     "safety_identifier": safety_identifier,
                     "safety_settings": safety_settings,
+                    "search_parameters": search_parameters,
                     "seed": seed,
                     "service_tier": service_tier,
                     "stop": stop,
@@ -1166,7 +1153,7 @@ class CompletionsResource(SyncAPIResource):
                 timeout=timeout,
                 idempotency_key=idempotency_key,
             ),
-            cast_to=StreamChunk,
+            cast_to=Completion,
             stream=stream or False,
             stream_cls=Stream[StreamChunk],
         )
@@ -1201,6 +1188,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
         auto_execute_tools: bool | Omit = omit,
+        deferred: Optional[bool] | Omit = omit,
         disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
@@ -1215,7 +1203,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
-        mcp_servers: Optional[completion_create_params.MCPServers] | Omit = omit,
+        mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
@@ -1228,6 +1216,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         response_format: Optional[Dict[str, object]] | Omit = omit,
         safety_identifier: Optional[str] | Omit = omit,
         safety_settings: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        search_parameters: Optional[Dict[str, object]] | Omit = omit,
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[Literal["auto", "default"]] | Omit = omit,
         stop: Optional[SequenceNotStr[str]] | Omit = omit,
@@ -1253,84 +1242,70 @@ class AsyncCompletionsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
-    ) -> StreamChunk:
+    ) -> Completion:
         """
         Create a chat completion.
 
-        This endpoint provides a vendor-agnostic chat completions API that works with
-        thousands of LLMs. It supports MCP integration, multi-model routing with
-        intelligent agentic handoffs, client-side and server-side tool execution, and
-        streaming and non-streaming responses.
+        Unified chat-completions endpoint that works across many model providers.
+        Supports optional MCP integration, multi-model routing with agentic handoffs,
+        server- or client-executed tools, and both streaming and non-streaming delivery.
 
-        Args: request: Chat completion request with messages, model, and configuration.
-        http_request: FastAPI request object for accessing headers and state.
-        background_tasks: FastAPI background tasks for async billing operations. user:
-        Authenticated user with validated API key and sufficient balance.
+        Request body:
 
-        Returns: ChatCompletion: OpenAI-compatible completion response with usage data.
+        - messages: ordered list of chat turns.
+        - model: identifier or a list of identifiers for routing.
+        - tools: optional tool declarations available to the model.
+        - mcp_servers: optional list of MCP server slugs to enable during the run.
+        - stream: boolean to request incremental output.
+        - config: optional generation parameters (e.g., temperature, max_tokens,
+          metadata).
 
-        Raises: HTTPException: - 401 if authentication fails or insufficient balance. -
-        400 if request validation fails. - 500 if internal processing error occurs.
+        Headers:
 
-        Billing: - Token usage billed automatically based on model pricing - MCP tool
-        calls billed separately using credits system - Streaming responses billed after
-        completion via background task
+        - Authorization: bearer key for the calling account.
+        - Optional BYOK or provider headers if applicable.
 
-        Example: Basic chat completion: ```python from dedalus_labs import Dedalus
+        Behavior:
 
-            client = Dedalus(api_key="your-api-key")
+        - If multiple models are supplied, the router may select or hand off across
+          them.
+        - Tools may be invoked on the server or signaled for the client to run.
+        - Streaming responses emit incremental deltas; non-streaming returns a single
+          object.
+        - Usage metrics are computed when available and returned in the response.
 
-            completion = client.chat.completions.create(
-                model="openai/gpt-5",
-                messages=[{"role": "user", "content": "Hello, how are you?"}],
-            )
+        Responses:
 
-            print(completion.choices[0].message.content)
-            ```
+        - 200 OK: JSON completion object with choices, message content, and usage.
+        - 400 Bad Request: validation error.
+        - 401 Unauthorized: authentication failed.
+        - 402 Payment Required or 429 Too Many Requests: quota, balance, or rate limit
+          issue.
+        - 500 Internal Server Error: unexpected failure.
 
-            With tools and MCP servers:
-            ```python
-            completion = client.chat.completions.create(
-                model="openai/gpt-5",
-                messages=[{"role": "user", "content": "Search for recent AI news"}],
-                tools=[
-                    {
-                        "type": "function",
-                        "function": {
-                            "name": "search_web",
-                            "description": "Search the web for information",
-                        },
-                    }
-                ],
-                mcp_servers=["dedalus-labs/brave-search"],
-            )
-            ```
+        Billing:
 
-            Multi-model routing:
-            ```python
-            completion = client.chat.completions.create(
-                model=[
-                    "openai/gpt-4o-mini",
-                    "openai/gpt-5",
-                    "anthropic/claude-sonnet-4-20250514",
-                ],
-                messages=[{"role": "user", "content": "Analyze this complex data"}],
-                agent_attributes={"complexity": 0.8, "accuracy": 0.9},
-            )
-            ```
+        - Token usage metered by the selected model(s).
+        - Tool calls and MCP sessions may be billed separately.
+        - Streaming is settled after the stream ends via an async task.
 
-            Streaming response:
-            ```python
-            stream = client.chat.completions.create(
-                model="openai/gpt-5",
-                messages=[{"role": "user", "content": "Tell me a story"}],
-                stream=True,
-            )
+        Example (non-streaming HTTP): POST /v1/chat/completions Content-Type:
+        application/json Authorization: Bearer <key>
 
-            for chunk in stream:
-                if chunk.choices[0].delta.content:
-                    print(chunk.choices[0].delta.content, end="")
-            ```
+        { "model": "provider/model-name", "messages": [{"role": "user", "content":
+        "Hello"}] }
+
+        200 OK { "id": "cmpl_123", "object": "chat.completion", "choices": [ {"index":
+        0, "message": {"role": "assistant", "content": "Hi there!"}, "finish_reason":
+        "stop"} ], "usage": {"prompt_tokens": 3, "completion_tokens": 4, "total_tokens":
+        7} }
+
+        Example (streaming over SSE): POST /v1/chat/completions Accept:
+        text/event-stream
+
+        data: {"id":"cmpl_123","choices":[{"index":0,"delta":{"content":"Hi"}}]} data:
+        {"id":"cmpl_123","choices":[{"index":0,"delta":{"content":" there!"}}]} data:
+        [DONE]
 
         Args:
           messages: Conversation history. Accepts either a list of message objects or a string,
@@ -1353,6 +1328,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           auto_execute_tools: When False, skip server-side tool execution and return raw OpenAI-style
               tool_calls in the response.
+
+          deferred: xAI-specific parameter. If set to true, the request returns a request_id for
+              async completion retrieval via GET /v1/chat/deferred-completion/{request_id}.
 
           disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
               the model returns function calls for the client to execute manually.
@@ -1449,6 +1427,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
               policies. Consider hashing end-user identifiers before sending.
 
           safety_settings: Google safety settings (harm categories and thresholds).
+
+          search_parameters: xAI-specific parameter for configuring web search data acquisition. If not set,
+              no data will be acquired by the model.
 
           seed: If specified, system will make a best effort to sample deterministically.
               Determinism is not guaranteed for the same seed across different models or API
@@ -1533,6 +1514,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
         auto_execute_tools: bool | Omit = omit,
+        deferred: Optional[bool] | Omit = omit,
         disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
@@ -1547,7 +1529,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
-        mcp_servers: Optional[completion_create_params.MCPServers] | Omit = omit,
+        mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
@@ -1560,6 +1542,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         response_format: Optional[Dict[str, object]] | Omit = omit,
         safety_identifier: Optional[str] | Omit = omit,
         safety_settings: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        search_parameters: Optional[Dict[str, object]] | Omit = omit,
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[Literal["auto", "default"]] | Omit = omit,
         stop: Optional[SequenceNotStr[str]] | Omit = omit,
@@ -1588,80 +1571,66 @@ class AsyncCompletionsResource(AsyncAPIResource):
         """
         Create a chat completion.
 
-        This endpoint provides a vendor-agnostic chat completions API that works with
-        thousands of LLMs. It supports MCP integration, multi-model routing with
-        intelligent agentic handoffs, client-side and server-side tool execution, and
-        streaming and non-streaming responses.
+        Unified chat-completions endpoint that works across many model providers.
+        Supports optional MCP integration, multi-model routing with agentic handoffs,
+        server- or client-executed tools, and both streaming and non-streaming delivery.
 
-        Args: request: Chat completion request with messages, model, and configuration.
-        http_request: FastAPI request object for accessing headers and state.
-        background_tasks: FastAPI background tasks for async billing operations. user:
-        Authenticated user with validated API key and sufficient balance.
+        Request body:
 
-        Returns: ChatCompletion: OpenAI-compatible completion response with usage data.
+        - messages: ordered list of chat turns.
+        - model: identifier or a list of identifiers for routing.
+        - tools: optional tool declarations available to the model.
+        - mcp_servers: optional list of MCP server slugs to enable during the run.
+        - stream: boolean to request incremental output.
+        - config: optional generation parameters (e.g., temperature, max_tokens,
+          metadata).
 
-        Raises: HTTPException: - 401 if authentication fails or insufficient balance. -
-        400 if request validation fails. - 500 if internal processing error occurs.
+        Headers:
 
-        Billing: - Token usage billed automatically based on model pricing - MCP tool
-        calls billed separately using credits system - Streaming responses billed after
-        completion via background task
+        - Authorization: bearer key for the calling account.
+        - Optional BYOK or provider headers if applicable.
 
-        Example: Basic chat completion: ```python from dedalus_labs import Dedalus
+        Behavior:
 
-            client = Dedalus(api_key="your-api-key")
+        - If multiple models are supplied, the router may select or hand off across
+          them.
+        - Tools may be invoked on the server or signaled for the client to run.
+        - Streaming responses emit incremental deltas; non-streaming returns a single
+          object.
+        - Usage metrics are computed when available and returned in the response.
 
-            completion = client.chat.completions.create(
-                model="openai/gpt-5",
-                messages=[{"role": "user", "content": "Hello, how are you?"}],
-            )
+        Responses:
 
-            print(completion.choices[0].message.content)
-            ```
+        - 200 OK: JSON completion object with choices, message content, and usage.
+        - 400 Bad Request: validation error.
+        - 401 Unauthorized: authentication failed.
+        - 402 Payment Required or 429 Too Many Requests: quota, balance, or rate limit
+          issue.
+        - 500 Internal Server Error: unexpected failure.
 
-            With tools and MCP servers:
-            ```python
-            completion = client.chat.completions.create(
-                model="openai/gpt-5",
-                messages=[{"role": "user", "content": "Search for recent AI news"}],
-                tools=[
-                    {
-                        "type": "function",
-                        "function": {
-                            "name": "search_web",
-                            "description": "Search the web for information",
-                        },
-                    }
-                ],
-                mcp_servers=["dedalus-labs/brave-search"],
-            )
-            ```
+        Billing:
 
-            Multi-model routing:
-            ```python
-            completion = client.chat.completions.create(
-                model=[
-                    "openai/gpt-4o-mini",
-                    "openai/gpt-5",
-                    "anthropic/claude-sonnet-4-20250514",
-                ],
-                messages=[{"role": "user", "content": "Analyze this complex data"}],
-                agent_attributes={"complexity": 0.8, "accuracy": 0.9},
-            )
-            ```
+        - Token usage metered by the selected model(s).
+        - Tool calls and MCP sessions may be billed separately.
+        - Streaming is settled after the stream ends via an async task.
 
-            Streaming response:
-            ```python
-            stream = client.chat.completions.create(
-                model="openai/gpt-5",
-                messages=[{"role": "user", "content": "Tell me a story"}],
-                stream=True,
-            )
+        Example (non-streaming HTTP): POST /v1/chat/completions Content-Type:
+        application/json Authorization: Bearer <key>
 
-            for chunk in stream:
-                if chunk.choices[0].delta.content:
-                    print(chunk.choices[0].delta.content, end="")
-            ```
+        { "model": "provider/model-name", "messages": [{"role": "user", "content":
+        "Hello"}] }
+
+        200 OK { "id": "cmpl_123", "object": "chat.completion", "choices": [ {"index":
+        0, "message": {"role": "assistant", "content": "Hi there!"}, "finish_reason":
+        "stop"} ], "usage": {"prompt_tokens": 3, "completion_tokens": 4, "total_tokens":
+        7} }
+
+        Example (streaming over SSE): POST /v1/chat/completions Accept:
+        text/event-stream
+
+        data: {"id":"cmpl_123","choices":[{"index":0,"delta":{"content":"Hi"}}]} data:
+        {"id":"cmpl_123","choices":[{"index":0,"delta":{"content":" there!"}}]} data:
+        [DONE]
 
         Args:
           messages: Conversation history. Accepts either a list of message objects or a string,
@@ -1687,6 +1656,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           auto_execute_tools: When False, skip server-side tool execution and return raw OpenAI-style
               tool_calls in the response.
+
+          deferred: xAI-specific parameter. If set to true, the request returns a request_id for
+              async completion retrieval via GET /v1/chat/deferred-completion/{request_id}.
 
           disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
               the model returns function calls for the client to execute manually.
@@ -1783,6 +1755,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
               policies. Consider hashing end-user identifiers before sending.
 
           safety_settings: Google safety settings (harm categories and thresholds).
+
+          search_parameters: xAI-specific parameter for configuring web search data acquisition. If not set,
+              no data will be acquired by the model.
 
           seed: If specified, system will make a best effort to sample deterministically.
               Determinism is not guaranteed for the same seed across different models or API
@@ -1864,6 +1839,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
         auto_execute_tools: bool | Omit = omit,
+        deferred: Optional[bool] | Omit = omit,
         disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
@@ -1878,7 +1854,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
-        mcp_servers: Optional[completion_create_params.MCPServers] | Omit = omit,
+        mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
@@ -1891,6 +1867,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         response_format: Optional[Dict[str, object]] | Omit = omit,
         safety_identifier: Optional[str] | Omit = omit,
         safety_settings: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        search_parameters: Optional[Dict[str, object]] | Omit = omit,
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[Literal["auto", "default"]] | Omit = omit,
         stop: Optional[SequenceNotStr[str]] | Omit = omit,
@@ -1915,84 +1892,70 @@ class AsyncCompletionsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
-    ) -> StreamChunk | AsyncStream[StreamChunk]:
+    ) -> Completion | AsyncStream[StreamChunk]:
         """
         Create a chat completion.
 
-        This endpoint provides a vendor-agnostic chat completions API that works with
-        thousands of LLMs. It supports MCP integration, multi-model routing with
-        intelligent agentic handoffs, client-side and server-side tool execution, and
-        streaming and non-streaming responses.
+        Unified chat-completions endpoint that works across many model providers.
+        Supports optional MCP integration, multi-model routing with agentic handoffs,
+        server- or client-executed tools, and both streaming and non-streaming delivery.
 
-        Args: request: Chat completion request with messages, model, and configuration.
-        http_request: FastAPI request object for accessing headers and state.
-        background_tasks: FastAPI background tasks for async billing operations. user:
-        Authenticated user with validated API key and sufficient balance.
+        Request body:
 
-        Returns: ChatCompletion: OpenAI-compatible completion response with usage data.
+        - messages: ordered list of chat turns.
+        - model: identifier or a list of identifiers for routing.
+        - tools: optional tool declarations available to the model.
+        - mcp_servers: optional list of MCP server slugs to enable during the run.
+        - stream: boolean to request incremental output.
+        - config: optional generation parameters (e.g., temperature, max_tokens,
+          metadata).
 
-        Raises: HTTPException: - 401 if authentication fails or insufficient balance. -
-        400 if request validation fails. - 500 if internal processing error occurs.
+        Headers:
 
-        Billing: - Token usage billed automatically based on model pricing - MCP tool
-        calls billed separately using credits system - Streaming responses billed after
-        completion via background task
+        - Authorization: bearer key for the calling account.
+        - Optional BYOK or provider headers if applicable.
 
-        Example: Basic chat completion: ```python from dedalus_labs import Dedalus
+        Behavior:
 
-            client = Dedalus(api_key="your-api-key")
+        - If multiple models are supplied, the router may select or hand off across
+          them.
+        - Tools may be invoked on the server or signaled for the client to run.
+        - Streaming responses emit incremental deltas; non-streaming returns a single
+          object.
+        - Usage metrics are computed when available and returned in the response.
 
-            completion = client.chat.completions.create(
-                model="openai/gpt-5",
-                messages=[{"role": "user", "content": "Hello, how are you?"}],
-            )
+        Responses:
 
-            print(completion.choices[0].message.content)
-            ```
+        - 200 OK: JSON completion object with choices, message content, and usage.
+        - 400 Bad Request: validation error.
+        - 401 Unauthorized: authentication failed.
+        - 402 Payment Required or 429 Too Many Requests: quota, balance, or rate limit
+          issue.
+        - 500 Internal Server Error: unexpected failure.
 
-            With tools and MCP servers:
-            ```python
-            completion = client.chat.completions.create(
-                model="openai/gpt-5",
-                messages=[{"role": "user", "content": "Search for recent AI news"}],
-                tools=[
-                    {
-                        "type": "function",
-                        "function": {
-                            "name": "search_web",
-                            "description": "Search the web for information",
-                        },
-                    }
-                ],
-                mcp_servers=["dedalus-labs/brave-search"],
-            )
-            ```
+        Billing:
 
-            Multi-model routing:
-            ```python
-            completion = client.chat.completions.create(
-                model=[
-                    "openai/gpt-4o-mini",
-                    "openai/gpt-5",
-                    "anthropic/claude-sonnet-4-20250514",
-                ],
-                messages=[{"role": "user", "content": "Analyze this complex data"}],
-                agent_attributes={"complexity": 0.8, "accuracy": 0.9},
-            )
-            ```
+        - Token usage metered by the selected model(s).
+        - Tool calls and MCP sessions may be billed separately.
+        - Streaming is settled after the stream ends via an async task.
 
-            Streaming response:
-            ```python
-            stream = client.chat.completions.create(
-                model="openai/gpt-5",
-                messages=[{"role": "user", "content": "Tell me a story"}],
-                stream=True,
-            )
+        Example (non-streaming HTTP): POST /v1/chat/completions Content-Type:
+        application/json Authorization: Bearer <key>
 
-            for chunk in stream:
-                if chunk.choices[0].delta.content:
-                    print(chunk.choices[0].delta.content, end="")
-            ```
+        { "model": "provider/model-name", "messages": [{"role": "user", "content":
+        "Hello"}] }
+
+        200 OK { "id": "cmpl_123", "object": "chat.completion", "choices": [ {"index":
+        0, "message": {"role": "assistant", "content": "Hi there!"}, "finish_reason":
+        "stop"} ], "usage": {"prompt_tokens": 3, "completion_tokens": 4, "total_tokens":
+        7} }
+
+        Example (streaming over SSE): POST /v1/chat/completions Accept:
+        text/event-stream
+
+        data: {"id":"cmpl_123","choices":[{"index":0,"delta":{"content":"Hi"}}]} data:
+        {"id":"cmpl_123","choices":[{"index":0,"delta":{"content":" there!"}}]} data:
+        [DONE]
 
         Args:
           messages: Conversation history. Accepts either a list of message objects or a string,
@@ -2018,6 +1981,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           auto_execute_tools: When False, skip server-side tool execution and return raw OpenAI-style
               tool_calls in the response.
+
+          deferred: xAI-specific parameter. If set to true, the request returns a request_id for
+              async completion retrieval via GET /v1/chat/deferred-completion/{request_id}.
 
           disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
               the model returns function calls for the client to execute manually.
@@ -2115,6 +2081,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           safety_settings: Google safety settings (harm categories and thresholds).
 
+          search_parameters: xAI-specific parameter for configuring web search data acquisition. If not set,
+              no data will be acquired by the model.
+
           seed: If specified, system will make a best effort to sample deterministically.
               Determinism is not guaranteed for the same seed across different models or API
               versions.
@@ -2194,6 +2163,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
         auto_execute_tools: bool | Omit = omit,
+        deferred: Optional[bool] | Omit = omit,
         disable_automatic_function_calling: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Union[str, Dict[str, object], None] | Omit = omit,
@@ -2208,7 +2178,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
-        mcp_servers: Optional[completion_create_params.MCPServers] | Omit = omit,
+        mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
@@ -2221,6 +2191,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         response_format: Optional[Dict[str, object]] | Omit = omit,
         safety_identifier: Optional[str] | Omit = omit,
         safety_settings: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        search_parameters: Optional[Dict[str, object]] | Omit = omit,
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[Literal["auto", "default"]] | Omit = omit,
         stop: Optional[SequenceNotStr[str]] | Omit = omit,
@@ -2246,7 +2217,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
-    ) -> StreamChunk | AsyncStream[StreamChunk]:
+    ) -> Completion | AsyncStream[StreamChunk]:
         return await self._post(
             "/v1/chat/completions",
             body=await async_maybe_transform(
@@ -2256,6 +2227,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
                     "agent_attributes": agent_attributes,
                     "audio": audio,
                     "auto_execute_tools": auto_execute_tools,
+                    "deferred": deferred,
                     "disable_automatic_function_calling": disable_automatic_function_calling,
                     "frequency_penalty": frequency_penalty,
                     "function_call": function_call,
@@ -2283,6 +2255,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
                     "response_format": response_format,
                     "safety_identifier": safety_identifier,
                     "safety_settings": safety_settings,
+                    "search_parameters": search_parameters,
                     "seed": seed,
                     "service_tier": service_tier,
                     "stop": stop,
@@ -2313,7 +2286,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
                 timeout=timeout,
                 idempotency_key=idempotency_key,
             ),
-            cast_to=StreamChunk,
+            cast_to=Completion,
             stream=stream or False,
             stream_cls=AsyncStream[StreamChunk],
         )

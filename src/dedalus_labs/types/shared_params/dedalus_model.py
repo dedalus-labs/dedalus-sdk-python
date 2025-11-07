@@ -27,13 +27,17 @@ class SettingsToolChoiceMCPToolChoice(TypedDict, total=False):
     server_label: Required[str]
 
 
-SettingsToolChoice: TypeAlias = Union[Literal["auto", "required", "none"], str, SettingsToolChoiceMCPToolChoice]
+SettingsToolChoice: TypeAlias = Union[
+    Literal["auto", "required", "none"], str, Dict[str, object], SettingsToolChoiceMCPToolChoice
+]
 
 
 class Settings(TypedDict, total=False):
     attributes: Dict[str, object]
 
     audio: Optional[Dict[str, object]]
+
+    deferred: Optional[bool]
 
     disable_automatic_function_calling: bool
 
@@ -99,6 +103,8 @@ class Settings(TypedDict, total=False):
     safety_identifier: Optional[str]
 
     safety_settings: Optional[Iterable[Dict[str, object]]]
+
+    search_parameters: Optional[Dict[str, object]]
 
     seed: Optional[int]
 

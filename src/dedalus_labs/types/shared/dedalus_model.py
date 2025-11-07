@@ -36,13 +36,17 @@ class SettingsToolChoiceMCPToolChoice(BaseModel):
     server_label: str
 
 
-SettingsToolChoice: TypeAlias = Union[Literal["auto", "required", "none"], str, SettingsToolChoiceMCPToolChoice, None]
+SettingsToolChoice: TypeAlias = Union[
+    Literal["auto", "required", "none"], str, Dict[str, object], SettingsToolChoiceMCPToolChoice, None
+]
 
 
 class Settings(BaseModel):
     attributes: Optional[Dict[str, object]] = None
 
     audio: Optional[Dict[str, object]] = None
+
+    deferred: Optional[bool] = None
 
     disable_automatic_function_calling: Optional[bool] = None
 
@@ -108,6 +112,8 @@ class Settings(BaseModel):
     safety_identifier: Optional[str] = None
 
     safety_settings: Optional[List[Dict[str, object]]] = None
+
+    search_parameters: Optional[Dict[str, object]] = None
 
     seed: Optional[int] = None
 

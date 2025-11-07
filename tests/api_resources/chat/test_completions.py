@@ -9,7 +9,7 @@ import pytest
 
 from tests.utils import assert_matches_type
 from dedalus_labs import Dedalus, AsyncDedalus
-from dedalus_labs.types.chat import StreamChunk
+from dedalus_labs.types.chat import Completion
 
 base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 
@@ -29,7 +29,7 @@ class TestCompletions:
             ],
             model="openai/gpt-4",
         )
-        assert_matches_type(StreamChunk, completion, path=["response"])
+        assert_matches_type(Completion, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -52,6 +52,7 @@ class TestCompletions:
                 "voice": "bar",
             },
             auto_execute_tools=True,
+            deferred=True,
             disable_automatic_function_calling=True,
             frequency_penalty=-0.5,
             function_call="string",
@@ -106,6 +107,7 @@ class TestCompletions:
                     "threshold": "bar",
                 }
             ],
+            search_parameters={"foo": "bar"},
             seed=42,
             service_tier="auto",
             stop=["\n", "END"],
@@ -133,7 +135,7 @@ class TestCompletions:
             verbosity="low",
             web_search_options={"foo": "bar"},
         )
-        assert_matches_type(StreamChunk, completion, path=["response"])
+        assert_matches_type(Completion, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -151,7 +153,7 @@ class TestCompletions:
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
         completion = response.parse()
-        assert_matches_type(StreamChunk, completion, path=["response"])
+        assert_matches_type(Completion, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -169,7 +171,7 @@ class TestCompletions:
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
             completion = response.parse()
-            assert_matches_type(StreamChunk, completion, path=["response"])
+            assert_matches_type(Completion, completion, path=["response"])
 
         assert cast(Any, response.is_closed) is True
 
@@ -210,6 +212,7 @@ class TestCompletions:
                 "voice": "bar",
             },
             auto_execute_tools=True,
+            deferred=True,
             disable_automatic_function_calling=True,
             frequency_penalty=-0.5,
             function_call="string",
@@ -264,6 +267,7 @@ class TestCompletions:
                     "threshold": "bar",
                 }
             ],
+            search_parameters={"foo": "bar"},
             seed=42,
             service_tier="auto",
             stop=["\n", "END"],
@@ -349,7 +353,7 @@ class TestAsyncCompletions:
             ],
             model="openai/gpt-4",
         )
-        assert_matches_type(StreamChunk, completion, path=["response"])
+        assert_matches_type(Completion, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -372,6 +376,7 @@ class TestAsyncCompletions:
                 "voice": "bar",
             },
             auto_execute_tools=True,
+            deferred=True,
             disable_automatic_function_calling=True,
             frequency_penalty=-0.5,
             function_call="string",
@@ -426,6 +431,7 @@ class TestAsyncCompletions:
                     "threshold": "bar",
                 }
             ],
+            search_parameters={"foo": "bar"},
             seed=42,
             service_tier="auto",
             stop=["\n", "END"],
@@ -453,7 +459,7 @@ class TestAsyncCompletions:
             verbosity="low",
             web_search_options={"foo": "bar"},
         )
-        assert_matches_type(StreamChunk, completion, path=["response"])
+        assert_matches_type(Completion, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -471,7 +477,7 @@ class TestAsyncCompletions:
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
         completion = await response.parse()
-        assert_matches_type(StreamChunk, completion, path=["response"])
+        assert_matches_type(Completion, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -489,7 +495,7 @@ class TestAsyncCompletions:
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
             completion = await response.parse()
-            assert_matches_type(StreamChunk, completion, path=["response"])
+            assert_matches_type(Completion, completion, path=["response"])
 
         assert cast(Any, response.is_closed) is True
 
@@ -530,6 +536,7 @@ class TestAsyncCompletions:
                 "voice": "bar",
             },
             auto_execute_tools=True,
+            deferred=True,
             disable_automatic_function_calling=True,
             frequency_penalty=-0.5,
             function_call="string",
@@ -584,6 +591,7 @@ class TestAsyncCompletions:
                     "threshold": "bar",
                 }
             ],
+            search_parameters={"foo": "bar"},
             seed=42,
             service_tier="auto",
             stop=["\n", "END"],
