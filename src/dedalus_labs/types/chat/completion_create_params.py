@@ -13,10 +13,6 @@ from ..shared_params.dedalus_model import DedalusModel
 __all__ = [
     "CompletionCreateParamsBase",
     "Model",
-    "MCPServers",
-    "MCPServersMCPServer",
-    "MCPServersMCPServerMCPServerSpec",
-    "MCPServersMCPServerSpec",
     "Thinking",
     "ThinkingThinkingConfigDisabled",
     "ThinkingThinkingConfigEnabled",
@@ -62,6 +58,13 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     """
     When False, skip server-side tool execution and return raw OpenAI-style
     tool_calls in the response.
+    """
+
+    deferred: Optional[bool]
+    """xAI-specific parameter.
+
+    If set to true, the request returns a request_id for async completion retrieval
+    via GET /v1/chat/deferred-completion/{request_id}.
     """
 
     disable_automatic_function_calling: Optional[bool]
@@ -156,7 +159,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     reasoning but increase cost and latency.
     """
 
-    mcp_servers: Optional[MCPServers]
+    mcp_servers: Union[str, SequenceNotStr[str], None]
     """
     MCP (Model Context Protocol) server addresses to make available for server-side
     tool execution. Entries can be URLs (e.g., 'https://mcp.example.com'), slugs
@@ -237,6 +240,12 @@ class CompletionCreateParamsBase(TypedDict, total=False):
 
     safety_settings: Optional[Iterable[Dict[str, object]]]
     """Google safety settings (harm categories and thresholds)."""
+
+    search_parameters: Optional[Dict[str, object]]
+    """xAI-specific parameter for configuring web search data acquisition.
+
+    If not set, no data will be acquired by the model.
+    """
 
     seed: Optional[int]
     """If specified, system will make a best effort to sample deterministically.
@@ -353,44 +362,6 @@ class CompletionCreateParamsBase(TypedDict, total=False):
 
 
 Model: TypeAlias = Union[ModelID, DedalusModel, ModelsParam]
-
-
-class MCPServersMCPServerMCPServerSpecTyped(TypedDict, total=False):
-    metadata: Optional[Dict[str, object]]
-    """Optional metadata associated with the MCP server entry."""
-
-    slug: Optional[str]
-    """Slug identifying an MCP server (e.g., 'dedalus-labs/brave-search')."""
-
-    url: Optional[str]
-    """Explicit MCP server URL."""
-
-    version: Optional[str]
-    """Optional explicit version to target when using a slug."""
-
-
-MCPServersMCPServerMCPServerSpec: TypeAlias = Union[MCPServersMCPServerMCPServerSpecTyped, Dict[str, object]]
-
-MCPServersMCPServer: TypeAlias = Union[str, MCPServersMCPServerMCPServerSpec]
-
-
-class MCPServersMCPServerSpecTyped(TypedDict, total=False):
-    metadata: Optional[Dict[str, object]]
-    """Optional metadata associated with the MCP server entry."""
-
-    slug: Optional[str]
-    """Slug identifying an MCP server (e.g., 'dedalus-labs/brave-search')."""
-
-    url: Optional[str]
-    """Explicit MCP server URL."""
-
-    version: Optional[str]
-    """Optional explicit version to target when using a slug."""
-
-
-MCPServersMCPServerSpec: TypeAlias = Union[MCPServersMCPServerSpecTyped, Dict[str, object]]
-
-MCPServers: TypeAlias = Union[SequenceNotStr[MCPServersMCPServer], str, MCPServersMCPServerSpec]
 
 
 class ThinkingThinkingConfigDisabled(TypedDict, total=False):

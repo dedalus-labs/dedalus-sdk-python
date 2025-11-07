@@ -1,59 +1,76 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import List, Optional
+from typing import List, Union, Optional
+from typing_extensions import TypeAlias
 
 from ..._models import BaseModel
 
-__all__ = ["TranslationCreateResponse", "Segment"]
+__all__ = [
+    "TranslationCreateResponse",
+    "CreateTranslationResponseVerboseJson",
+    "CreateTranslationResponseVerboseJsonSegment",
+    "CreateTranslationResponseJson",
+]
 
 
-class Segment(BaseModel):
+class CreateTranslationResponseVerboseJsonSegment(BaseModel):
     id: int
-    """Unique identifier of the segment"""
+    """Unique identifier of the segment."""
 
     avg_logprob: float
-    """Average log probability of the segment"""
+    """Average logprob of the segment.
+
+    If the value is lower than -1, consider the logprobs failed.
+    """
 
     compression_ratio: float
     """Compression ratio of the segment.
 
-    If greater than 2.4, consider the compression failed
+    If the value is greater than 2.4, consider the compression failed.
     """
 
     end: float
-    """End time of the segment in seconds"""
+    """End time of the segment in seconds."""
 
     no_speech_prob: float
     """Probability of no speech in the segment.
 
-    If higher than 1.0 and avg_logprob is below -1, consider this segment silent
+    If the value is higher than 1.0 and the `avg_logprob` is below -1, consider this
+    segment silent.
     """
 
     seek: int
-    """Seek offset of the segment"""
+    """Seek offset of the segment."""
 
     start: float
-    """Start time of the segment in seconds"""
+    """Start time of the segment in seconds."""
 
     temperature: float
-    """Temperature parameter used for generating this segment"""
+    """Temperature parameter used for generating the segment."""
 
     text: str
-    """Text content of the segment"""
+    """Text content of the segment."""
 
     tokens: List[int]
-    """Array of token IDs for the segment"""
+    """Array of token IDs for the text content."""
 
 
-class TranslationCreateResponse(BaseModel):
+class CreateTranslationResponseVerboseJson(BaseModel):
+    duration: float
+    """The duration of the input audio."""
+
+    language: str
+    """The language of the output translation (always `english`)."""
+
     text: str
-    """The translated text (in English)"""
+    """The translated text."""
 
-    duration: Optional[float] = None
-    """The duration of the input audio in seconds"""
+    segments: Optional[List[CreateTranslationResponseVerboseJsonSegment]] = None
+    """Segments of the translated text and their corresponding details."""
 
-    language: Optional[str] = None
-    """The language of the output translation (always 'english')"""
 
-    segments: Optional[List[Segment]] = None
-    """Segments of the translated text and their corresponding details"""
+class CreateTranslationResponseJson(BaseModel):
+    text: str
+
+
+TranslationCreateResponse: TypeAlias = Union[CreateTranslationResponseVerboseJson, CreateTranslationResponseJson]

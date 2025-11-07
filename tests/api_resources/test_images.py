@@ -31,7 +31,7 @@ class TestImages:
         image = client.images.generate(
             prompt="A white siamese cat",
             background="transparent",
-            model="dall-e-3",
+            model="openai/dall-e-3",
             moderation="auto",
             n=1,
             output_compression=85,
@@ -92,7 +92,7 @@ class TestAsyncImages:
         image = await async_client.images.generate(
             prompt="A white siamese cat",
             background="transparent",
-            model="dall-e-3",
+            model="openai/dall-e-3",
             moderation="auto",
             n=1,
             output_compression=85,

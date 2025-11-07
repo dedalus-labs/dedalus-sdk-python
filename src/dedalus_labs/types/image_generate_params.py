@@ -30,8 +30,8 @@ class ImageGenerateParams(TypedDict, total=False):
     model: Optional[str]
     """The model to use for image generation.
 
-    One of `dall-e-2`, `dall-e-3`, or `gpt-image-1`. Defaults to `dall-e-2` unless a
-    parameter specific to `gpt-image-1` is used.
+    One of `openai/dall-e-2`, `openai/dall-e-3`, or `openai/gpt-image-1`. Defaults
+    to `openai/dall-e-2` unless a parameter specific to `gpt-image-1` is used.
     """
 
     moderation: Optional[Literal["low", "auto"]]
