@@ -17,7 +17,7 @@ The REST API documentation can be found on [docs.dedaluslabs.ai](https://docs.de
 
 ```sh
 # install from PyPI
-pip install --pre dedalus_labs
+pip install dedalus_labs
 ```
 
 ## Usage
@@ -93,7 +93,7 @@ You can enable this by installing `aiohttp`:
 
 ```sh
 # install from PyPI
-pip install --pre dedalus_labs[aiohttp]
+pip install dedalus_labs[aiohttp]
 ```
 
 Then you can enable it by instantiating the client with `http_client=DefaultAioHttpClient()`:
