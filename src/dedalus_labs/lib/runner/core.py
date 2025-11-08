@@ -167,7 +167,7 @@ class DedalusRunner:
         instructions: str | None = None,
         model: str | list[str] | DedalusModel | list[DedalusModel] | None = None,
         max_steps: int = 10,
-        mcp_servers: list[str] | None = None,
+        mcp_servers: str | list[str] | None = None,
         temperature: float | None = None,
         max_tokens: int | None = None,
         top_p: float | None = None,
@@ -367,8 +367,11 @@ class DedalusRunner:
             handoff_config=handoff_config,
         )
 
+        # Normalize mcp_servers to list
+        normalized_mcp_servers = [mcp_servers] if isinstance(mcp_servers, str) else (mcp_servers or [])
+
         exec_config = _ExecutionConfig(
-            mcp_servers=mcp_servers or [],
+            mcp_servers=normalized_mcp_servers,
             max_steps=max_steps,
             stream=stream,
             transport=transport,
