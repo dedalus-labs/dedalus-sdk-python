@@ -514,7 +514,16 @@ class DedalusRunner:
             if exec_config.verbose:
                 print(f" Response content: {content[:100] if content else '(none)'}...")
                 if tool_calls:
-                    print(f" Tool calls in response: {[tc.get('function', {}).get('name', '?') for tc in tool_calls]}")
+                    call_names = []
+                    for tc in tool_calls:
+                        try:
+                            if isinstance(tc, dict):
+                                call_names.append(tc.get("function", {}).get("name", "?"))
+                            else:
+                                call_names.append(getattr(getattr(tc, "function", None), "name", "?"))
+                        except Exception:
+                            call_names.append("?")
+                    print(f" Tool calls in response: {call_names}")
 
             if not tool_calls:
                 final_text = content or ""
@@ -1154,6 +1163,9 @@ class DedalusRunner:
             if verbose:
                 print(f" Tool {i + 1}/{len(tool_calls)}: {fn_name}")
 
+            # Always record the assistant tool_call message so subsequent tool responses are valid.
+            messages.append({"role": "assistant", "tool_calls": [tc]})
+
             try:
                 fn_args = json.loads(fn_args_str)
             except json.JSONDecodeError:
@@ -1163,9 +1175,6 @@ class DedalusRunner:
                 result = await tool_handler.exec(fn_name, fn_args)
                 tool_results.append({"name": fn_name, "result": result, "step": step})
                 tools_called.append(fn_name)
-
-                # Add tool call and result to conversation
-                messages.append({"role": "assistant", "tool_calls": [tc]})
                 messages.append({"role": "tool", "tool_call_id": tc["id"], "content": str(result)})
 
                 if verbose:
@@ -1193,6 +1202,8 @@ class DedalusRunner:
             fn_name = tc["function"]["name"]
             fn_args_str = tc["function"]["arguments"]
 
+            messages.append({"role": "assistant", "tool_calls": [tc]})
+
             try:
                 fn_args = json.loads(fn_args_str)
             except json.JSONDecodeError:
@@ -1202,9 +1213,6 @@ class DedalusRunner:
                 result = tool_handler.exec_sync(fn_name, fn_args)
                 tool_results.append({"name": fn_name, "result": result, "step": step})
                 tools_called.append(fn_name)
-
-                # Add tool call and result to conversation
-                messages.append({"role": "assistant", "tool_calls": [tc]})
                 messages.append({"role": "tool", "tool_call_id": tc["id"], "content": str(result)})
             except Exception as e:
                 error_result = {"error": str(e), "name": fn_name, "step": step}
