@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from .image import Image as Image
 from .model import Model as Model
+from .shared import DedalusModel as DedalusModel, DedalusModelChoice as DedalusModelChoice
 from .images_response import ImagesResponse as ImagesResponse
 from .image_edit_params import ImageEditParams as ImageEditParams
 from .root_get_response import RootGetResponse as RootGetResponse

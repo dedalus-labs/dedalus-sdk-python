@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-from typing import List, Union
+from typing import Union
 from typing_extensions import TypeAlias
 
-from .model_id import ModelID
-from ..shared_params.dedalus_model import DedalusModel
+from .dedalus_model import DedalusModel
+from ..chat.model_id import ModelID
 
-__all__ = ["ModelsParam", "DedalusModelChoice"]
+__all__ = ["DedalusModelChoice"]
 
 DedalusModelChoice: TypeAlias = Union[ModelID, DedalusModel]
-
-ModelsParam: TypeAlias = List[DedalusModelChoice]
