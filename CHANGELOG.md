@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.0.1 (2025-11-08)
+
+Full Changelog: [v0.1.0-alpha.10...v0.0.1](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.10...v0.0.1)
+
+### Bug Fixes
+
+* **api:** add shared DedalusModel type ([8855a07](https://github.com/dedalus-labs/dedalus-sdk-python/commit/8855a07e4ea638102e71a049e182891e76e3d34d))
+
 ## 0.1.0-alpha.10 (2025-11-08)
 
 Full Changelog: [v0.1.0-alpha.10...v0.1.0-alpha.10](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.10...v0.1.0-alpha.10)
