@@ -6,6 +6,41 @@ Full Changelog: [v0.1.0-alpha.10...v0.1.0-alpha.10](https://github.com/dedalus-l
 
 ### Features
 
+* add image edits/variation and vision format support ([f8a8c84](https://github.com/dedalus-labs/dedalus-sdk-python/commit/f8a8c84f3379d92619de56929d6ad3048989b18c))
+* **api:** add endpoints ([c10d7b5](https://github.com/dedalus-labs/dedalus-sdk-python/commit/c10d7b55a8ec6bb82556b3efe4db20c91959131d))
+* **api:** add streaming ([745c331](https://github.com/dedalus-labs/dedalus-sdk-python/commit/745c33166a671b79a978961d576064618cc80bcb))
+* **api:** add streaming configuration ([0172ad5](https://github.com/dedalus-labs/dedalus-sdk-python/commit/0172ad5175dd15650252a084f213b16c56b8befc))
+* **api:** api update ([280a595](https://github.com/dedalus-labs/dedalus-sdk-python/commit/280a595b3d3900625cfdf26be12027a88eff9618))
+* **api:** auto exec tools ([780162b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/780162b01d27703bb873488702ebede232791ed2))
+* **api:** image support ([ca28133](https://github.com/dedalus-labs/dedalus-sdk-python/commit/ca281334db05ac2e939436050d1cf70ca5359ab4))
+* **api:** manual updates ([9b2851a](https://github.com/dedalus-labs/dedalus-sdk-python/commit/9b2851a6bdbf861c0db0b01aa3e7a8f5a45bfa77))
+* **api:** revert streaming for now ([56d57d5](https://github.com/dedalus-labs/dedalus-sdk-python/commit/56d57d5a19034eec13d5a98a86d133d36ac2830a))
+* **api:** update via SDK Studio ([9407b44](https://github.com/dedalus-labs/dedalus-sdk-python/commit/9407b44fa8dbd4df7c18c36eab95a5573399810a))
+* **client:** support file upload requests ([caadecd](https://github.com/dedalus-labs/dedalus-sdk-python/commit/caadecdf5c75297819cd41fe3adcc5f7af3de772))
+
+
+### Bug Fixes
+
+* **client:** close streams without requiring full consumption ([24c4190](https://github.com/dedalus-labs/dedalus-sdk-python/commit/24c4190ccb71d2c369b3d79f5764be31f2e8ead7))
+* runner tool calling mechanics ([a07f8eb](https://github.com/dedalus-labs/dedalus-sdk-python/commit/a07f8ebd7d65d9a054bba7838443da90f396762d))
+* **types:** remove manual DedalusModel ([e1ce236](https://github.com/dedalus-labs/dedalus-sdk-python/commit/e1ce236b931b0715b9fa280ef329bfa451eb05c1))
+
+
+### Chores
+
+* bump `httpx-aiohttp` version to 0.1.9 ([6b5f606](https://github.com/dedalus-labs/dedalus-sdk-python/commit/6b5f60653d76bfe6b4a85d841f115d59c5eba976))
+* **internal/tests:** avoid race condition with implicit client cleanup ([0854f1d](https://github.com/dedalus-labs/dedalus-sdk-python/commit/0854f1d8f52ad5d75c2da1781358f96543793c02))
+* **internal:** detect missing future annotations with ruff ([6909c09](https://github.com/dedalus-labs/dedalus-sdk-python/commit/6909c09996be7fe019ec6737a18b7e330b325c4a))
+* **internal:** grammar fix (it's -&gt; its) ([f0c5880](https://github.com/dedalus-labs/dedalus-sdk-python/commit/f0c58800e495c0cd5c1f13a9799e8e2025154a1c))
+* remove custom code ([81f922b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/81f922b8eabc571abf4cfd1b87e08517b4564128))
+* tidying ([354f95b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/354f95b1efde6b3df27275b3b8a36510f28d1858))
+
+## 0.1.0-alpha.10 (2025-11-08)
+
+Full Changelog: [v0.1.0-alpha.10...v0.1.0-alpha.10](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.10...v0.1.0-alpha.10)
+
+### Features
+
 * add image edits/variation and vision format support ([10fcf44](https://github.com/dedalus-labs/dedalus-sdk-python/commit/10fcf44511298d1ae13de0dcac21a5888b83cae7))
 * **api:** add endpoints ([91f3f6f](https://github.com/dedalus-labs/dedalus-sdk-python/commit/91f3f6f093ff45119257f78b470aa4f834ff62cb))
 * **api:** add streaming ([745c331](https://github.com/dedalus-labs/dedalus-sdk-python/commit/745c33166a671b79a978961d576064618cc80bcb))
