@@ -1,3 +1,9 @@
+# Shared Types
+
+```python
+from dedalus_labs.types import DedalusModel, DedalusModelChoice
+```
+
 # Root
 
 Types:
