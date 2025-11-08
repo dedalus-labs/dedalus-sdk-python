@@ -65,19 +65,21 @@ class SpeechResource(SyncAPIResource):
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
     ) -> BinaryAPIResponse:
-        """Generate audio from text using text-to-speech.
+        """
+        Generate speech audio from text.
 
-        OpenAI models only.
+        Generates audio from the input text using text-to-speech models. Supports
+        multiple voices and output formats including mp3, opus, aac, flac, wav, and pcm.
 
-        Gemini TTS uses different architecture (audio modalities in
-        chat).
+        Returns streaming audio data that can be saved to a file or streamed directly to
+        users.
 
         Args:
           input: The text to generate audio for. The maximum length is 4096 characters.
 
           model:
               One of the available [TTS models](https://platform.openai.com/docs/models#tts):
-              `tts-1`, `tts-1-hd` or `gpt-4o-mini-tts`.
+              `openai/tts-1`, `openai/tts-1-hd` or `openai/gpt-4o-mini-tts`.
 
           voice: The voice to use when generating the audio. Supported voices are `alloy`, `ash`,
               `ballad`, `coral`, `echo`, `fable`, `onyx`, `nova`, `sage`, `shimmer`, and
@@ -170,19 +172,21 @@ class AsyncSpeechResource(AsyncAPIResource):
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
     ) -> AsyncBinaryAPIResponse:
-        """Generate audio from text using text-to-speech.
+        """
+        Generate speech audio from text.
 
-        OpenAI models only.
+        Generates audio from the input text using text-to-speech models. Supports
+        multiple voices and output formats including mp3, opus, aac, flac, wav, and pcm.
 
-        Gemini TTS uses different architecture (audio modalities in
-        chat).
+        Returns streaming audio data that can be saved to a file or streamed directly to
+        users.
 
         Args:
           input: The text to generate audio for. The maximum length is 4096 characters.
 
           model:
               One of the available [TTS models](https://platform.openai.com/docs/models#tts):
-              `tts-1`, `tts-1-hd` or `gpt-4o-mini-tts`.
+              `openai/tts-1`, `openai/tts-1-hd` or `openai/gpt-4o-mini-tts`.
 
           voice: The voice to use when generating the audio. Supported voices are `alloy`, `ash`,
               `ballad`, `coral`, `echo`, `fable`, `onyx`, `nova`, `sage`, `shimmer`, and

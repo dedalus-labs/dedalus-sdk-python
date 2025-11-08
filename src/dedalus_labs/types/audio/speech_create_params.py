@@ -15,7 +15,7 @@ class SpeechCreateParams(TypedDict, total=False):
     model: Required[str]
     """
     One of the available [TTS models](https://platform.openai.com/docs/models#tts):
-    `tts-1`, `tts-1-hd` or `gpt-4o-mini-tts`.
+    `openai/tts-1`, `openai/tts-1-hd` or `openai/gpt-4o-mini-tts`.
     """
 
     voice: Required[

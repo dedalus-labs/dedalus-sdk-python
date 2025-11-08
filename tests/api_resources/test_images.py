@@ -19,6 +19,105 @@ class TestImages:
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
+    def test_method_create_variation(self, client: Dedalus) -> None:
+        image = client.images.create_variation(
+            image=b"raw file contents",
+        )
+        assert_matches_type(ImagesResponse, image, path=["response"])
+
+    @pytest.mark.skip(reason="Prism tests are disabled")
+    @parametrize
+    def test_method_create_variation_with_all_params(self, client: Dedalus) -> None:
+        image = client.images.create_variation(
+            image=b"raw file contents",
+            model="model",
+            n=0,
+            response_format="response_format",
+            size="size",
+            user="user",
+        )
+        assert_matches_type(ImagesResponse, image, path=["response"])
+
+    @pytest.mark.skip(reason="Prism tests are disabled")
+    @parametrize
+    def test_raw_response_create_variation(self, client: Dedalus) -> None:
+        response = client.images.with_raw_response.create_variation(
+            image=b"raw file contents",
+        )
+
+        assert response.is_closed is True
+        assert response.http_request.headers.get("X-Stainless-Lang") == "python"
+        image = response.parse()
+        assert_matches_type(ImagesResponse, image, path=["response"])
+
+    @pytest.mark.skip(reason="Prism tests are disabled")
+    @parametrize
+    def test_streaming_response_create_variation(self, client: Dedalus) -> None:
+        with client.images.with_streaming_response.create_variation(
+            image=b"raw file contents",
+        ) as response:
+            assert not response.is_closed
+            assert response.http_request.headers.get("X-Stainless-Lang") == "python"
+
+            image = response.parse()
+            assert_matches_type(ImagesResponse, image, path=["response"])
+
+        assert cast(Any, response.is_closed) is True
+
+    @pytest.mark.skip(reason="Prism tests are disabled")
+    @parametrize
+    def test_method_edit(self, client: Dedalus) -> None:
+        image = client.images.edit(
+            image=b"raw file contents",
+            prompt="prompt",
+        )
+        assert_matches_type(ImagesResponse, image, path=["response"])
+
+    @pytest.mark.skip(reason="Prism tests are disabled")
+    @parametrize
+    def test_method_edit_with_all_params(self, client: Dedalus) -> None:
+        image = client.images.edit(
+            image=b"raw file contents",
+            prompt="prompt",
+            mask=b"raw file contents",
+            model="model",
+            n=0,
+            response_format="response_format",
+            size="size",
+            user="user",
+        )
+        assert_matches_type(ImagesResponse, image, path=["response"])
+
+    @pytest.mark.skip(reason="Prism tests are disabled")
+    @parametrize
+    def test_raw_response_edit(self, client: Dedalus) -> None:
+        response = client.images.with_raw_response.edit(
+            image=b"raw file contents",
+            prompt="prompt",
+        )
+
+        assert response.is_closed is True
+        assert response.http_request.headers.get("X-Stainless-Lang") == "python"
+        image = response.parse()
+        assert_matches_type(ImagesResponse, image, path=["response"])
+
+    @pytest.mark.skip(reason="Prism tests are disabled")
+    @parametrize
+    def test_streaming_response_edit(self, client: Dedalus) -> None:
+        with client.images.with_streaming_response.edit(
+            image=b"raw file contents",
+            prompt="prompt",
+        ) as response:
+            assert not response.is_closed
+            assert response.http_request.headers.get("X-Stainless-Lang") == "python"
+
+            image = response.parse()
+            assert_matches_type(ImagesResponse, image, path=["response"])
+
+        assert cast(Any, response.is_closed) is True
+
+    @pytest.mark.skip(reason="Prism tests are disabled")
+    @parametrize
     def test_method_generate(self, client: Dedalus) -> None:
         image = client.images.generate(
             prompt="A white siamese cat",
@@ -31,7 +130,7 @@ class TestImages:
         image = client.images.generate(
             prompt="A white siamese cat",
             background="transparent",
-            model="dall-e-3",
+            model="openai/dall-e-3",
             moderation="auto",
             n=1,
             output_compression=85,
@@ -80,6 +179,105 @@ class TestAsyncImages:
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
+    async def test_method_create_variation(self, async_client: AsyncDedalus) -> None:
+        image = await async_client.images.create_variation(
+            image=b"raw file contents",
+        )
+        assert_matches_type(ImagesResponse, image, path=["response"])
+
+    @pytest.mark.skip(reason="Prism tests are disabled")
+    @parametrize
+    async def test_method_create_variation_with_all_params(self, async_client: AsyncDedalus) -> None:
+        image = await async_client.images.create_variation(
+            image=b"raw file contents",
+            model="model",
+            n=0,
+            response_format="response_format",
+            size="size",
+            user="user",
+        )
+        assert_matches_type(ImagesResponse, image, path=["response"])
+
+    @pytest.mark.skip(reason="Prism tests are disabled")
+    @parametrize
+    async def test_raw_response_create_variation(self, async_client: AsyncDedalus) -> None:
+        response = await async_client.images.with_raw_response.create_variation(
+            image=b"raw file contents",
+        )
+
+        assert response.is_closed is True
+        assert response.http_request.headers.get("X-Stainless-Lang") == "python"
+        image = await response.parse()
+        assert_matches_type(ImagesResponse, image, path=["response"])
+
+    @pytest.mark.skip(reason="Prism tests are disabled")
+    @parametrize
+    async def test_streaming_response_create_variation(self, async_client: AsyncDedalus) -> None:
+        async with async_client.images.with_streaming_response.create_variation(
+            image=b"raw file contents",
+        ) as response:
+            assert not response.is_closed
+            assert response.http_request.headers.get("X-Stainless-Lang") == "python"
+
+            image = await response.parse()
+            assert_matches_type(ImagesResponse, image, path=["response"])
+
+        assert cast(Any, response.is_closed) is True
+
+    @pytest.mark.skip(reason="Prism tests are disabled")
+    @parametrize
+    async def test_method_edit(self, async_client: AsyncDedalus) -> None:
+        image = await async_client.images.edit(
+            image=b"raw file contents",
+            prompt="prompt",
+        )
+        assert_matches_type(ImagesResponse, image, path=["response"])
+
+    @pytest.mark.skip(reason="Prism tests are disabled")
+    @parametrize
+    async def test_method_edit_with_all_params(self, async_client: AsyncDedalus) -> None:
+        image = await async_client.images.edit(
+            image=b"raw file contents",
+            prompt="prompt",
+            mask=b"raw file contents",
+            model="model",
+            n=0,
+            response_format="response_format",
+            size="size",
+            user="user",
+        )
+        assert_matches_type(ImagesResponse, image, path=["response"])
+
+    @pytest.mark.skip(reason="Prism tests are disabled")
+    @parametrize
+    async def test_raw_response_edit(self, async_client: AsyncDedalus) -> None:
+        response = await async_client.images.with_raw_response.edit(
+            image=b"raw file contents",
+            prompt="prompt",
+        )
+
+        assert response.is_closed is True
+        assert response.http_request.headers.get("X-Stainless-Lang") == "python"
+        image = await response.parse()
+        assert_matches_type(ImagesResponse, image, path=["response"])
+
+    @pytest.mark.skip(reason="Prism tests are disabled")
+    @parametrize
+    async def test_streaming_response_edit(self, async_client: AsyncDedalus) -> None:
+        async with async_client.images.with_streaming_response.edit(
+            image=b"raw file contents",
+            prompt="prompt",
+        ) as response:
+            assert not response.is_closed
+            assert response.http_request.headers.get("X-Stainless-Lang") == "python"
+
+            image = await response.parse()
+            assert_matches_type(ImagesResponse, image, path=["response"])
+
+        assert cast(Any, response.is_closed) is True
+
+    @pytest.mark.skip(reason="Prism tests are disabled")
+    @parametrize
     async def test_method_generate(self, async_client: AsyncDedalus) -> None:
         image = await async_client.images.generate(
             prompt="A white siamese cat",
@@ -92,7 +290,7 @@ class TestAsyncImages:
         image = await async_client.images.generate(
             prompt="A white siamese cat",
             background="transparent",
-            model="dall-e-3",
+            model="openai/dall-e-3",
             moderation="auto",
             n=1,
             output_compression=85,

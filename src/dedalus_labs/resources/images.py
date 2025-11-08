@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Mapping, Optional, cast
 from typing_extensions import Literal
 
 import httpx
 
-from ..types import image_generate_params
-from .._types import Body, Omit, Query, Headers, NotGiven, omit, not_given
-from .._utils import maybe_transform, async_maybe_transform
+from ..types import image_edit_params, image_generate_params, image_create_variation_params
+from .._types import Body, Omit, Query, Headers, NotGiven, FileTypes, omit, not_given
+from .._utils import extract_files, maybe_transform, deepcopy_minimal, async_maybe_transform
 from .._compat import cached_property
 from .._resource import SyncAPIResource, AsyncAPIResource
 from .._response import (
@@ -43,6 +43,137 @@ class ImagesResource(SyncAPIResource):
         For more information, see https://www.github.com/dedalus-labs/dedalus-sdk-python#with_streaming_response
         """
         return ImagesResourceWithStreamingResponse(self)
+
+    def create_variation(
+        self,
+        *,
+        image: FileTypes,
+        model: Optional[str] | Omit = omit,
+        n: Optional[int] | Omit = omit,
+        response_format: Optional[str] | Omit = omit,
+        size: Optional[str] | Omit = omit,
+        user: Optional[str] | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+        idempotency_key: str | None = None,
+    ) -> ImagesResponse:
+        """Create variations of an image.
+
+        DALL·E 2 only.
+
+        Upload an image to generate variations.
+
+        Args:
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+
+          idempotency_key: Specify a custom idempotency key for this request
+        """
+        body = deepcopy_minimal(
+            {
+                "image": image,
+                "model": model,
+                "n": n,
+                "response_format": response_format,
+                "size": size,
+                "user": user,
+            }
+        )
+        files = extract_files(cast(Mapping[str, object], body), paths=[["image"]])
+        # It should be noted that the actual Content-Type header that will be
+        # sent to the server will contain a `boundary` parameter, e.g.
+        # multipart/form-data; boundary=---abc--
+        extra_headers = {"Content-Type": "multipart/form-data", **(extra_headers or {})}
+        return self._post(
+            "/v1/images/variations",
+            body=maybe_transform(body, image_create_variation_params.ImageCreateVariationParams),
+            files=files,
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                idempotency_key=idempotency_key,
+            ),
+            cast_to=ImagesResponse,
+        )
+
+    def edit(
+        self,
+        *,
+        image: FileTypes,
+        prompt: str,
+        mask: Optional[FileTypes] | Omit = omit,
+        model: Optional[str] | Omit = omit,
+        n: Optional[int] | Omit = omit,
+        response_format: Optional[str] | Omit = omit,
+        size: Optional[str] | Omit = omit,
+        user: Optional[str] | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+        idempotency_key: str | None = None,
+    ) -> ImagesResponse:
+        """Edit images using inpainting.
+
+        Supports dall-e-2 and gpt-image-1.
+
+        Upload an image and optionally a mask to
+        indicate which areas to regenerate based on the prompt.
+
+        Args:
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+
+          idempotency_key: Specify a custom idempotency key for this request
+        """
+        body = deepcopy_minimal(
+            {
+                "image": image,
+                "prompt": prompt,
+                "mask": mask,
+                "model": model,
+                "n": n,
+                "response_format": response_format,
+                "size": size,
+                "user": user,
+            }
+        )
+        files = extract_files(cast(Mapping[str, object], body), paths=[["image"], ["mask"]])
+        # It should be noted that the actual Content-Type header that will be
+        # sent to the server will contain a `boundary` parameter, e.g.
+        # multipart/form-data; boundary=---abc--
+        extra_headers = {"Content-Type": "multipart/form-data", **(extra_headers or {})}
+        return self._post(
+            "/v1/images/edits",
+            body=maybe_transform(body, image_edit_params.ImageEditParams),
+            files=files,
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                idempotency_key=idempotency_key,
+            ),
+            cast_to=ImagesResponse,
+        )
 
     def generate(
         self,
@@ -91,9 +222,9 @@ class ImagesResource(SyncAPIResource):
               If `transparent`, the output format needs to support transparency, so it should
               be set to either `png` (default value) or `webp`.
 
-          model: The model to use for image generation. One of `dall-e-2`, `dall-e-3`, or
-              `gpt-image-1`. Defaults to `dall-e-2` unless a parameter specific to
-              `gpt-image-1` is used.
+          model: The model to use for image generation. One of `openai/dall-e-2`,
+              `openai/dall-e-3`, or `openai/gpt-image-1`. Defaults to `openai/dall-e-2` unless
+              a parameter specific to `gpt-image-1` is used.
 
           moderation: Control the content-moderation level for images generated by `gpt-image-1`. Must
               be either `low` for less restrictive filtering or `auto` (default value).
@@ -208,6 +339,137 @@ class AsyncImagesResource(AsyncAPIResource):
         """
         return AsyncImagesResourceWithStreamingResponse(self)
 
+    async def create_variation(
+        self,
+        *,
+        image: FileTypes,
+        model: Optional[str] | Omit = omit,
+        n: Optional[int] | Omit = omit,
+        response_format: Optional[str] | Omit = omit,
+        size: Optional[str] | Omit = omit,
+        user: Optional[str] | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+        idempotency_key: str | None = None,
+    ) -> ImagesResponse:
+        """Create variations of an image.
+
+        DALL·E 2 only.
+
+        Upload an image to generate variations.
+
+        Args:
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+
+          idempotency_key: Specify a custom idempotency key for this request
+        """
+        body = deepcopy_minimal(
+            {
+                "image": image,
+                "model": model,
+                "n": n,
+                "response_format": response_format,
+                "size": size,
+                "user": user,
+            }
+        )
+        files = extract_files(cast(Mapping[str, object], body), paths=[["image"]])
+        # It should be noted that the actual Content-Type header that will be
+        # sent to the server will contain a `boundary` parameter, e.g.
+        # multipart/form-data; boundary=---abc--
+        extra_headers = {"Content-Type": "multipart/form-data", **(extra_headers or {})}
+        return await self._post(
+            "/v1/images/variations",
+            body=await async_maybe_transform(body, image_create_variation_params.ImageCreateVariationParams),
+            files=files,
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                idempotency_key=idempotency_key,
+            ),
+            cast_to=ImagesResponse,
+        )
+
+    async def edit(
+        self,
+        *,
+        image: FileTypes,
+        prompt: str,
+        mask: Optional[FileTypes] | Omit = omit,
+        model: Optional[str] | Omit = omit,
+        n: Optional[int] | Omit = omit,
+        response_format: Optional[str] | Omit = omit,
+        size: Optional[str] | Omit = omit,
+        user: Optional[str] | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+        idempotency_key: str | None = None,
+    ) -> ImagesResponse:
+        """Edit images using inpainting.
+
+        Supports dall-e-2 and gpt-image-1.
+
+        Upload an image and optionally a mask to
+        indicate which areas to regenerate based on the prompt.
+
+        Args:
+          extra_headers: Send extra headers
+
+          extra_query: Add additional query parameters to the request
+
+          extra_body: Add additional JSON properties to the request
+
+          timeout: Override the client-level default timeout for this request, in seconds
+
+          idempotency_key: Specify a custom idempotency key for this request
+        """
+        body = deepcopy_minimal(
+            {
+                "image": image,
+                "prompt": prompt,
+                "mask": mask,
+                "model": model,
+                "n": n,
+                "response_format": response_format,
+                "size": size,
+                "user": user,
+            }
+        )
+        files = extract_files(cast(Mapping[str, object], body), paths=[["image"], ["mask"]])
+        # It should be noted that the actual Content-Type header that will be
+        # sent to the server will contain a `boundary` parameter, e.g.
+        # multipart/form-data; boundary=---abc--
+        extra_headers = {"Content-Type": "multipart/form-data", **(extra_headers or {})}
+        return await self._post(
+            "/v1/images/edits",
+            body=await async_maybe_transform(body, image_edit_params.ImageEditParams),
+            files=files,
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                idempotency_key=idempotency_key,
+            ),
+            cast_to=ImagesResponse,
+        )
+
     async def generate(
         self,
         *,
@@ -255,9 +517,9 @@ class AsyncImagesResource(AsyncAPIResource):
               If `transparent`, the output format needs to support transparency, so it should
               be set to either `png` (default value) or `webp`.
 
-          model: The model to use for image generation. One of `dall-e-2`, `dall-e-3`, or
-              `gpt-image-1`. Defaults to `dall-e-2` unless a parameter specific to
-              `gpt-image-1` is used.
+          model: The model to use for image generation. One of `openai/dall-e-2`,
+              `openai/dall-e-3`, or `openai/gpt-image-1`. Defaults to `openai/dall-e-2` unless
+              a parameter specific to `gpt-image-1` is used.
 
           moderation: Control the content-moderation level for images generated by `gpt-image-1`. Must
               be either `low` for less restrictive filtering or `auto` (default value).
@@ -356,6 +618,12 @@ class ImagesResourceWithRawResponse:
     def __init__(self, images: ImagesResource) -> None:
         self._images = images
 
+        self.create_variation = to_raw_response_wrapper(
+            images.create_variation,
+        )
+        self.edit = to_raw_response_wrapper(
+            images.edit,
+        )
         self.generate = to_raw_response_wrapper(
             images.generate,
         )
@@ -365,6 +633,12 @@ class AsyncImagesResourceWithRawResponse:
     def __init__(self, images: AsyncImagesResource) -> None:
         self._images = images
 
+        self.create_variation = async_to_raw_response_wrapper(
+            images.create_variation,
+        )
+        self.edit = async_to_raw_response_wrapper(
+            images.edit,
+        )
         self.generate = async_to_raw_response_wrapper(
             images.generate,
         )
@@ -374,6 +648,12 @@ class ImagesResourceWithStreamingResponse:
     def __init__(self, images: ImagesResource) -> None:
         self._images = images
 
+        self.create_variation = to_streamed_response_wrapper(
+            images.create_variation,
+        )
+        self.edit = to_streamed_response_wrapper(
+            images.edit,
+        )
         self.generate = to_streamed_response_wrapper(
             images.generate,
         )
@@ -383,6 +663,12 @@ class AsyncImagesResourceWithStreamingResponse:
     def __init__(self, images: AsyncImagesResource) -> None:
         self._images = images
 
+        self.create_variation = async_to_streamed_response_wrapper(
+            images.create_variation,
+        )
+        self.edit = async_to_streamed_response_wrapper(
+            images.edit,
+        )
         self.generate = async_to_streamed_response_wrapper(
             images.generate,
         )

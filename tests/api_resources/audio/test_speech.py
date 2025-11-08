@@ -29,7 +29,7 @@ class TestSpeech:
         respx_mock.post("/v1/audio/speech").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
         speech = client.audio.speech.create(
             input="Hello, how are you today?",
-            model="tts-1",
+            model="openai/tts-1",
             voice="alloy",
         )
         assert speech.is_closed
@@ -43,7 +43,7 @@ class TestSpeech:
         respx_mock.post("/v1/audio/speech").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
         speech = client.audio.speech.create(
             input="Hello, how are you today?",
-            model="tts-1",
+            model="openai/tts-1",
             voice="alloy",
             instructions="instructions",
             response_format="mp3",
@@ -62,7 +62,7 @@ class TestSpeech:
 
         speech = client.audio.speech.with_raw_response.create(
             input="Hello, how are you today?",
-            model="tts-1",
+            model="openai/tts-1",
             voice="alloy",
         )
 
@@ -77,7 +77,7 @@ class TestSpeech:
         respx_mock.post("/v1/audio/speech").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
         with client.audio.speech.with_streaming_response.create(
             input="Hello, how are you today?",
-            model="tts-1",
+            model="openai/tts-1",
             voice="alloy",
         ) as speech:
             assert not speech.is_closed
@@ -101,7 +101,7 @@ class TestAsyncSpeech:
         respx_mock.post("/v1/audio/speech").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
         speech = await async_client.audio.speech.create(
             input="Hello, how are you today?",
-            model="tts-1",
+            model="openai/tts-1",
             voice="alloy",
         )
         assert speech.is_closed
@@ -115,7 +115,7 @@ class TestAsyncSpeech:
         respx_mock.post("/v1/audio/speech").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
         speech = await async_client.audio.speech.create(
             input="Hello, how are you today?",
-            model="tts-1",
+            model="openai/tts-1",
             voice="alloy",
             instructions="instructions",
             response_format="mp3",
@@ -134,7 +134,7 @@ class TestAsyncSpeech:
 
         speech = await async_client.audio.speech.with_raw_response.create(
             input="Hello, how are you today?",
-            model="tts-1",
+            model="openai/tts-1",
             voice="alloy",
         )
 
@@ -149,7 +149,7 @@ class TestAsyncSpeech:
         respx_mock.post("/v1/audio/speech").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
         async with async_client.audio.speech.with_streaming_response.create(
             input="Hello, how are you today?",
-            model="tts-1",
+            model="openai/tts-1",
             voice="alloy",
         ) as speech:
             assert not speech.is_closed

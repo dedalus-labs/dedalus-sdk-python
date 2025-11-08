@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Mapping, Optional, cast
+from typing import Any, Mapping, Optional, cast
 
 import httpx
 
@@ -60,9 +60,18 @@ class TranslationsResource(SyncAPIResource):
         idempotency_key: str | None = None,
     ) -> TranslationCreateResponse:
         """
-        Translate audio to English text.
+        Translate audio into English.
 
-        OpenAI Whisper models only.
+        Translates audio files in any supported language to English text using OpenAI's
+        Whisper model. Supports the same audio formats as transcription. Maximum file
+        size is 25 MB.
+
+        Args: file: Audio file to translate (required) model: Model ID to use (e.g.,
+        "openai/whisper-1") prompt: Optional text to guide the model's style
+        response_format: Format of the output (json, text, srt, verbose_json, vtt)
+        temperature: Sampling temperature between 0 and 1
+
+        Returns: Translation object with the English translation
 
         Args:
           extra_headers: Send extra headers
@@ -89,18 +98,23 @@ class TranslationsResource(SyncAPIResource):
         # sent to the server will contain a `boundary` parameter, e.g.
         # multipart/form-data; boundary=---abc--
         extra_headers = {"Content-Type": "multipart/form-data", **(extra_headers or {})}
-        return self._post(
-            "/v1/audio/translations",
-            body=maybe_transform(body, translation_create_params.TranslationCreateParams),
-            files=files,
-            options=make_request_options(
-                extra_headers=extra_headers,
-                extra_query=extra_query,
-                extra_body=extra_body,
-                timeout=timeout,
-                idempotency_key=idempotency_key,
+        return cast(
+            TranslationCreateResponse,
+            self._post(
+                "/v1/audio/translations",
+                body=maybe_transform(body, translation_create_params.TranslationCreateParams),
+                files=files,
+                options=make_request_options(
+                    extra_headers=extra_headers,
+                    extra_query=extra_query,
+                    extra_body=extra_body,
+                    timeout=timeout,
+                    idempotency_key=idempotency_key,
+                ),
+                cast_to=cast(
+                    Any, TranslationCreateResponse
+                ),  # Union types cannot be passed in as arguments in the type system
             ),
-            cast_to=TranslationCreateResponse,
         )
 
 
@@ -141,9 +155,18 @@ class AsyncTranslationsResource(AsyncAPIResource):
         idempotency_key: str | None = None,
     ) -> TranslationCreateResponse:
         """
-        Translate audio to English text.
+        Translate audio into English.
 
-        OpenAI Whisper models only.
+        Translates audio files in any supported language to English text using OpenAI's
+        Whisper model. Supports the same audio formats as transcription. Maximum file
+        size is 25 MB.
+
+        Args: file: Audio file to translate (required) model: Model ID to use (e.g.,
+        "openai/whisper-1") prompt: Optional text to guide the model's style
+        response_format: Format of the output (json, text, srt, verbose_json, vtt)
+        temperature: Sampling temperature between 0 and 1
+
+        Returns: Translation object with the English translation
 
         Args:
           extra_headers: Send extra headers
@@ -170,18 +193,23 @@ class AsyncTranslationsResource(AsyncAPIResource):
         # sent to the server will contain a `boundary` parameter, e.g.
         # multipart/form-data; boundary=---abc--
         extra_headers = {"Content-Type": "multipart/form-data", **(extra_headers or {})}
-        return await self._post(
-            "/v1/audio/translations",
-            body=await async_maybe_transform(body, translation_create_params.TranslationCreateParams),
-            files=files,
-            options=make_request_options(
-                extra_headers=extra_headers,
-                extra_query=extra_query,
-                extra_body=extra_body,
-                timeout=timeout,
-                idempotency_key=idempotency_key,
+        return cast(
+            TranslationCreateResponse,
+            await self._post(
+                "/v1/audio/translations",
+                body=await async_maybe_transform(body, translation_create_params.TranslationCreateParams),
+                files=files,
+                options=make_request_options(
+                    extra_headers=extra_headers,
+                    extra_query=extra_query,
+                    extra_body=extra_body,
+                    timeout=timeout,
+                    idempotency_key=idempotency_key,
+                ),
+                cast_to=cast(
+                    Any, TranslationCreateResponse
+                ),  # Union types cannot be passed in as arguments in the type system
             ),
-            cast_to=TranslationCreateResponse,
         )
 
 

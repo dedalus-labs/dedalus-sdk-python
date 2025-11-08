@@ -1,9 +1,3 @@
-# Shared Types
-
-```python
-from dedalus_labs.types import DedalusModel, Model
-```
-
 # Root
 
 Types:
@@ -33,12 +27,12 @@ Methods:
 Types:
 
 ```python
-from dedalus_labs.types import ListModelsResponse
+from dedalus_labs.types import ListModelsResponse, Model
 ```
 
 Methods:
 
-- <code title="get /v1/models/{model_id}">client.models.<a href="./src/dedalus_labs/resources/models.py">retrieve</a>(model_id) -> <a href="./src/dedalus_labs/types/shared/model.py">Model</a></code>
+- <code title="get /v1/models/{model_id}">client.models.<a href="./src/dedalus_labs/resources/models.py">retrieve</a>(model_id) -> <a href="./src/dedalus_labs/types/model.py">Model</a></code>
 - <code title="get /v1/models">client.models.<a href="./src/dedalus_labs/resources/models.py">list</a>() -> <a href="./src/dedalus_labs/types/list_models_response.py">ListModelsResponse</a></code>
 
 # Embeddings
@@ -95,6 +89,8 @@ from dedalus_labs.types import CreateImageRequest, Image, ImagesResponse
 
 Methods:
 
+- <code title="post /v1/images/variations">client.images.<a href="./src/dedalus_labs/resources/images.py">create_variation</a>(\*\*<a href="src/dedalus_labs/types/image_create_variation_params.py">params</a>) -> <a href="./src/dedalus_labs/types/images_response.py">ImagesResponse</a></code>
+- <code title="post /v1/images/edits">client.images.<a href="./src/dedalus_labs/resources/images.py">edit</a>(\*\*<a href="src/dedalus_labs/types/image_edit_params.py">params</a>) -> <a href="./src/dedalus_labs/types/images_response.py">ImagesResponse</a></code>
 - <code title="post /v1/images/generations">client.images.<a href="./src/dedalus_labs/resources/images.py">generate</a>(\*\*<a href="src/dedalus_labs/types/image_generate_params.py">params</a>) -> <a href="./src/dedalus_labs/types/images_response.py">ImagesResponse</a></code>
 
 # Chat
@@ -108,7 +104,6 @@ from dedalus_labs.types.chat import (
     ChatCompletionTokenLogprob,
     Completion,
     CompletionRequest,
-    DedalusModelChoice,
     ModelID,
     Models,
     StreamChunk,
@@ -118,4 +113,4 @@ from dedalus_labs.types.chat import (
 
 Methods:
 
-- <code title="post /v1/chat/completions">client.chat.completions.<a href="./src/dedalus_labs/resources/chat/completions.py">create</a>(\*\*<a href="src/dedalus_labs/types/chat/completion_create_params.py">params</a>) -> <a href="./src/dedalus_labs/types/chat/stream_chunk.py">StreamChunk</a></code>
+- <code title="post /v1/chat/completions">client.chat.completions.<a href="./src/dedalus_labs/resources/chat/completions.py">create</a>(\*\*<a href="src/dedalus_labs/types/chat/completion_create_params.py">params</a>) -> <a href="./src/dedalus_labs/types/chat/completion.py">Completion</a></code>

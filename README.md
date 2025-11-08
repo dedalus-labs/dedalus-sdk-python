@@ -34,7 +34,7 @@ client = Dedalus(
     environment="development",
 )
 
-stream_chunk = client.chat.completions.create(
+completion = client.chat.completions.create(
     messages=[
         {
             "role": "user",
@@ -43,7 +43,7 @@ stream_chunk = client.chat.completions.create(
     ],
     model="openai/gpt-5",
 )
-print(stream_chunk.id)
+print(completion.id)
 ```
 
 While you can provide an `api_key` keyword argument,
@@ -68,7 +68,7 @@ client = AsyncDedalus(
 
 
 async def main() -> None:
-    stream_chunk = await client.chat.completions.create(
+    completion = await client.chat.completions.create(
         messages=[
             {
                 "role": "user",
@@ -77,7 +77,7 @@ async def main() -> None:
         ],
         model="openai/gpt-5",
     )
-    print(stream_chunk.id)
+    print(completion.id)
 
 
 asyncio.run(main())
@@ -109,7 +109,7 @@ async def main() -> None:
         api_key="My API Key",
         http_client=DefaultAioHttpClient(),
     ) as client:
-        stream_chunk = await client.chat.completions.create(
+        completion = await client.chat.completions.create(
             messages=[
                 {
                     "role": "user",
@@ -118,7 +118,7 @@ async def main() -> None:
             ],
             model="openai/gpt-5",
         )
-        print(stream_chunk.id)
+        print(completion.id)
 
 
 asyncio.run(main())
@@ -147,8 +147,8 @@ stream = client.chat.completions.create(
     model="openai/gpt-5",
     stream=True,
 )
-for stream_chunk in stream:
-    print(stream_chunk.id)
+for completion in stream:
+    print(completion.id)
 ```
 
 The async client uses the exact same interface.
@@ -172,8 +172,8 @@ stream = await client.chat.completions.create(
     model="openai/gpt-5",
     stream=True,
 )
-async for stream_chunk in stream:
-    print(stream_chunk.id)
+async for completion in stream:
+    print(completion.id)
 ```
 
 ## Using types

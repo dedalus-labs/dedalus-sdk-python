@@ -2,21 +2,21 @@
 
 from __future__ import annotations
 
-from typing import Dict, Union, Iterable, Optional
+from typing import Dict, List, Union, Iterable, Optional
 from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
 from ..._types import SequenceNotStr
 from .model_id import ModelID
 from .models_param import ModelsParam
-from ..shared_params.dedalus_model import DedalusModel
 
 __all__ = [
     "CompletionCreateParamsBase",
     "Model",
-    "MCPServers",
-    "MCPServersMCPServer",
-    "MCPServersMCPServerMCPServerSpec",
-    "MCPServersMCPServerSpec",
+    "ModelDedalusModel",
+    "ModelDedalusModelSettings",
+    "ModelDedalusModelSettingsReasoning",
+    "ModelDedalusModelSettingsToolChoice",
+    "ModelDedalusModelSettingsToolChoiceMCPToolChoice",
     "Thinking",
     "ThinkingThinkingConfigDisabled",
     "ThinkingThinkingConfigEnabled",
@@ -62,6 +62,13 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     """
     When False, skip server-side tool execution and return raw OpenAI-style
     tool_calls in the response.
+    """
+
+    deferred: Optional[bool]
+    """xAI-specific parameter.
+
+    If set to true, the request returns a request_id for async completion retrieval
+    via GET /v1/chat/deferred-completion/{request_id}.
     """
 
     disable_automatic_function_calling: Optional[bool]
@@ -156,7 +163,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     reasoning but increase cost and latency.
     """
 
-    mcp_servers: Optional[MCPServers]
+    mcp_servers: Union[str, SequenceNotStr[str], None]
     """
     MCP (Model Context Protocol) server addresses to make available for server-side
     tool execution. Entries can be URLs (e.g., 'https://mcp.example.com'), slugs
@@ -237,6 +244,12 @@ class CompletionCreateParamsBase(TypedDict, total=False):
 
     safety_settings: Optional[Iterable[Dict[str, object]]]
     """Google safety settings (harm categories and thresholds)."""
+
+    search_parameters: Optional[Dict[str, object]]
+    """xAI-specific parameter for configuring web search data acquisition.
+
+    If not set, no data will be acquired by the model.
+    """
 
     seed: Optional[int]
     """If specified, system will make a best effort to sample deterministically.
@@ -352,45 +365,164 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     """
 
 
-Model: TypeAlias = Union[ModelID, DedalusModel, ModelsParam]
+class ModelDedalusModelSettingsReasoningTyped(TypedDict, total=False):
+    effort: Optional[Literal["minimal", "low", "medium", "high"]]
+
+    generate_summary: Optional[Literal["auto", "concise", "detailed"]]
+
+    summary: Optional[Literal["auto", "concise", "detailed"]]
 
 
-class MCPServersMCPServerMCPServerSpecTyped(TypedDict, total=False):
-    metadata: Optional[Dict[str, object]]
-    """Optional metadata associated with the MCP server entry."""
-
-    slug: Optional[str]
-    """Slug identifying an MCP server (e.g., 'dedalus-labs/brave-search')."""
-
-    url: Optional[str]
-    """Explicit MCP server URL."""
-
-    version: Optional[str]
-    """Optional explicit version to target when using a slug."""
+ModelDedalusModelSettingsReasoning: TypeAlias = Union[ModelDedalusModelSettingsReasoningTyped, Dict[str, object]]
 
 
-MCPServersMCPServerMCPServerSpec: TypeAlias = Union[MCPServersMCPServerMCPServerSpecTyped, Dict[str, object]]
+class ModelDedalusModelSettingsToolChoiceMCPToolChoice(TypedDict, total=False):
+    name: Required[str]
 
-MCPServersMCPServer: TypeAlias = Union[str, MCPServersMCPServerMCPServerSpec]
-
-
-class MCPServersMCPServerSpecTyped(TypedDict, total=False):
-    metadata: Optional[Dict[str, object]]
-    """Optional metadata associated with the MCP server entry."""
-
-    slug: Optional[str]
-    """Slug identifying an MCP server (e.g., 'dedalus-labs/brave-search')."""
-
-    url: Optional[str]
-    """Explicit MCP server URL."""
-
-    version: Optional[str]
-    """Optional explicit version to target when using a slug."""
+    server_label: Required[str]
 
 
-MCPServersMCPServerSpec: TypeAlias = Union[MCPServersMCPServerSpecTyped, Dict[str, object]]
+ModelDedalusModelSettingsToolChoice: TypeAlias = Union[
+    Literal["auto", "required", "none"], str, Dict[str, object], ModelDedalusModelSettingsToolChoiceMCPToolChoice
+]
 
-MCPServers: TypeAlias = Union[SequenceNotStr[MCPServersMCPServer], str, MCPServersMCPServerSpec]
+
+class ModelDedalusModelSettings(TypedDict, total=False):
+    attributes: Dict[str, object]
+
+    audio: Optional[Dict[str, object]]
+
+    deferred: Optional[bool]
+
+    disable_automatic_function_calling: bool
+
+    extra_args: Optional[Dict[str, object]]
+
+    extra_headers: Optional[Dict[str, str]]
+
+    extra_query: Optional[Dict[str, object]]
+
+    frequency_penalty: Optional[float]
+
+    generation_config: Optional[Dict[str, object]]
+
+    include_usage: Optional[bool]
+
+    input_audio_format: Optional[str]
+
+    input_audio_transcription: Optional[Dict[str, object]]
+
+    logit_bias: Optional[Dict[str, int]]
+
+    logprobs: Optional[bool]
+
+    max_completion_tokens: Optional[int]
+
+    max_tokens: Optional[int]
+
+    metadata: Optional[Dict[str, str]]
+
+    modalities: Optional[SequenceNotStr[str]]
+
+    n: Optional[int]
+
+    output_audio_format: Optional[str]
+
+    parallel_tool_calls: Optional[bool]
+
+    prediction: Optional[Dict[str, object]]
+
+    presence_penalty: Optional[float]
+
+    prompt_cache_key: Optional[str]
+
+    reasoning: Optional[ModelDedalusModelSettingsReasoning]
+
+    reasoning_effort: Optional[str]
+
+    response_format: Optional[Dict[str, object]]
+
+    response_include: Optional[
+        List[
+            Literal[
+                "code_interpreter_call.outputs",
+                "computer_call_output.output.image_url",
+                "file_search_call.results",
+                "message.input_image.image_url",
+                "message.output_text.logprobs",
+                "reasoning.encrypted_content",
+            ]
+        ]
+    ]
+
+    safety_identifier: Optional[str]
+
+    safety_settings: Optional[Iterable[Dict[str, object]]]
+
+    search_parameters: Optional[Dict[str, object]]
+
+    seed: Optional[int]
+
+    service_tier: Optional[str]
+
+    stop: Union[str, SequenceNotStr[str], None]
+
+    store: Optional[bool]
+
+    stream: Optional[bool]
+
+    stream_options: Optional[Dict[str, object]]
+
+    structured_output: object
+
+    system_instruction: Optional[Dict[str, object]]
+
+    temperature: Optional[float]
+
+    thinking: Optional[Dict[str, object]]
+
+    timeout: Optional[float]
+
+    tool_choice: Optional[ModelDedalusModelSettingsToolChoice]
+
+    tool_config: Optional[Dict[str, object]]
+
+    top_k: Optional[int]
+
+    top_logprobs: Optional[int]
+
+    top_p: Optional[float]
+
+    truncation: Optional[Literal["auto", "disabled"]]
+
+    turn_detection: Optional[Dict[str, object]]
+
+    use_responses: bool
+
+    user: Optional[str]
+
+    verbosity: Optional[str]
+
+    voice: Optional[str]
+
+    web_search_options: Optional[Dict[str, object]]
+
+
+class ModelDedalusModel(TypedDict, total=False):
+    model: Required[str]
+    """
+    Model identifier with provider prefix (e.g., 'openai/gpt-5',
+    'anthropic/claude-3-5-sonnet').
+    """
+
+    settings: Optional[ModelDedalusModelSettings]
+    """
+    Optional default generation settings (e.g., temperature, max_tokens) applied
+    when this model is selected.
+    """
+
+
+Model: TypeAlias = Union[ModelID, ModelDedalusModel, ModelsParam]
 
 
 class ThinkingThinkingConfigDisabled(TypedDict, total=False):

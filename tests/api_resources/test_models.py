@@ -9,8 +9,7 @@ import pytest
 
 from tests.utils import assert_matches_type
 from dedalus_labs import Dedalus, AsyncDedalus
-from dedalus_labs.types import ListModelsResponse
-from dedalus_labs.types.shared import Model
+from dedalus_labs.types import Model, ListModelsResponse
 
 base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 
