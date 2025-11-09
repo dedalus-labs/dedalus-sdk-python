@@ -102,6 +102,7 @@ class _ModelConfig:
     frequency_penalty: float | None = None
     presence_penalty: float | None = None
     logit_bias: Dict[str, int] | None = None
+    response_format: Dict[str, JsonValue] | type | None = None  # Dict or Pydantic model
     agent_attributes: Dict[str, float] | None = None
     model_attributes: Dict[str, Dict[str, float]] | None = None
     tool_choice: str | Dict[str, JsonValue] | None = None
@@ -139,12 +140,12 @@ class _RunResult:
 
     @property
     def output(self) -> str:
-        """Legacy compatibility."""
+        """Alias for final_output."""
         return self.final_output
 
     @property
     def content(self) -> str:
-        """Legacy compatibility."""
+        """Alias for final_output."""
         return self.final_output
 
     def to_input_list(self) -> list[Message]:
@@ -174,6 +175,7 @@ class DedalusRunner:
         frequency_penalty: float | None = None,
         presence_penalty: float | None = None,
         logit_bias: Dict[str, int] | None = None,
+        response_format: Dict[str, JsonValue] | type | None = None,
         stream: bool = False,
         transport: Literal["http", "realtime"] = "http",
         verbose: bool | None = None,
@@ -255,8 +257,6 @@ class DedalusRunner:
                             unsupported_params.append("logprobs")
                         if hasattr(m, "top_logprobs") and m.top_logprobs is not None:
                             unsupported_params.append("top_logprobs")
-                        if hasattr(m, "response_format") and m.response_format is not None:
-                            unsupported_params.append("response_format")
                         if hasattr(m, "seed") and m.seed is not None:
                             unsupported_params.append("seed")
                         if hasattr(m, "service_tier") and m.service_tier is not None:
@@ -321,8 +321,6 @@ class DedalusRunner:
                 unsupported_params.append("logprobs")
             if hasattr(model, "top_logprobs") and model.top_logprobs is not None:
                 unsupported_params.append("top_logprobs")
-            if hasattr(model, "response_format") and model.response_format is not None:
-                unsupported_params.append("response_format")
             if hasattr(model, "seed") and model.seed is not None:
                 unsupported_params.append("seed")
             if hasattr(model, "service_tier") and model.service_tier is not None:
@@ -360,6 +358,7 @@ class DedalusRunner:
             frequency_penalty=frequency_penalty,
             presence_penalty=presence_penalty,
             logit_bias=logit_bias,
+            response_format=response_format,
             agent_attributes=agent_attributes,
             model_attributes=model_attributes,
             tool_choice=tool_choice,
@@ -388,12 +387,10 @@ class DedalusRunner:
 
         # Handle instructions and messages parameters
         if instructions is not None and messages is not None:
-            # Check if messages already has system prompt
-            has_system = any(msg.get("role") == "system" for msg in messages)
-            if has_system:
-                raise ValueError("Cannot provide both 'instructions' and system message in 'messages'. Use one or the other.")
-            # Prepend instructions as system message
-            conversation = [{"role": "system", "content": instructions}] + list(messages)
+            # instructions overrides any existing system messages
+            conversation = [{"role": "system", "content": instructions}] + [
+                msg for msg in messages if msg.get("role") != "system"
+            ]
         elif instructions is not None:
             # Convert instructions to system message, optionally with user input
             if input is not None:
@@ -1240,7 +1237,16 @@ class DedalusRunner:
     @staticmethod
     def _mk_kwargs(mc: _ModelConfig) -> Dict[str, Any]:
         """Convert model config to kwargs for client call."""
+        from ...lib._parsing import type_to_response_format_param
+        from ..._utils import is_given
+
         d = asdict(mc)
         d.pop("id", None)  # Remove id since it's passed separately
         d.pop("model_list", None)  # Remove model_list since it's not an API parameter
+
+        # Convert Pydantic model to dict schema if needed
+        if "response_format" in d and d["response_format"] is not None:
+            converted = type_to_response_format_param(d["response_format"])
+            d["response_format"] = converted if is_given(converted) else None
+
         return {k: v for k, v in d.items() if v is not None}

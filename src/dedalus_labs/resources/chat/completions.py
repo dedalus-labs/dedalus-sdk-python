@@ -22,6 +22,12 @@ from ...types.chat import completion_create_params
 from ..._base_client import make_request_options
 from ...types.chat.completion import Completion
 from ...types.chat.stream_chunk import StreamChunk
+from ...lib._parsing import (
+    ResponseFormatT,
+    parse_chat_completion as _parse_chat_completion,
+    type_to_response_format_param as _type_to_response_format,
+    validate_input_tools as _validate_input_tools,
+)
 
 __all__ = ["CompletionsResource", "AsyncCompletionsResource"]
 
@@ -1161,6 +1167,173 @@ class CompletionsResource(SyncAPIResource):
             stream_cls=Stream[StreamChunk],
         )
 
+    def parse(
+        self,
+        *,
+        messages: Union[Iterable[Dict[str, object]], str],
+        model: completion_create_params.Model,
+        response_format: type[ResponseFormatT] | Omit = omit,
+        agent_attributes: Optional[Dict[str, float]] | Omit = omit,
+        audio: Optional[Dict[str, object]] | Omit = omit,
+        auto_execute_tools: bool | Omit = omit,
+        deferred: Optional[bool] | Omit = omit,
+        disable_automatic_function_calling: Optional[bool] | Omit = omit,
+        frequency_penalty: Optional[float] | Omit = omit,
+        function_call: Union[str, Dict[str, object], None] | Omit = omit,
+        functions: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        generation_config: Optional[Dict[str, object]] | Omit = omit,
+        guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        handoff_config: Optional[Dict[str, object]] | Omit = omit,
+        input: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
+        instructions: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
+        logit_bias: Optional[Dict[str, int]] | Omit = omit,
+        logprobs: Optional[bool] | Omit = omit,
+        max_completion_tokens: Optional[int] | Omit = omit,
+        max_tokens: Optional[int] | Omit = omit,
+        max_turns: Optional[int] | Omit = omit,
+        mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
+        metadata: Optional[Dict[str, str]] | Omit = omit,
+        modalities: Optional[SequenceNotStr[str]] | Omit = omit,
+        model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
+        n: Optional[int] | Omit = omit,
+        parallel_tool_calls: Optional[bool] | Omit = omit,
+        prediction: Optional[Dict[str, object]] | Omit = omit,
+        presence_penalty: Optional[float] | Omit = omit,
+        prompt_cache_key: Optional[str] | Omit = omit,
+        reasoning_effort: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        safety_identifier: Optional[str] | Omit = omit,
+        safety_settings: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        search_parameters: Optional[Dict[str, object]] | Omit = omit,
+        seed: Optional[int] | Omit = omit,
+        service_tier: Optional[Literal["auto", "default"]] | Omit = omit,
+        stop: Optional[SequenceNotStr[str]] | Omit = omit,
+        store: Optional[bool] | Omit = omit,
+        stream_options: Optional[Dict[str, object]] | Omit = omit,
+        system: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
+        temperature: Optional[float] | Omit = omit,
+        thinking: Optional[completion_create_params.Thinking] | Omit = omit,
+        tool_choice: Union[str, Dict[str, object], None] | Omit = omit,
+        tool_config: Optional[Dict[str, object]] | Omit = omit,
+        tools: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        top_k: Optional[int] | Omit = omit,
+        top_logprobs: Optional[int] | Omit = omit,
+        top_p: Optional[float] | Omit = omit,
+        user: Optional[str] | Omit = omit,
+        verbosity: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        web_search_options: Optional[Dict[str, object]] | Omit = omit,
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+        idempotency_key: str | None = None,
+    ):
+        """Parse method with Pydantic model support for structured outputs.
+
+        Accepts a Pydantic BaseModel class via response_format parameter and returns
+        a ParsedChatCompletion with automatic JSON parsing into the model.
+
+        Example:
+            from pydantic import BaseModel
+
+            class PersonInfo(BaseModel):
+                name: str
+                age: int
+
+            completion = client.chat.completions.parse(
+                model="openai/gpt-4o-mini",
+                messages=[{"role": "user", "content": "Tell me about Alice, age 28"}],
+                response_format=PersonInfo,
+            )
+
+            person = completion.choices[0].message.parsed
+        """
+        from ...types.chat.parsed_chat_completion import ParsedChatCompletion
+        from ..._utils import is_given
+
+        chat_completion_tools = _validate_input_tools(tools)
+
+        extra_headers = {
+            "X-Stainless-Helper-Method": "chat.completions.parse",
+            **(extra_headers or {}),
+        }
+
+        def parser(raw_completion: Completion):
+            return _parse_chat_completion(
+                response_format=response_format,
+                chat_completion=raw_completion,
+                input_tools=chat_completion_tools,
+            )
+
+        return self._post(
+            "/v1/chat/completions",
+            body=maybe_transform(
+                {
+                    "messages": messages,
+                    "model": model,
+                    "agent_attributes": agent_attributes,
+                    "audio": audio,
+                    "auto_execute_tools": auto_execute_tools,
+                    "deferred": deferred,
+                    "disable_automatic_function_calling": disable_automatic_function_calling,
+                    "frequency_penalty": frequency_penalty,
+                    "function_call": function_call,
+                    "functions": functions,
+                    "generation_config": generation_config,
+                    "guardrails": guardrails,
+                    "handoff_config": handoff_config,
+                    "input": input,
+                    "instructions": instructions,
+                    "logit_bias": logit_bias,
+                    "logprobs": logprobs,
+                    "max_completion_tokens": max_completion_tokens,
+                    "max_tokens": max_tokens,
+                    "max_turns": max_turns,
+                    "mcp_servers": mcp_servers,
+                    "metadata": metadata,
+                    "modalities": modalities,
+                    "model_attributes": model_attributes,
+                    "n": n,
+                    "parallel_tool_calls": parallel_tool_calls,
+                    "prediction": prediction,
+                    "presence_penalty": presence_penalty,
+                    "prompt_cache_key": prompt_cache_key,
+                    "reasoning_effort": reasoning_effort,
+                    "response_format": _type_to_response_format(response_format),
+                    "safety_identifier": safety_identifier,
+                    "safety_settings": safety_settings,
+                    "search_parameters": search_parameters,
+                    "seed": seed,
+                    "service_tier": service_tier,
+                    "stop": stop,
+                    "store": store,
+                    "stream": False,
+                    "stream_options": stream_options,
+                    "system": system,
+                    "temperature": temperature,
+                    "thinking": thinking,
+                    "tool_choice": tool_choice,
+                    "tool_config": tool_config,
+                    "tools": tools,
+                    "top_k": top_k,
+                    "top_logprobs": top_logprobs,
+                    "top_p": top_p,
+                    "user": user,
+                    "verbosity": verbosity,
+                    "web_search_options": web_search_options,
+                },
+                completion_create_params.CompletionCreateParams,
+            ),
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                idempotency_key=idempotency_key,
+                post_parser=parser,
+            ),
+            cast_to=ParsedChatCompletion,
+        )
+
 
 class AsyncCompletionsResource(AsyncAPIResource):
     @cached_property
@@ -2295,6 +2468,154 @@ class AsyncCompletionsResource(AsyncAPIResource):
             cast_to=Completion,
             stream=stream or False,
             stream_cls=AsyncStream[StreamChunk],
+        )
+
+    async def parse(
+        self,
+        *,
+        messages: Union[Iterable[Dict[str, object]], str],
+        model: completion_create_params.Model,
+        response_format: type[ResponseFormatT] | Omit = omit,
+        agent_attributes: Optional[Dict[str, float]] | Omit = omit,
+        audio: Optional[Dict[str, object]] | Omit = omit,
+        auto_execute_tools: bool | Omit = omit,
+        deferred: Optional[bool] | Omit = omit,
+        disable_automatic_function_calling: Optional[bool] | Omit = omit,
+        frequency_penalty: Optional[float] | Omit = omit,
+        function_call: Union[str, Dict[str, object], None] | Omit = omit,
+        functions: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        generation_config: Optional[Dict[str, object]] | Omit = omit,
+        guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        handoff_config: Optional[Dict[str, object]] | Omit = omit,
+        input: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
+        instructions: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
+        logit_bias: Optional[Dict[str, int]] | Omit = omit,
+        logprobs: Optional[bool] | Omit = omit,
+        max_completion_tokens: Optional[int] | Omit = omit,
+        max_tokens: Optional[int] | Omit = omit,
+        max_turns: Optional[int] | Omit = omit,
+        mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
+        metadata: Optional[Dict[str, str]] | Omit = omit,
+        modalities: Optional[SequenceNotStr[str]] | Omit = omit,
+        model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
+        n: Optional[int] | Omit = omit,
+        parallel_tool_calls: Optional[bool] | Omit = omit,
+        prediction: Optional[Dict[str, object]] | Omit = omit,
+        presence_penalty: Optional[float] | Omit = omit,
+        prompt_cache_key: Optional[str] | Omit = omit,
+        reasoning_effort: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        safety_identifier: Optional[str] | Omit = omit,
+        safety_settings: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        search_parameters: Optional[Dict[str, object]] | Omit = omit,
+        seed: Optional[int] | Omit = omit,
+        service_tier: Optional[Literal["auto", "default"]] | Omit = omit,
+        stop: Optional[SequenceNotStr[str]] | Omit = omit,
+        store: Optional[bool] | Omit = omit,
+        stream_options: Optional[Dict[str, object]] | Omit = omit,
+        system: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
+        temperature: Optional[float] | Omit = omit,
+        thinking: Optional[completion_create_params.Thinking] | Omit = omit,
+        tool_choice: Union[str, Dict[str, object], None] | Omit = omit,
+        tool_config: Optional[Dict[str, object]] | Omit = omit,
+        tools: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        top_k: Optional[int] | Omit = omit,
+        top_logprobs: Optional[int] | Omit = omit,
+        top_p: Optional[float] | Omit = omit,
+        user: Optional[str] | Omit = omit,
+        verbosity: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        web_search_options: Optional[Dict[str, object]] | Omit = omit,
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+        idempotency_key: str | None = None,
+    ):
+        """Async parse method with Pydantic model support for structured outputs."""
+        from ...types.chat.parsed_chat_completion import ParsedChatCompletion
+        from ..._utils import is_given
+
+        chat_completion_tools = _validate_input_tools(tools)
+
+        extra_headers = {
+            "X-Stainless-Helper-Method": "chat.completions.parse",
+            **(extra_headers or {}),
+        }
+
+        def parser(raw_completion: Completion):
+            return _parse_chat_completion(
+                response_format=response_format,
+                chat_completion=raw_completion,
+                input_tools=chat_completion_tools,
+            )
+
+        return await self._post(
+            "/v1/chat/completions",
+            body=await async_maybe_transform(
+                {
+                    "messages": messages,
+                    "model": model,
+                    "agent_attributes": agent_attributes,
+                    "audio": audio,
+                    "auto_execute_tools": auto_execute_tools,
+                    "deferred": deferred,
+                    "disable_automatic_function_calling": disable_automatic_function_calling,
+                    "frequency_penalty": frequency_penalty,
+                    "function_call": function_call,
+                    "functions": functions,
+                    "generation_config": generation_config,
+                    "guardrails": guardrails,
+                    "handoff_config": handoff_config,
+                    "input": input,
+                    "instructions": instructions,
+                    "logit_bias": logit_bias,
+                    "logprobs": logprobs,
+                    "max_completion_tokens": max_completion_tokens,
+                    "max_tokens": max_tokens,
+                    "max_turns": max_turns,
+                    "mcp_servers": mcp_servers,
+                    "metadata": metadata,
+                    "modalities": modalities,
+                    "model_attributes": model_attributes,
+                    "n": n,
+                    "parallel_tool_calls": parallel_tool_calls,
+                    "prediction": prediction,
+                    "presence_penalty": presence_penalty,
+                    "prompt_cache_key": prompt_cache_key,
+                    "reasoning_effort": reasoning_effort,
+                    "response_format": _type_to_response_format(response_format),
+                    "safety_identifier": safety_identifier,
+                    "safety_settings": safety_settings,
+                    "search_parameters": search_parameters,
+                    "seed": seed,
+                    "service_tier": service_tier,
+                    "stop": stop,
+                    "store": store,
+                    "stream": False,
+                    "stream_options": stream_options,
+                    "system": system,
+                    "temperature": temperature,
+                    "thinking": thinking,
+                    "tool_choice": tool_choice,
+                    "tool_config": tool_config,
+                    "tools": tools,
+                    "top_k": top_k,
+                    "top_logprobs": top_logprobs,
+                    "top_p": top_p,
+                    "user": user,
+                    "verbosity": verbosity,
+                    "web_search_options": web_search_options,
+                },
+                completion_create_params.CompletionCreateParams,
+            ),
+            options=make_request_options(
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                extra_body=extra_body,
+                timeout=timeout,
+                idempotency_key=idempotency_key,
+                post_parser=parser,
+            ),
+            cast_to=ParsedChatCompletion,
         )
 
 
