@@ -22,13 +22,6 @@ __all__ = [
 
 
 class CompletionCreateParamsBase(TypedDict, total=False):
-    messages: Required[Union[Iterable[Dict[str, object]], str]]
-    """Conversation history.
-
-    Accepts either a list of message objects or a string, which is treated as a
-    single user message.
-    """
-
     model: Required[Model]
     """Model(s) to use for completion.
 
@@ -165,6 +158,13 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     tool execution. Entries can be URLs (e.g., 'https://mcp.example.com'), slugs
     (e.g., 'dedalus-labs/brave-search'), or structured objects specifying
     slug/version/url. MCP tools are executed server-side and billed separately.
+    """
+
+    messages: Union[Iterable[Dict[str, object]], str, None]
+    """Conversation history.
+
+    Accepts either a list of message objects or a string, which is treated as a
+    single user message. Optional if `input` or `instructions` is provided.
     """
 
     metadata: Optional[Dict[str, str]]

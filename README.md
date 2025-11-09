@@ -35,13 +35,13 @@ client = Dedalus(
 )
 
 completion = client.chat.completions.create(
+    model="openai/gpt-5",
     messages=[
         {
             "role": "user",
             "content": "Hello, how are you today?",
         }
     ],
-    model="openai/gpt-5",
 )
 print(completion.id)
 ```
@@ -69,13 +69,13 @@ client = AsyncDedalus(
 
 async def main() -> None:
     completion = await client.chat.completions.create(
+        model="openai/gpt-5",
         messages=[
             {
                 "role": "user",
                 "content": "Hello, how are you today?",
             }
         ],
-        model="openai/gpt-5",
     )
     print(completion.id)
 
@@ -110,13 +110,13 @@ async def main() -> None:
         http_client=DefaultAioHttpClient(),
     ) as client:
         completion = await client.chat.completions.create(
+            model="openai/gpt-5",
             messages=[
                 {
                     "role": "user",
                     "content": "Hello, how are you today?",
                 }
             ],
-            model="openai/gpt-5",
         )
         print(completion.id)
 
@@ -134,6 +134,8 @@ from dedalus_labs import Dedalus
 client = Dedalus()
 
 stream = client.chat.completions.create(
+    model="openai/gpt-5",
+    stream=True,
     messages=[
         {
             "role": "system",
@@ -144,8 +146,6 @@ stream = client.chat.completions.create(
             "content": "What do you think of artificial intelligence?",
         },
     ],
-    model="openai/gpt-5",
-    stream=True,
 )
 for completion in stream:
     print(completion.id)
@@ -159,6 +159,8 @@ from dedalus_labs import AsyncDedalus
 client = AsyncDedalus()
 
 stream = await client.chat.completions.create(
+    model="openai/gpt-5",
+    stream=True,
     messages=[
         {
             "role": "system",
@@ -169,8 +171,6 @@ stream = await client.chat.completions.create(
             "content": "What do you think of artificial intelligence?",
         },
     ],
-    model="openai/gpt-5",
-    stream=True,
 )
 async for completion in stream:
     print(completion.id)

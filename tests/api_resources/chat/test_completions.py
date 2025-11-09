@@ -21,12 +21,6 @@ class TestCompletions:
     @parametrize
     def test_method_create_overload_1(self, client: Dedalus) -> None:
         completion = client.chat.completions.create(
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
         )
         assert_matches_type(Completion, completion, path=["response"])
@@ -35,12 +29,6 @@ class TestCompletions:
     @parametrize
     def test_method_create_with_all_params_overload_1(self, client: Dedalus) -> None:
         completion = client.chat.completions.create(
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
             agent_attributes={
                 "accuracy": 0.9,
@@ -71,6 +59,12 @@ class TestCompletions:
             max_tokens=100,
             max_turns=5,
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
             metadata={
                 "session": "abc",
                 "user_id": "123",
@@ -141,12 +135,6 @@ class TestCompletions:
     @parametrize
     def test_raw_response_create_overload_1(self, client: Dedalus) -> None:
         response = client.chat.completions.with_raw_response.create(
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
         )
 
@@ -159,12 +147,6 @@ class TestCompletions:
     @parametrize
     def test_streaming_response_create_overload_1(self, client: Dedalus) -> None:
         with client.chat.completions.with_streaming_response.create(
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
         ) as response:
             assert not response.is_closed
@@ -179,12 +161,6 @@ class TestCompletions:
     @parametrize
     def test_method_create_overload_2(self, client: Dedalus) -> None:
         completion_stream = client.chat.completions.create(
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
             stream=True,
         )
@@ -194,12 +170,6 @@ class TestCompletions:
     @parametrize
     def test_method_create_with_all_params_overload_2(self, client: Dedalus) -> None:
         completion_stream = client.chat.completions.create(
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
             stream=True,
             agent_attributes={
@@ -231,6 +201,12 @@ class TestCompletions:
             max_tokens=100,
             max_turns=5,
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
             metadata={
                 "session": "abc",
                 "user_id": "123",
@@ -300,12 +276,6 @@ class TestCompletions:
     @parametrize
     def test_raw_response_create_overload_2(self, client: Dedalus) -> None:
         response = client.chat.completions.with_raw_response.create(
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
             stream=True,
         )
@@ -318,12 +288,6 @@ class TestCompletions:
     @parametrize
     def test_streaming_response_create_overload_2(self, client: Dedalus) -> None:
         with client.chat.completions.with_streaming_response.create(
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
             stream=True,
         ) as response:
@@ -345,12 +309,6 @@ class TestAsyncCompletions:
     @parametrize
     async def test_method_create_overload_1(self, async_client: AsyncDedalus) -> None:
         completion = await async_client.chat.completions.create(
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
         )
         assert_matches_type(Completion, completion, path=["response"])
@@ -359,12 +317,6 @@ class TestAsyncCompletions:
     @parametrize
     async def test_method_create_with_all_params_overload_1(self, async_client: AsyncDedalus) -> None:
         completion = await async_client.chat.completions.create(
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
             agent_attributes={
                 "accuracy": 0.9,
@@ -395,6 +347,12 @@ class TestAsyncCompletions:
             max_tokens=100,
             max_turns=5,
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
             metadata={
                 "session": "abc",
                 "user_id": "123",
@@ -465,12 +423,6 @@ class TestAsyncCompletions:
     @parametrize
     async def test_raw_response_create_overload_1(self, async_client: AsyncDedalus) -> None:
         response = await async_client.chat.completions.with_raw_response.create(
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
         )
 
@@ -483,12 +435,6 @@ class TestAsyncCompletions:
     @parametrize
     async def test_streaming_response_create_overload_1(self, async_client: AsyncDedalus) -> None:
         async with async_client.chat.completions.with_streaming_response.create(
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
         ) as response:
             assert not response.is_closed
@@ -503,12 +449,6 @@ class TestAsyncCompletions:
     @parametrize
     async def test_method_create_overload_2(self, async_client: AsyncDedalus) -> None:
         completion_stream = await async_client.chat.completions.create(
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
             stream=True,
         )
@@ -518,12 +458,6 @@ class TestAsyncCompletions:
     @parametrize
     async def test_method_create_with_all_params_overload_2(self, async_client: AsyncDedalus) -> None:
         completion_stream = await async_client.chat.completions.create(
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
             stream=True,
             agent_attributes={
@@ -555,6 +489,12 @@ class TestAsyncCompletions:
             max_tokens=100,
             max_turns=5,
             mcp_servers=["dedalus-labs/brave-search", "dedalus-labs/github-api"],
+            messages=[
+                {
+                    "content": "bar",
+                    "role": "bar",
+                }
+            ],
             metadata={
                 "session": "abc",
                 "user_id": "123",
@@ -624,12 +564,6 @@ class TestAsyncCompletions:
     @parametrize
     async def test_raw_response_create_overload_2(self, async_client: AsyncDedalus) -> None:
         response = await async_client.chat.completions.with_raw_response.create(
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
             stream=True,
         )
@@ -642,12 +576,6 @@ class TestAsyncCompletions:
     @parametrize
     async def test_streaming_response_create_overload_2(self, async_client: AsyncDedalus) -> None:
         async with async_client.chat.completions.with_streaming_response.create(
-            messages=[
-                {
-                    "content": "bar",
-                    "role": "bar",
-                }
-            ],
             model="openai/gpt-4",
             stream=True,
         ) as response:
