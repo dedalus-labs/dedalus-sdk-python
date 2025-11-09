@@ -140,12 +140,12 @@ class _RunResult:
 
     @property
     def output(self) -> str:
-        """Legacy compatibility."""
+        """Alias for final_output."""
         return self.final_output
 
     @property
     def content(self) -> str:
-        """Legacy compatibility."""
+        """Alias for final_output."""
         return self.final_output
 
     def to_input_list(self) -> list[Message]:
@@ -1239,7 +1239,16 @@ class DedalusRunner:
     @staticmethod
     def _mk_kwargs(mc: _ModelConfig) -> Dict[str, Any]:
         """Convert model config to kwargs for client call."""
+        from ...lib._parsing import type_to_response_format_param
+        from ..._utils import is_given
+
         d = asdict(mc)
         d.pop("id", None)  # Remove id since it's passed separately
         d.pop("model_list", None)  # Remove model_list since it's not an API parameter
+
+        # Convert Pydantic model to dict schema if needed
+        if "response_format" in d and d["response_format"] is not None:
+            converted = type_to_response_format_param(d["response_format"])
+            d["response_format"] = converted if is_given(converted) else None
+
         return {k: v for k, v in d.items() if v is not None}
