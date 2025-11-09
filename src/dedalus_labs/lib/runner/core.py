@@ -387,12 +387,10 @@ class DedalusRunner:
 
         # Handle instructions and messages parameters
         if instructions is not None and messages is not None:
-            # Check if messages already has system prompt
-            has_system = any(msg.get("role") == "system" for msg in messages)
-            if has_system:
-                raise ValueError("Cannot provide both 'instructions' and system message in 'messages'. Use one or the other.")
-            # Prepend instructions as system message
-            conversation = [{"role": "system", "content": instructions}] + list(messages)
+            # instructions overrides any existing system messages
+            conversation = [{"role": "system", "content": instructions}] + [
+                msg for msg in messages if msg.get("role") != "system"
+            ]
         elif instructions is not None:
             # Convert instructions to system message, optionally with user input
             if input is not None:
