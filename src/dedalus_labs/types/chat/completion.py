@@ -133,7 +133,7 @@ ChoiceMessageToolCall: TypeAlias = Annotated[
 
 
 class ChoiceMessage(BaseModel):
-    content: Optional[str] = None
+    content: Union[str, List[Dict[str, object]], None] = None
     """The contents of the message."""
 
     refusal: Optional[str] = None
