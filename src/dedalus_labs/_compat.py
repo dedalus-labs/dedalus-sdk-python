@@ -165,6 +165,20 @@ def model_parse(model: type[_ModelT], data: Any) -> _ModelT:
     return model.model_validate(data)
 
 
+def model_parse_json(model: type[_ModelT], data: str | bytes) -> _ModelT:
+    """Parse JSON string/bytes into Pydantic model."""
+    if PYDANTIC_V1:
+        return model.parse_raw(data)  # pyright: ignore[reportDeprecated]
+    return model.model_validate_json(data)
+
+
+def model_json_schema(model: type[pydantic.BaseModel]) -> dict[str, Any]:
+    """Get JSON schema from Pydantic model."""
+    if PYDANTIC_V1:
+        return model.schema()  # pyright: ignore[reportDeprecated]
+    return model.model_json_schema()
+
+
 # generic models
 if TYPE_CHECKING:
 

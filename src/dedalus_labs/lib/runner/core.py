@@ -102,6 +102,7 @@ class _ModelConfig:
     frequency_penalty: float | None = None
     presence_penalty: float | None = None
     logit_bias: Dict[str, int] | None = None
+    response_format: Dict[str, JsonValue] | type | None = None  # Dict or Pydantic model
     agent_attributes: Dict[str, float] | None = None
     model_attributes: Dict[str, Dict[str, float]] | None = None
     tool_choice: str | Dict[str, JsonValue] | None = None
@@ -174,6 +175,7 @@ class DedalusRunner:
         frequency_penalty: float | None = None,
         presence_penalty: float | None = None,
         logit_bias: Dict[str, int] | None = None,
+        response_format: Dict[str, JsonValue] | type | None = None,
         stream: bool = False,
         transport: Literal["http", "realtime"] = "http",
         verbose: bool | None = None,
@@ -255,8 +257,6 @@ class DedalusRunner:
                             unsupported_params.append("logprobs")
                         if hasattr(m, "top_logprobs") and m.top_logprobs is not None:
                             unsupported_params.append("top_logprobs")
-                        if hasattr(m, "response_format") and m.response_format is not None:
-                            unsupported_params.append("response_format")
                         if hasattr(m, "seed") and m.seed is not None:
                             unsupported_params.append("seed")
                         if hasattr(m, "service_tier") and m.service_tier is not None:
@@ -321,8 +321,6 @@ class DedalusRunner:
                 unsupported_params.append("logprobs")
             if hasattr(model, "top_logprobs") and model.top_logprobs is not None:
                 unsupported_params.append("top_logprobs")
-            if hasattr(model, "response_format") and model.response_format is not None:
-                unsupported_params.append("response_format")
             if hasattr(model, "seed") and model.seed is not None:
                 unsupported_params.append("seed")
             if hasattr(model, "service_tier") and model.service_tier is not None:
@@ -360,6 +358,7 @@ class DedalusRunner:
             frequency_penalty=frequency_penalty,
             presence_penalty=presence_penalty,
             logit_bias=logit_bias,
+            response_format=response_format,
             agent_attributes=agent_attributes,
             model_attributes=model_attributes,
             tool_choice=tool_choice,
