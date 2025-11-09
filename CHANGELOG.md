@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.0 (2025-11-09)
+
+Full Changelog: [v0.0.1...v0.1.0](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.0.1...v0.1.0)
+
+### Features
+
+* **api:** messages param nullable ([e905235](https://github.com/dedalus-labs/dedalus-sdk-python/commit/e9052357b7efa9d49b4f8b8d4c7dfc026d69414b))
+* flexible input params for .parse() ([b208fbe](https://github.com/dedalus-labs/dedalus-sdk-python/commit/b208fbed8300526b323ac7c935d6d50bb652f0d3))
+* structured outputs for tools ([b0434ca](https://github.com/dedalus-labs/dedalus-sdk-python/commit/b0434ca32e43dc5ef254e3fecb5493a2d3896384))
+
 ## 0.0.1 (2025-11-08)
 
 Full Changelog: [v0.1.0-alpha.10...v0.0.1](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0-alpha.10...v0.0.1)
