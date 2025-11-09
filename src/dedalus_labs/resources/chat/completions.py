@@ -50,7 +50,6 @@ class CompletionsResource(SyncAPIResource):
     def create(
         self,
         *,
-        messages: Union[Iterable[Dict[str, object]], str],
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
@@ -71,6 +70,7 @@ class CompletionsResource(SyncAPIResource):
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
         mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
+        messages: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
@@ -175,9 +175,6 @@ class CompletionsResource(SyncAPIResource):
         [DONE]
 
         Args:
-          messages: Conversation history. Accepts either a list of message objects or a string,
-              which is treated as a single user message.
-
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
               or a list for multi-model routing. Single model: 'openai/gpt-4',
               'anthropic/claude-3-5-sonnet-20241022', 'openai/gpt-4o-mini', or a DedalusModel
@@ -252,6 +249,10 @@ class CompletionsResource(SyncAPIResource):
               tool execution. Entries can be URLs (e.g., 'https://mcp.example.com'), slugs
               (e.g., 'dedalus-labs/brave-search'), or structured objects specifying
               slug/version/url. MCP tools are executed server-side and billed separately.
+
+          messages: Conversation history. Accepts either a list of message objects or a string,
+              which is treated as a single user message. Optional if `input` or `instructions`
+              is provided.
 
           metadata: Set of up to 16 key-value string pairs that can be attached to the request for
               structured metadata.
@@ -375,7 +376,6 @@ class CompletionsResource(SyncAPIResource):
     def create(
         self,
         *,
-        messages: Union[Iterable[Dict[str, object]], str],
         model: completion_create_params.Model,
         stream: Literal[True],
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
@@ -397,6 +397,7 @@ class CompletionsResource(SyncAPIResource):
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
         mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
+        messages: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
@@ -500,9 +501,6 @@ class CompletionsResource(SyncAPIResource):
         [DONE]
 
         Args:
-          messages: Conversation history. Accepts either a list of message objects or a string,
-              which is treated as a single user message.
-
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
               or a list for multi-model routing. Single model: 'openai/gpt-4',
               'anthropic/claude-3-5-sonnet-20241022', 'openai/gpt-4o-mini', or a DedalusModel
@@ -580,6 +578,10 @@ class CompletionsResource(SyncAPIResource):
               tool execution. Entries can be URLs (e.g., 'https://mcp.example.com'), slugs
               (e.g., 'dedalus-labs/brave-search'), or structured objects specifying
               slug/version/url. MCP tools are executed server-side and billed separately.
+
+          messages: Conversation history. Accepts either a list of message objects or a string,
+              which is treated as a single user message. Optional if `input` or `instructions`
+              is provided.
 
           metadata: Set of up to 16 key-value string pairs that can be attached to the request for
               structured metadata.
@@ -700,7 +702,6 @@ class CompletionsResource(SyncAPIResource):
     def create(
         self,
         *,
-        messages: Union[Iterable[Dict[str, object]], str],
         model: completion_create_params.Model,
         stream: bool,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
@@ -722,6 +723,7 @@ class CompletionsResource(SyncAPIResource):
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
         mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
+        messages: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
@@ -825,9 +827,6 @@ class CompletionsResource(SyncAPIResource):
         [DONE]
 
         Args:
-          messages: Conversation history. Accepts either a list of message objects or a string,
-              which is treated as a single user message.
-
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
               or a list for multi-model routing. Single model: 'openai/gpt-4',
               'anthropic/claude-3-5-sonnet-20241022', 'openai/gpt-4o-mini', or a DedalusModel
@@ -905,6 +904,10 @@ class CompletionsResource(SyncAPIResource):
               tool execution. Entries can be URLs (e.g., 'https://mcp.example.com'), slugs
               (e.g., 'dedalus-labs/brave-search'), or structured objects specifying
               slug/version/url. MCP tools are executed server-side and billed separately.
+
+          messages: Conversation history. Accepts either a list of message objects or a string,
+              which is treated as a single user message. Optional if `input` or `instructions`
+              is provided.
 
           metadata: Set of up to 16 key-value string pairs that can be attached to the request for
               structured metadata.
@@ -1021,11 +1024,10 @@ class CompletionsResource(SyncAPIResource):
         """
         ...
 
-    @required_args(["messages", "model"], ["messages", "model", "stream"])
+    @required_args(["model"], ["model", "stream"])
     def create(
         self,
         *,
-        messages: Union[Iterable[Dict[str, object]], str],
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
@@ -1046,6 +1048,7 @@ class CompletionsResource(SyncAPIResource):
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
         mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
+        messages: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
@@ -1089,7 +1092,6 @@ class CompletionsResource(SyncAPIResource):
             "/v1/chat/completions",
             body=maybe_transform(
                 {
-                    "messages": messages,
                     "model": model,
                     "agent_attributes": agent_attributes,
                     "audio": audio,
@@ -1110,6 +1112,7 @@ class CompletionsResource(SyncAPIResource):
                     "max_tokens": max_tokens,
                     "max_turns": max_turns,
                     "mcp_servers": mcp_servers,
+                    "messages": messages,
                     "metadata": metadata,
                     "modalities": modalities,
                     "model_attributes": model_attributes,
@@ -1183,7 +1186,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
-        messages: Union[Iterable[Dict[str, object]], str],
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
@@ -1204,6 +1206,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
         mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
+        messages: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
@@ -1308,9 +1311,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
         [DONE]
 
         Args:
-          messages: Conversation history. Accepts either a list of message objects or a string,
-              which is treated as a single user message.
-
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
               or a list for multi-model routing. Single model: 'openai/gpt-4',
               'anthropic/claude-3-5-sonnet-20241022', 'openai/gpt-4o-mini', or a DedalusModel
@@ -1385,6 +1385,10 @@ class AsyncCompletionsResource(AsyncAPIResource):
               tool execution. Entries can be URLs (e.g., 'https://mcp.example.com'), slugs
               (e.g., 'dedalus-labs/brave-search'), or structured objects specifying
               slug/version/url. MCP tools are executed server-side and billed separately.
+
+          messages: Conversation history. Accepts either a list of message objects or a string,
+              which is treated as a single user message. Optional if `input` or `instructions`
+              is provided.
 
           metadata: Set of up to 16 key-value string pairs that can be attached to the request for
               structured metadata.
@@ -1508,7 +1512,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
-        messages: Union[Iterable[Dict[str, object]], str],
         model: completion_create_params.Model,
         stream: Literal[True],
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
@@ -1530,6 +1533,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
         mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
+        messages: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
@@ -1633,9 +1637,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
         [DONE]
 
         Args:
-          messages: Conversation history. Accepts either a list of message objects or a string,
-              which is treated as a single user message.
-
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
               or a list for multi-model routing. Single model: 'openai/gpt-4',
               'anthropic/claude-3-5-sonnet-20241022', 'openai/gpt-4o-mini', or a DedalusModel
@@ -1713,6 +1714,10 @@ class AsyncCompletionsResource(AsyncAPIResource):
               tool execution. Entries can be URLs (e.g., 'https://mcp.example.com'), slugs
               (e.g., 'dedalus-labs/brave-search'), or structured objects specifying
               slug/version/url. MCP tools are executed server-side and billed separately.
+
+          messages: Conversation history. Accepts either a list of message objects or a string,
+              which is treated as a single user message. Optional if `input` or `instructions`
+              is provided.
 
           metadata: Set of up to 16 key-value string pairs that can be attached to the request for
               structured metadata.
@@ -1833,7 +1838,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
     async def create(
         self,
         *,
-        messages: Union[Iterable[Dict[str, object]], str],
         model: completion_create_params.Model,
         stream: bool,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
@@ -1855,6 +1859,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
         mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
+        messages: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
@@ -1958,9 +1963,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
         [DONE]
 
         Args:
-          messages: Conversation history. Accepts either a list of message objects or a string,
-              which is treated as a single user message.
-
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
               or a list for multi-model routing. Single model: 'openai/gpt-4',
               'anthropic/claude-3-5-sonnet-20241022', 'openai/gpt-4o-mini', or a DedalusModel
@@ -2038,6 +2040,10 @@ class AsyncCompletionsResource(AsyncAPIResource):
               tool execution. Entries can be URLs (e.g., 'https://mcp.example.com'), slugs
               (e.g., 'dedalus-labs/brave-search'), or structured objects specifying
               slug/version/url. MCP tools are executed server-side and billed separately.
+
+          messages: Conversation history. Accepts either a list of message objects or a string,
+              which is treated as a single user message. Optional if `input` or `instructions`
+              is provided.
 
           metadata: Set of up to 16 key-value string pairs that can be attached to the request for
               structured metadata.
@@ -2154,11 +2160,10 @@ class AsyncCompletionsResource(AsyncAPIResource):
         """
         ...
 
-    @required_args(["messages", "model"], ["messages", "model", "stream"])
+    @required_args(["model"], ["model", "stream"])
     async def create(
         self,
         *,
-        messages: Union[Iterable[Dict[str, object]], str],
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
@@ -2179,6 +2184,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
         mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
+        messages: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
@@ -2222,7 +2228,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
             "/v1/chat/completions",
             body=await async_maybe_transform(
                 {
-                    "messages": messages,
                     "model": model,
                     "agent_attributes": agent_attributes,
                     "audio": audio,
@@ -2243,6 +2248,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
                     "max_tokens": max_tokens,
                     "max_turns": max_turns,
                     "mcp_servers": mcp_servers,
+                    "messages": messages,
                     "metadata": metadata,
                     "modalities": modalities,
                     "model_attributes": model_attributes,
