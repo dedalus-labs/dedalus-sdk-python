@@ -28,7 +28,7 @@ class TestGenerateBugReportUrl:
         params = parse_qs(parsed.query)
 
         assert parsed.netloc == "github.com"
-        assert parsed.path == "/dedalus-labs/api/issues/new"
+        assert parsed.path == "/dedalus-labs/dedalus-sdk-python/issues/new"
         assert params["template"] == ["bug-report.yml"]
         assert params["component"] == ["Python SDK"]
         assert "python_version" in params
@@ -40,8 +40,10 @@ class TestGenerateBugReportUrl:
             version="0.0.1",
             error_type="APIError",
             error_message="Connection timeout",
-            session_id="test-session-123",
             environment="dev",
+            request_id="req-123",
+            endpoint="/v1/chat/completions",
+            method="POST",
         )
 
         parsed = urlparse(url)
@@ -50,19 +52,18 @@ class TestGenerateBugReportUrl:
         assert params["version"] == ["0.0.1"]
         assert params["error_type"] == ["APIError"]
         assert params["actual"] == ["Connection timeout"]
-        assert params["session_id"] == ["Session ID: test-session-123"]
         assert params["environment"] == ["dev"]
-        assert params["steps"][0].startswith("Uploaded thread: test-session-123")
+        assert params["notes"][0] == "Request ID: req-123\nEndpoint: POST /v1/chat/completions"
 
-    def test_session_id_prefilling(self):
-        """Session ID pre-fills both session_id and steps fields."""
-        url = generate_bug_report_url(session_id="abc-123")
+    def test_request_id_in_notes(self):
+        """Request ID is included in notes field."""
+        url = generate_bug_report_url(request_id="req-abc-123")
 
         parsed = urlparse(url)
         params = parse_qs(parsed.query)
 
-        assert params["session_id"] == ["Session ID: abc-123"]
-        assert "abc-123" in params["steps"][0]
+        assert "notes" in params
+        assert "Request ID: req-abc-123" in params["notes"][0]
 
     def test_custom_template(self):
         """Custom template name is respected."""
@@ -106,18 +107,18 @@ class TestGetBugReportUrlFromError:
         assert "[400]" in params["actual"][0]
         assert "Invalid request" in params["actual"][0]
 
-    def test_with_session_id(self):
-        """Session ID parameter is included when provided."""
+    def test_with_request_id(self):
+        """Request ID parameter is included when provided."""
         request = httpx.Request("POST", "https://api.dedalus.ai/v1/chat/completions")
         error = APIError("Test error", request, body=None)
 
-        url = get_bug_report_url_from_error(error, session_id="session-456")
+        url = get_bug_report_url_from_error(error, request_id="req-456")
 
         parsed = urlparse(url)
         params = parse_qs(parsed.query)
 
-        assert params["session_id"] == ["Session ID: session-456"]
-        assert "session-456" in params["steps"][0]
+        assert "notes" in params
+        assert "Request ID: req-456" in params["notes"][0]
 
     def test_includes_sdk_version(self):
         """SDK version is automatically included from __version__."""
@@ -171,7 +172,7 @@ class TestUrlEncoding:
         """Special characters are properly URL-encoded."""
         url = generate_bug_report_url(
             error_message="Error @ 127.0.0.1:8080 #fail",
-            session_id="test/session#123",
+            request_id="req/test#123",
         )
 
         # URL query string should not contain raw special chars
@@ -183,6 +184,7 @@ class TestUrlEncoding:
         parsed = urlparse(url)
         params = parse_qs(parsed.query)
         assert "@" in params["actual"][0]
+        assert "#" in params["notes"][0]
 
     def test_unicode_handling(self):
         """Unicode characters are properly encoded."""
