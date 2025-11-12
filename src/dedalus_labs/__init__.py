@@ -40,6 +40,7 @@ from ._exceptions import (
 from ._base_client import DefaultHttpxClient, DefaultAioHttpClient, DefaultAsyncHttpxClient
 from ._utils._logs import setup_logging as _setup_logging
 from .lib.runner import DedalusRunner
+from .lib._bug_report import generate_bug_report_url, get_bug_report_url_from_error
 
 __all__ = [
     "types",
@@ -85,6 +86,8 @@ __all__ = [
     "DefaultAsyncHttpxClient",
     "DefaultAioHttpClient",
     "DedalusRunner",
+    "generate_bug_report_url",
+    "get_bug_report_url_from_error",
 ]
 
 if not _t.TYPE_CHECKING:

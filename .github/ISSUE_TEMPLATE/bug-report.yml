@@ -1,0 +1,90 @@
+name: 🪲 Bug Report
+description: Report an issue with the Dedalus Python SDK
+labels:
+  - bug
+  - needs triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for submitting a bug report! Your vigilance helps make the Dedalus SDK better for everyone.
+
+        **Please read this first:**
+        - **Have you searched for related issues?** Others may have faced similar issues
+        - **Have you checked the documentation?** Review the [README](../../README.md) and examples
+
+        Make sure you are running the latest version. The bug you are experiencing may already have been fixed.
+
+  - type: input
+    id: version
+    attributes:
+      label: SDK version
+      description: Copy the output of `python -c "import dedalus_labs; print(dedalus_labs.__version__)"`
+      placeholder: "e.g., 0.0.1, 0.0.2.dev5"
+    validations:
+      required: true
+
+  - type: input
+    id: python_version
+    attributes:
+      label: Python version
+      description: Copy the output of `python --version`
+      placeholder: "e.g., Python 3.12.1"
+    validations:
+      required: true
+
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      description: |
+        For macOS/Linux: copy the output of `uname -mprs`
+        For Windows: copy the output of `"$([Environment]::OSVersion | ForEach-Object VersionString) $(if ([Environment]::Is64BitOperatingSystem) { "x64" } else { "x86" })"` in PowerShell
+      placeholder: "e.g., Darwin 24.6.0 arm64, Linux 5.15.0 x86_64"
+
+  - type: textarea
+    id: error_type
+    attributes:
+      label: Error type
+      description: What type of error occurred? (if applicable)
+      placeholder: "e.g., APIError, APITimeoutError, BadRequestError, AuthenticationError"
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What issue are you seeing?
+      description: A clear description of the bug. Include full error messages (redact any sensitive data). Provide text instead of screenshots when possible.
+      placeholder: |
+        Describe the issue and include error messages, stack traces, or unexpected behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Provide a minimal code snippet that reproduces the bug. Ideally a minimal Python script that can be run.
+      placeholder: |
+        ```python
+        from dedalus_labs import Dedalus
+
+        client = Dedalus(api_key="...")
+        # Steps that trigger the bug
+        response = client.chat.completions.create(...)
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: A clear description of what you expected to happen.
+      placeholder: "Describe what should have happened instead."
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context
+      description: Any other information that might help us investigate?
+      placeholder: "Request IDs, timestamps, API endpoint used, etc."
