@@ -6,30 +6,54 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, AsyncIterator, Iterator
 import os
+
+from collections.abc import AsyncIterator, Iterator
+from typing import TYPE_CHECKING
+
 
 if TYPE_CHECKING:
     from ...types.chat.stream_chunk import StreamChunk
 
 __all__ = [
-    "stream_sync",
     "stream_async",
+    "stream_sync",
 ]
 
 
-async def stream_async(stream: AsyncIterator[StreamChunk]) -> None:
+async def stream_async(stream: AsyncIterator[StreamChunk] | object) -> None:
     """Stream text content from an async streaming response.
 
+    Supports both:
+    - Raw StreamChunk iterator from .create(stream=True) or DedalusRunner.run(stream=True)
+    - ChatCompletionStreamManager from .stream() (Pydantic models with event API)
+
     Args:
-        stream: An async iterator of StreamChunk from DedalusRunner.run(stream=True)
+        stream: An async iterator of StreamChunk or a ChatCompletionStreamManager
 
     Example:
-        >>> result = await runner.run("Hello", stream=True)
-        >>> await stream_async(result)
+        >>> # With .create(stream=True)
+        >>> stream = await client.chat.completions.create(stream=True, ...)
+        >>> await stream_async(stream)
+
+        >>> # With .stream() (Pydantic models)
+        >>> stream = client.chat.completions.stream(response_format=Model, ...)
+        >>> await stream_async(stream)
     """
     verbose = os.environ.get("DEDALUS_SDK_VERBOSE", "").lower() in ("1", "true", "yes", "on", "debug")
 
+    # Stream manager (event API) vs raw AsyncStream: discriminate via __aenter__ without __aiter__
+    if hasattr(stream, "__aenter__") and not hasattr(stream, "__aiter__"):
+        async with stream as event_stream:
+            async for event in event_stream:
+                if event.type == "content.delta":
+                    print(event.delta, end="", flush=True)
+                elif verbose and event.type == "content.done" and hasattr(event, "parsed") and event.parsed:
+                    print(f"\n[PARSED] {type(event.parsed).__name__}")
+        print()  # Final newline
+        return
+
+    # Simple StreamChunk iterator case
     async for chunk in stream:
         # Print server-side metadata events if present (verbose-only)
         if verbose:
@@ -58,18 +82,39 @@ async def stream_async(stream: AsyncIterator[StreamChunk]) -> None:
     print()  # Final newline
 
 
-def stream_sync(stream: Iterator[StreamChunk]) -> None:
+def stream_sync(stream: Iterator[StreamChunk] | object) -> None:
     """Stream text content from a streaming response.
 
+    Supports both:
+    - Raw StreamChunk iterator from .create(stream=True) or DedalusRunner.run(stream=True)
+    - ChatCompletionStreamManager from .stream() (Pydantic models with event API)
+
     Args:
-        stream: An iterator of StreamChunk from DedalusRunner.run(stream=True)
+        stream: An iterator of StreamChunk or a ChatCompletionStreamManager
 
     Example:
-        >>> result = runner.run("Hello", stream=True)
-        >>> stream_sync(result)
+        >>> # With .create(stream=True)
+        >>> stream = client.chat.completions.create(stream=True, ...)
+        >>> stream_sync(stream)
+
+        >>> # With .stream() (Pydantic models)
+        >>> stream = client.chat.completions.stream(response_format=Model, ...)
+        >>> stream_sync(stream)
     """
     verbose = os.environ.get("DEDALUS_SDK_VERBOSE", "").lower() in ("1", "true", "yes", "on", "debug")
 
+    # Stream manager (event API) vs raw Stream: discriminate via __enter__ without __iter__
+    if hasattr(stream, "__enter__") and not hasattr(stream, "__iter__"):
+        with stream as event_stream:
+            for event in event_stream:
+                if event.type == "content.delta":
+                    print(event.delta, end="", flush=True)
+                elif verbose and event.type == "content.done" and hasattr(event, "parsed") and event.parsed:
+                    print(f"\n[PARSED] {type(event.parsed).__name__}")
+        print()  # Final newline
+        return
+
+    # Simple StreamChunk iterator case
     for chunk in stream:
         # Print server-side metadata events if present (verbose-only)
         if verbose:

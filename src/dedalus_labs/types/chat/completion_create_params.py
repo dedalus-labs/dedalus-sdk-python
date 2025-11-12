@@ -9,10 +9,14 @@ from ..._types import SequenceNotStr
 from .model_id import ModelID
 from .models_param import ModelsParam
 from ..shared_params.dedalus_model import DedalusModel
+from ..shared_params.response_format_text import ResponseFormatText
+from ..shared_params.response_format_json_object import ResponseFormatJSONObject
+from ..shared_params.response_format_json_schema import ResponseFormatJSONSchema
 
 __all__ = [
     "CompletionCreateParamsBase",
     "Model",
+    "ResponseFormat",
     "Thinking",
     "ThinkingThinkingConfigDisabled",
     "ThinkingThinkingConfigEnabled",
@@ -223,7 +227,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     cost of latency and tokens.
     """
 
-    response_format: Optional[Dict[str, object]]
+    response_format: Optional[ResponseFormat]
     """An object specifying the format that the model must output.
 
     Use {'type': 'json_schema', 'json_schema': {...}} for structured outputs or
@@ -362,6 +366,8 @@ class CompletionCreateParamsBase(TypedDict, total=False):
 
 
 Model: TypeAlias = Union[ModelID, DedalusModel, ModelsParam]
+
+ResponseFormat: TypeAlias = Union[ResponseFormatText, ResponseFormatJSONObject, ResponseFormatJSONSchema]
 
 
 class ThinkingThinkingConfigDisabled(TypedDict, total=False):

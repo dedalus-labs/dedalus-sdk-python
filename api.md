@@ -1,7 +1,13 @@
 # Shared Types
 
 ```python
-from dedalus_labs.types import DedalusModel, DedalusModelChoice
+from dedalus_labs.types import (
+    DedalusModel,
+    DedalusModelChoice,
+    ResponseFormatJSONObject,
+    ResponseFormatJSONSchema,
+    ResponseFormatText,
+)
 ```
 
 # Root

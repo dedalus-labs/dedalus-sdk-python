@@ -3,7 +3,7 @@
 <!-- prettier-ignore -->
 [![PyPI version](https://img.shields.io/pypi/v/dedalus_labs.svg?label=pypi%20(stable))](https://pypi.org/project/dedalus_labs/)
 
-The Dedalus Python library provides convenient access to the Dedalus REST API from any Python 3.8+
+The Dedalus Python library provides convenient access to the Dedalus REST API from any Python 3.9+
 application. The library includes type definitions for all request params and response fields,
 and offers both synchronous and asynchronous clients powered by [httpx](https://github.com/encode/httpx).
 
@@ -35,7 +35,7 @@ client = Dedalus(
 )
 
 completion = client.chat.completions.create(
-    model="openai/gpt-5",
+    model="openai/gpt-5-nano",
     messages=[
         {
             "role": "user",
@@ -69,7 +69,7 @@ client = AsyncDedalus(
 
 async def main() -> None:
     completion = await client.chat.completions.create(
-        model="openai/gpt-5",
+        model="openai/gpt-5-nano",
         messages=[
             {
                 "role": "user",
@@ -110,7 +110,7 @@ async def main() -> None:
         http_client=DefaultAioHttpClient(),
     ) as client:
         completion = await client.chat.completions.create(
-            model="openai/gpt-5",
+            model="openai/gpt-5-nano",
             messages=[
                 {
                     "role": "user",
@@ -134,7 +134,7 @@ from dedalus_labs import Dedalus
 client = Dedalus()
 
 stream = client.chat.completions.create(
-    model="openai/gpt-5",
+    model="openai/gpt-5-nano",
     stream=True,
     messages=[
         {
@@ -159,7 +159,7 @@ from dedalus_labs import AsyncDedalus
 client = AsyncDedalus()
 
 stream = await client.chat.completions.create(
-    model="openai/gpt-5",
+    model="openai/gpt-5-nano",
     stream=True,
     messages=[
         {
@@ -473,7 +473,7 @@ print(dedalus_labs.__version__)
 
 ## Requirements
 
-Python 3.8 or higher.
+Python 3.9 or higher.
 
 ## Contributing
 

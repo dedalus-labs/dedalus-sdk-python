@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.1.1 (2025-11-12)
+
+Full Changelog: [v0.1.0...v0.1.1](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0...v0.1.1)
+
+### Features
+
+* **api:** convenient bug reporting ux ([5aa032f](https://github.com/dedalus-labs/dedalus-sdk-python/commit/5aa032f24a9fe44d23cfbf83f12fc79104529c8d))
+* **api:** response format ([660ac29](https://github.com/dedalus-labs/dedalus-sdk-python/commit/660ac2954efc08eaed5212da934203b5b80f522e))
+* **api:** standardize name casing with stainless initialism ([ba1e188](https://github.com/dedalus-labs/dedalus-sdk-python/commit/ba1e188beb62f6def79720d7d2ec8e22853fadaf))
+* **api:** stream helper for pydantic ([c4ab8b0](https://github.com/dedalus-labs/dedalus-sdk-python/commit/c4ab8b0d911b92afe76de99143567e6898e9e95c))
+* **api:** streaming support for structured output ([48ddd0a](https://github.com/dedalus-labs/dedalus-sdk-python/commit/48ddd0a996e99b65fb4635f276a5562ef567ed26))
+
+
+### Bug Fixes
+
+* **api:** hardened _compat types ([312b628](https://github.com/dedalus-labs/dedalus-sdk-python/commit/312b628b48d15aaae5b4d2765a75d2b6b830e318))
+* compat with Python 3.14 ([aacb192](https://github.com/dedalus-labs/dedalus-sdk-python/commit/aacb192910f8bdd09625f098874cf54d3c0c0971))
+* **compat:** update signatures of `model_dump` and `model_dump_json` for Pydantic v1 ([bd1df12](https://github.com/dedalus-labs/dedalus-sdk-python/commit/bd1df12d6c26ad35101bd7b181f33ee8f7fe75ce))
+* **runner:** use TypeAlias from typing_extensions for py3.9+ support ([0625b2c](https://github.com/dedalus-labs/dedalus-sdk-python/commit/0625b2c9cd7569140fb81848b9d77bbbfbe256b9))
+* **streaming:** correct stream type detection ([7b6576c](https://github.com/dedalus-labs/dedalus-sdk-python/commit/7b6576c23400bca2420e6782defa633b0f3dbff9))
+* **tests:** update bug reporting parameters/paths ([3838ebe](https://github.com/dedalus-labs/dedalus-sdk-python/commit/3838ebe4db440a852c233cd2a96c2b7a4f0c4082))
+
+
+### Chores
+
+* **package:** drop Python 3.8 support ([ef5e794](https://github.com/dedalus-labs/dedalus-sdk-python/commit/ef5e794d49c800706eeb693170ea4a3ac0245290))
+
 ## 0.1.0 (2025-11-09)
 
 Full Changelog: [v0.0.1...v0.1.0](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.0.1...v0.1.0)

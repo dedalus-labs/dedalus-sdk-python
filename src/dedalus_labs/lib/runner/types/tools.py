@@ -6,7 +6,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Union, Callable, Protocol, TypeAlias
+from typing import Any, Dict, List, Union, Callable, Protocol
+from typing_extensions import TypeAlias
 
 __all__ = [
     "Tool",
