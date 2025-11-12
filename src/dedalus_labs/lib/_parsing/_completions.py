@@ -16,6 +16,7 @@ from .._pydantic import is_basemodel_type, to_strict_json_schema, is_dataclass_l
 if TYPE_CHECKING:
     from ...types.chat.completion_create_params import ResponseFormat as ResponseFormatParam
     from ...types.chat.completion import ChoiceMessageToolCallChatCompletionMessageToolCallFunction as Function
+    from ...types.shared_params.response_format_json_schema import ResponseFormatJSONSchema
 
 ResponseFormatT = TypeVar("ResponseFormatT")
 
@@ -28,27 +29,28 @@ def type_to_response_format_param(
         return omit
 
     if is_dict(response_format):
-        return response_format
+        return cast("ResponseFormatParam", response_format)
 
     response_format = cast(type, response_format)
 
+    json_schema_type: type[pydantic.BaseModel] | pydantic.TypeAdapter[Any]
     if is_basemodel_type(response_format):
         name = response_format.__name__
         json_schema_type = response_format
     elif is_dataclass_like_type(response_format):
         name = response_format.__name__
-        json_schema_type = pydantic.TypeAdapter(response_format)
+        json_schema_type = pydantic.TypeAdapter(response_format)  # type: ignore[assignment]
     else:
         raise TypeError(f"Unsupported response_format type - {response_format}")
 
-    return {
+    return cast("ResponseFormatJSONSchema", {
         "type": "json_schema",
         "json_schema": {
             "schema": to_strict_json_schema(json_schema_type),
             "name": name,
             "strict": True,
         },
-    }
+    })
 
 
 def validate_input_tools(tools: Iterable[Dict[str, Any]] | Omit = omit) -> Iterable[Dict[str, Any]] | Omit:
@@ -154,7 +156,7 @@ def _parse_function_tool_arguments(*, input_tools: list[Dict[str, Any]], functio
         return model_parse_json(input_fn.model, function.arguments)
 
     if input_fn and input_fn.get("strict"):
-        return json.loads(function.arguments)
+        return cast(object, json.loads(function.arguments))
 
     return None
 

@@ -106,7 +106,9 @@ def _ensure_strict_json_schema(
             merged = _ensure_strict_json_schema(all_of[0], path=(*path, "allOf", "0"), root=root)
             json_schema.pop("allOf")
             # Merge while preserving local properties and avoiding $defs duplication
-            json_schema.update({k: v for k, v in merged.items() if k != "$defs"})
+            # Use opposite order: merged first, then local on top (local properties override)
+            merged_without_defs = {k: v for k, v in merged.items() if k != "$defs"}
+            json_schema.update({**merged_without_defs, **json_schema})
         else:
             json_schema["allOf"] = [
                 _ensure_strict_json_schema(entry, path=(*path, "allOf", str(i)), root=root)
