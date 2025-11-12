@@ -6,15 +6,18 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, AsyncIterator, Iterator
 import os
+
+from collections.abc import AsyncIterator, Iterator
+from typing import TYPE_CHECKING
+
 
 if TYPE_CHECKING:
     from ...types.chat.stream_chunk import StreamChunk
 
 __all__ = [
-    "stream_sync",
     "stream_async",
+    "stream_sync",
 ]
 
 
@@ -39,15 +42,14 @@ async def stream_async(stream: AsyncIterator[StreamChunk] | object) -> None:
     """
     verbose = os.environ.get("DEDALUS_SDK_VERBOSE", "").lower() in ("1", "true", "yes", "on", "debug")
 
-    # Check if it's a ChatCompletionStreamManager (context manager with event API)
-    if hasattr(stream, "__aenter__"):
+    # Stream manager (event API) vs raw AsyncStream: discriminate via __aenter__ without __aiter__
+    if hasattr(stream, "__aenter__") and not hasattr(stream, "__aiter__"):
         async with stream as event_stream:
             async for event in event_stream:
                 if event.type == "content.delta":
                     print(event.delta, end="", flush=True)
-                elif verbose and event.type == "content.done":
-                    if hasattr(event, "parsed") and event.parsed:
-                        print(f"\n[PARSED] {type(event.parsed).__name__}")
+                elif verbose and event.type == "content.done" and hasattr(event, "parsed") and event.parsed:
+                    print(f"\n[PARSED] {type(event.parsed).__name__}")
         print()  # Final newline
         return
 
@@ -101,15 +103,14 @@ def stream_sync(stream: Iterator[StreamChunk] | object) -> None:
     """
     verbose = os.environ.get("DEDALUS_SDK_VERBOSE", "").lower() in ("1", "true", "yes", "on", "debug")
 
-    # Check if it's a ChatCompletionStreamManager (context manager with event API)
-    if hasattr(stream, "__enter__"):
+    # Stream manager (event API) vs raw Stream: discriminate via __enter__ without __iter__
+    if hasattr(stream, "__enter__") and not hasattr(stream, "__iter__"):
         with stream as event_stream:
             for event in event_stream:
                 if event.type == "content.delta":
                     print(event.delta, end="", flush=True)
-                elif verbose and event.type == "content.done":
-                    if hasattr(event, "parsed") and event.parsed:
-                        print(f"\n[PARSED] {type(event.parsed).__name__}")
+                elif verbose and event.type == "content.done" and hasattr(event, "parsed") and event.parsed:
+                    print(f"\n[PARSED] {type(event.parsed).__name__}")
         print()  # Final newline
         return
 
