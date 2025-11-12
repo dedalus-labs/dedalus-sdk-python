@@ -35,7 +35,7 @@ client = Dedalus(
 )
 
 completion = client.chat.completions.create(
-    model="openai/gpt-5",
+    model="openai/gpt-4o-mini",
     messages=[
         {
             "role": "user",
@@ -69,7 +69,7 @@ client = AsyncDedalus(
 
 async def main() -> None:
     completion = await client.chat.completions.create(
-        model="openai/gpt-5",
+        model="openai/gpt-4o-mini",
         messages=[
             {
                 "role": "user",
@@ -110,7 +110,7 @@ async def main() -> None:
         http_client=DefaultAioHttpClient(),
     ) as client:
         completion = await client.chat.completions.create(
-            model="openai/gpt-5",
+            model="openai/gpt-4o-mini",
             messages=[
                 {
                     "role": "user",
@@ -134,7 +134,7 @@ from dedalus_labs import Dedalus
 client = Dedalus()
 
 stream = client.chat.completions.create(
-    model="openai/gpt-5",
+    model="openai/gpt-4o-mini",
     stream=True,
     messages=[
         {
@@ -159,7 +159,7 @@ from dedalus_labs import AsyncDedalus
 client = AsyncDedalus()
 
 stream = await client.chat.completions.create(
-    model="openai/gpt-5",
+    model="openai/gpt-4o-mini",
     stream=True,
     messages=[
         {

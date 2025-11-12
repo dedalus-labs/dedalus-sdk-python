@@ -7,13 +7,13 @@ from ..._models import BaseModel
 
 __all__ = [
     "TranslationCreateResponse",
-    "CreateTranslationResponseVerboseJson",
-    "CreateTranslationResponseVerboseJsonSegment",
-    "CreateTranslationResponseJson",
+    "CreateTranslationResponseVerboseJSON",
+    "CreateTranslationResponseVerboseJSONSegment",
+    "CreateTranslationResponseJSON",
 ]
 
 
-class CreateTranslationResponseVerboseJsonSegment(BaseModel):
+class CreateTranslationResponseVerboseJSONSegment(BaseModel):
     id: int
     """Unique identifier of the segment."""
 
@@ -55,7 +55,7 @@ class CreateTranslationResponseVerboseJsonSegment(BaseModel):
     """Array of token IDs for the text content."""
 
 
-class CreateTranslationResponseVerboseJson(BaseModel):
+class CreateTranslationResponseVerboseJSON(BaseModel):
     duration: float
     """The duration of the input audio."""
 
@@ -65,12 +65,12 @@ class CreateTranslationResponseVerboseJson(BaseModel):
     text: str
     """The translated text."""
 
-    segments: Optional[List[CreateTranslationResponseVerboseJsonSegment]] = None
+    segments: Optional[List[CreateTranslationResponseVerboseJSONSegment]] = None
     """Segments of the translated text and their corresponding details."""
 
 
-class CreateTranslationResponseJson(BaseModel):
+class CreateTranslationResponseJSON(BaseModel):
     text: str
 
 
-TranslationCreateResponse: TypeAlias = Union[CreateTranslationResponseVerboseJson, CreateTranslationResponseJson]
+TranslationCreateResponse: TypeAlias = Union[CreateTranslationResponseVerboseJSON, CreateTranslationResponseJSON]

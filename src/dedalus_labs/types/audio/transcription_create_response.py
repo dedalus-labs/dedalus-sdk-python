@@ -8,20 +8,20 @@ from ..._models import BaseModel
 
 __all__ = [
     "TranscriptionCreateResponse",
-    "CreateTranscriptionResponseVerboseJson",
-    "CreateTranscriptionResponseVerboseJsonSegment",
-    "CreateTranscriptionResponseVerboseJsonUsage",
-    "CreateTranscriptionResponseVerboseJsonWord",
-    "CreateTranscriptionResponseJson",
-    "CreateTranscriptionResponseJsonLogprob",
-    "CreateTranscriptionResponseJsonUsage",
-    "CreateTranscriptionResponseJsonUsageTranscriptTextUsageTokens",
-    "CreateTranscriptionResponseJsonUsageTranscriptTextUsageTokensInputTokenDetails",
-    "CreateTranscriptionResponseJsonUsageTranscriptTextUsageDuration",
+    "CreateTranscriptionResponseVerboseJSON",
+    "CreateTranscriptionResponseVerboseJSONSegment",
+    "CreateTranscriptionResponseVerboseJSONUsage",
+    "CreateTranscriptionResponseVerboseJSONWord",
+    "CreateTranscriptionResponseJSON",
+    "CreateTranscriptionResponseJSONLogprob",
+    "CreateTranscriptionResponseJSONUsage",
+    "CreateTranscriptionResponseJSONUsageTranscriptTextUsageTokens",
+    "CreateTranscriptionResponseJSONUsageTranscriptTextUsageTokensInputTokenDetails",
+    "CreateTranscriptionResponseJSONUsageTranscriptTextUsageDuration",
 ]
 
 
-class CreateTranscriptionResponseVerboseJsonSegment(BaseModel):
+class CreateTranscriptionResponseVerboseJSONSegment(BaseModel):
     id: int
     """Unique identifier of the segment."""
 
@@ -63,7 +63,7 @@ class CreateTranscriptionResponseVerboseJsonSegment(BaseModel):
     """Array of token IDs for the text content."""
 
 
-class CreateTranscriptionResponseVerboseJsonUsage(BaseModel):
+class CreateTranscriptionResponseVerboseJSONUsage(BaseModel):
     seconds: float
     """Duration of the input audio in seconds."""
 
@@ -71,7 +71,7 @@ class CreateTranscriptionResponseVerboseJsonUsage(BaseModel):
     """The type of the usage object. Always `duration` for this variant."""
 
 
-class CreateTranscriptionResponseVerboseJsonWord(BaseModel):
+class CreateTranscriptionResponseVerboseJSONWord(BaseModel):
     end: float
     """End time of the word in seconds."""
 
@@ -82,7 +82,7 @@ class CreateTranscriptionResponseVerboseJsonWord(BaseModel):
     """The text content of the word."""
 
 
-class CreateTranscriptionResponseVerboseJson(BaseModel):
+class CreateTranscriptionResponseVerboseJSON(BaseModel):
     duration: float
     """The duration of the input audio."""
 
@@ -92,17 +92,17 @@ class CreateTranscriptionResponseVerboseJson(BaseModel):
     text: str
     """The transcribed text."""
 
-    segments: Optional[List[CreateTranscriptionResponseVerboseJsonSegment]] = None
+    segments: Optional[List[CreateTranscriptionResponseVerboseJSONSegment]] = None
     """Segments of the transcribed text and their corresponding details."""
 
-    usage: Optional[CreateTranscriptionResponseVerboseJsonUsage] = None
+    usage: Optional[CreateTranscriptionResponseVerboseJSONUsage] = None
     """Usage statistics for models billed by audio input duration."""
 
-    words: Optional[List[CreateTranscriptionResponseVerboseJsonWord]] = None
+    words: Optional[List[CreateTranscriptionResponseVerboseJSONWord]] = None
     """Extracted words and their corresponding timestamps."""
 
 
-class CreateTranscriptionResponseJsonLogprob(BaseModel):
+class CreateTranscriptionResponseJSONLogprob(BaseModel):
     token: Optional[str] = None
     """The token in the transcription."""
 
@@ -113,7 +113,7 @@ class CreateTranscriptionResponseJsonLogprob(BaseModel):
     """The log probability of the token."""
 
 
-class CreateTranscriptionResponseJsonUsageTranscriptTextUsageTokensInputTokenDetails(BaseModel):
+class CreateTranscriptionResponseJSONUsageTranscriptTextUsageTokensInputTokenDetails(BaseModel):
     audio_tokens: Optional[int] = None
     """Number of audio tokens billed for this request."""
 
@@ -121,7 +121,7 @@ class CreateTranscriptionResponseJsonUsageTranscriptTextUsageTokensInputTokenDet
     """Number of text tokens billed for this request."""
 
 
-class CreateTranscriptionResponseJsonUsageTranscriptTextUsageTokens(BaseModel):
+class CreateTranscriptionResponseJSONUsageTranscriptTextUsageTokens(BaseModel):
     input_tokens: int
     """Number of input tokens billed for this request."""
 
@@ -134,11 +134,11 @@ class CreateTranscriptionResponseJsonUsageTranscriptTextUsageTokens(BaseModel):
     type: Literal["tokens"]
     """The type of the usage object. Always `tokens` for this variant."""
 
-    input_token_details: Optional[CreateTranscriptionResponseJsonUsageTranscriptTextUsageTokensInputTokenDetails] = None
+    input_token_details: Optional[CreateTranscriptionResponseJSONUsageTranscriptTextUsageTokensInputTokenDetails] = None
     """Details about the input tokens billed for this request."""
 
 
-class CreateTranscriptionResponseJsonUsageTranscriptTextUsageDuration(BaseModel):
+class CreateTranscriptionResponseJSONUsageTranscriptTextUsageDuration(BaseModel):
     seconds: float
     """Duration of the input audio in seconds."""
 
@@ -146,28 +146,28 @@ class CreateTranscriptionResponseJsonUsageTranscriptTextUsageDuration(BaseModel)
     """The type of the usage object. Always `duration` for this variant."""
 
 
-CreateTranscriptionResponseJsonUsage: TypeAlias = Annotated[
+CreateTranscriptionResponseJSONUsage: TypeAlias = Annotated[
     Union[
-        CreateTranscriptionResponseJsonUsageTranscriptTextUsageTokens,
-        CreateTranscriptionResponseJsonUsageTranscriptTextUsageDuration,
+        CreateTranscriptionResponseJSONUsageTranscriptTextUsageTokens,
+        CreateTranscriptionResponseJSONUsageTranscriptTextUsageDuration,
     ],
     PropertyInfo(discriminator="type"),
 ]
 
 
-class CreateTranscriptionResponseJson(BaseModel):
+class CreateTranscriptionResponseJSON(BaseModel):
     text: str
     """The transcribed text."""
 
-    logprobs: Optional[List[CreateTranscriptionResponseJsonLogprob]] = None
+    logprobs: Optional[List[CreateTranscriptionResponseJSONLogprob]] = None
     """The log probabilities of the tokens in the transcription.
 
     Only returned with the models `gpt-4o-transcribe` and `gpt-4o-mini-transcribe`
     if `logprobs` is added to the `include` array.
     """
 
-    usage: Optional[CreateTranscriptionResponseJsonUsage] = None
+    usage: Optional[CreateTranscriptionResponseJSONUsage] = None
     """Token usage statistics for the request."""
 
 
-TranscriptionCreateResponse: TypeAlias = Union[CreateTranscriptionResponseVerboseJson, CreateTranscriptionResponseJson]
+TranscriptionCreateResponse: TypeAlias = Union[CreateTranscriptionResponseVerboseJSON, CreateTranscriptionResponseJSON]
