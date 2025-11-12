@@ -93,7 +93,7 @@ class TestCompletions:
             presence_penalty=-0.5,
             prompt_cache_key="prompt_cache_key",
             reasoning_effort="medium",
-            response_format={"type": "bar"},
+            response_format={"type": "text"},
             safety_identifier="safety_identifier",
             safety_settings=[
                 {
@@ -235,7 +235,7 @@ class TestCompletions:
             presence_penalty=-0.5,
             prompt_cache_key="prompt_cache_key",
             reasoning_effort="medium",
-            response_format={"type": "bar"},
+            response_format={"type": "text"},
             safety_identifier="safety_identifier",
             safety_settings=[
                 {
@@ -381,7 +381,7 @@ class TestAsyncCompletions:
             presence_penalty=-0.5,
             prompt_cache_key="prompt_cache_key",
             reasoning_effort="medium",
-            response_format={"type": "bar"},
+            response_format={"type": "text"},
             safety_identifier="safety_identifier",
             safety_settings=[
                 {
@@ -523,7 +523,7 @@ class TestAsyncCompletions:
             presence_penalty=-0.5,
             prompt_cache_key="prompt_cache_key",
             reasoning_effort="medium",
-            response_format={"type": "bar"},
+            response_format={"type": "text"},
             safety_identifier="safety_identifier",
             safety_settings=[
                 {
