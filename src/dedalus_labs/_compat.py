@@ -143,7 +143,7 @@ def model_dump(
     if (not PYDANTIC_V1) or hasattr(model, "model_dump"):
         return model.model_dump(
             mode=mode,
-            by_alias=True,  # Always use aliases for API serialization
+            by_alias=True,
             exclude=exclude,
             exclude_unset=exclude_unset,
             exclude_defaults=exclude_defaults,
@@ -153,7 +153,7 @@ def model_dump(
     return cast(
         "dict[str, Any]",
         model.dict(  # pyright: ignore[reportDeprecated, reportUnnecessaryCast]
-            by_alias=True,  # Always use aliases for API serialization
+            by_alias=True,
             exclude=exclude,
             exclude_unset=exclude_unset,
             exclude_defaults=exclude_defaults,
@@ -174,11 +174,11 @@ def model_parse_json(model: type[_ModelT], data: str | bytes) -> _ModelT:
     return model.model_validate_json(data)
 
 
-def model_json_schema(model: type[pydantic.BaseModel], by_alias: bool = True) -> dict[str, Any]:
+def model_json_schema(model: type[_ModelT]) -> dict[str, Any]:
     """Get JSON schema from Pydantic model."""
     if PYDANTIC_V1:
-        return model.schema(by_alias=by_alias)  # pyright: ignore[reportDeprecated]
-    return model.model_json_schema(by_alias=by_alias)
+        return model.schema()  # pyright: ignore[reportDeprecated]
+    return model.model_json_schema()
 
 
 # generic models
