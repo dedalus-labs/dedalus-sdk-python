@@ -11,7 +11,9 @@ import httpx
 from . import _exceptions
 from ._qs import Querystring
 from ._types import (
+    Body,
     Omit,
+    Query,
     Headers,
     Timeout,
     NotGiven,
@@ -22,16 +24,24 @@ from ._types import (
 )
 from ._utils import is_given, get_async_library
 from ._version import __version__
-from .resources import root, health, images, models, embeddings
+from ._response import (
+    to_raw_response_wrapper,
+    to_streamed_response_wrapper,
+    async_to_raw_response_wrapper,
+    async_to_streamed_response_wrapper,
+)
+from .resources import health, images, models, embeddings
 from ._streaming import Stream as Stream, AsyncStream as AsyncStream
 from ._exceptions import APIStatusError
 from ._base_client import (
     DEFAULT_MAX_RETRIES,
     SyncAPIClient,
     AsyncAPIClient,
+    make_request_options,
 )
 from .resources.chat import chat
 from .resources.audio import audio
+from .types.get_response import GetResponse
 
 __all__ = [
     "ENVIRONMENTS",
@@ -52,7 +62,6 @@ ENVIRONMENTS: Dict[str, str] = {
 
 
 class Dedalus(SyncAPIClient):
-    root: root.RootResource
     health: health.HealthResource
     models: models.ModelsResource
     embeddings: embeddings.EmbeddingsResource
@@ -64,7 +73,11 @@ class Dedalus(SyncAPIClient):
 
     # client options
     api_key: str | None
+    x_api_key: str | None
     organization: str | None
+    provider: str | None
+    provider_key: str | None
+    provider_model: str | None
 
     _environment: Literal["production", "development"] | NotGiven
 
@@ -72,7 +85,11 @@ class Dedalus(SyncAPIClient):
         self,
         *,
         api_key: str | None = None,
+        x_api_key: str | None = None,
         organization: str | None = None,
+        provider: str | None = None,
+        provider_key: str | None = None,
+        provider_model: str | None = None,
         environment: Literal["production", "development"] | NotGiven = not_given,
         base_url: str | httpx.URL | None | NotGiven = not_given,
         timeout: float | Timeout | None | NotGiven = not_given,
@@ -97,15 +114,35 @@ class Dedalus(SyncAPIClient):
 
         This automatically infers the following arguments from their corresponding environment variables if they are not provided:
         - `api_key` from `DEDALUS_API_KEY`
+        - `x_api_key` from `DEDALUS_X_API_KEY`
         - `organization` from `DEDALUS_ORG_ID`
+        - `provider` from `DEDALUS_PROVIDER`
+        - `provider_key` from `DEDALUS_PROVIDER_KEY`
+        - `provider_model` from `DEDALUS_PROVIDER_MODEL`
         """
         if api_key is None:
             api_key = os.environ.get("DEDALUS_API_KEY")
         self.api_key = api_key
 
+        if x_api_key is None:
+            x_api_key = os.environ.get("DEDALUS_X_API_KEY")
+        self.x_api_key = x_api_key
+
         if organization is None:
             organization = os.environ.get("DEDALUS_ORG_ID")
         self.organization = organization
+
+        if provider is None:
+            provider = os.environ.get("DEDALUS_PROVIDER")
+        self.provider = provider
+
+        if provider_key is None:
+            provider_key = os.environ.get("DEDALUS_PROVIDER_KEY")
+        self.provider_key = provider_key
+
+        if provider_model is None:
+            provider_model = os.environ.get("DEDALUS_PROVIDER_MODEL")
+        self.provider_model = provider_model
 
         self._environment = environment
 
@@ -148,7 +185,6 @@ class Dedalus(SyncAPIClient):
 
         self._default_stream_cls = Stream
 
-        self.root = root.RootResource(self)
         self.health = health.HealthResource(self)
         self.models = models.ModelsResource(self)
         self.embeddings = embeddings.EmbeddingsResource(self)
@@ -166,10 +202,21 @@ class Dedalus(SyncAPIClient):
     @property
     @override
     def auth_headers(self) -> dict[str, str]:
+        return {**self._bearer, **self._api_key_auth}
+
+    @property
+    def _bearer(self) -> dict[str, str]:
         api_key = self.api_key
         if api_key is None:
             return {}
         return {"Authorization": f"Bearer {api_key}"}
+
+    @property
+    def _api_key_auth(self) -> dict[str, str]:
+        x_api_key = self.x_api_key
+        if x_api_key is None:
+            return {}
+        return {"x-api-key": x_api_key}
 
     @property
     @override
@@ -179,6 +226,8 @@ class Dedalus(SyncAPIClient):
             "X-Stainless-Async": "false",
             "User-Agent": "Dedalus-SDK",
             "X-SDK-Version": "1.0.0",
+            "X-Provider": self.provider if self.provider is not None else Omit(),
+            "X-Provider-Key": self.provider_key if self.provider_key is not None else Omit(),
             **self._custom_headers,
         }
 
@@ -189,15 +238,24 @@ class Dedalus(SyncAPIClient):
         if isinstance(custom_headers.get("Authorization"), Omit):
             return
 
+        if self.x_api_key and headers.get("x-api-key"):
+            return
+        if isinstance(custom_headers.get("x-api-key"), Omit):
+            return
+
         raise TypeError(
-            '"Could not resolve authentication method. Expected the api_key to be set. Or for the `Authorization` headers to be explicitly omitted"'
+            '"Could not resolve authentication method. Expected either api_key or x_api_key to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted"'
         )
 
     def copy(
         self,
         *,
         api_key: str | None = None,
+        x_api_key: str | None = None,
         organization: str | None = None,
+        provider: str | None = None,
+        provider_key: str | None = None,
+        provider_model: str | None = None,
         environment: Literal["production", "development"] | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: float | Timeout | None | NotGiven = not_given,
@@ -233,7 +291,11 @@ class Dedalus(SyncAPIClient):
         http_client = http_client or self._client
         return self.__class__(
             api_key=api_key or self.api_key,
+            x_api_key=x_api_key or self.x_api_key,
             organization=organization or self.organization,
+            provider=provider or self.provider,
+            provider_key=provider_key or self.provider_key,
+            provider_model=provider_model or self.provider_model,
             base_url=base_url or self.base_url,
             environment=environment or self._environment,
             timeout=self.timeout if isinstance(timeout, NotGiven) else timeout,
@@ -247,6 +309,25 @@ class Dedalus(SyncAPIClient):
     # Alias for `copy` for nicer inline usage, e.g.
     # client.with_options(timeout=10).foo.create(...)
     with_options = copy
+
+    def get(
+        self,
+        *,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+    ) -> GetResponse:
+        """Root"""
+        return self.get(
+            "/",
+            options=make_request_options(
+                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+            ),
+            cast_to=GetResponse,
+        )
 
     @override
     def _make_status_error(
@@ -283,7 +364,6 @@ class Dedalus(SyncAPIClient):
 
 
 class AsyncDedalus(AsyncAPIClient):
-    root: root.AsyncRootResource
     health: health.AsyncHealthResource
     models: models.AsyncModelsResource
     embeddings: embeddings.AsyncEmbeddingsResource
@@ -295,7 +375,11 @@ class AsyncDedalus(AsyncAPIClient):
 
     # client options
     api_key: str | None
+    x_api_key: str | None
     organization: str | None
+    provider: str | None
+    provider_key: str | None
+    provider_model: str | None
 
     _environment: Literal["production", "development"] | NotGiven
 
@@ -303,7 +387,11 @@ class AsyncDedalus(AsyncAPIClient):
         self,
         *,
         api_key: str | None = None,
+        x_api_key: str | None = None,
         organization: str | None = None,
+        provider: str | None = None,
+        provider_key: str | None = None,
+        provider_model: str | None = None,
         environment: Literal["production", "development"] | NotGiven = not_given,
         base_url: str | httpx.URL | None | NotGiven = not_given,
         timeout: float | Timeout | None | NotGiven = not_given,
@@ -328,15 +416,35 @@ class AsyncDedalus(AsyncAPIClient):
 
         This automatically infers the following arguments from their corresponding environment variables if they are not provided:
         - `api_key` from `DEDALUS_API_KEY`
+        - `x_api_key` from `DEDALUS_X_API_KEY`
         - `organization` from `DEDALUS_ORG_ID`
+        - `provider` from `DEDALUS_PROVIDER`
+        - `provider_key` from `DEDALUS_PROVIDER_KEY`
+        - `provider_model` from `DEDALUS_PROVIDER_MODEL`
         """
         if api_key is None:
             api_key = os.environ.get("DEDALUS_API_KEY")
         self.api_key = api_key
 
+        if x_api_key is None:
+            x_api_key = os.environ.get("DEDALUS_X_API_KEY")
+        self.x_api_key = x_api_key
+
         if organization is None:
             organization = os.environ.get("DEDALUS_ORG_ID")
         self.organization = organization
+
+        if provider is None:
+            provider = os.environ.get("DEDALUS_PROVIDER")
+        self.provider = provider
+
+        if provider_key is None:
+            provider_key = os.environ.get("DEDALUS_PROVIDER_KEY")
+        self.provider_key = provider_key
+
+        if provider_model is None:
+            provider_model = os.environ.get("DEDALUS_PROVIDER_MODEL")
+        self.provider_model = provider_model
 
         self._environment = environment
 
@@ -379,7 +487,6 @@ class AsyncDedalus(AsyncAPIClient):
 
         self._default_stream_cls = AsyncStream
 
-        self.root = root.AsyncRootResource(self)
         self.health = health.AsyncHealthResource(self)
         self.models = models.AsyncModelsResource(self)
         self.embeddings = embeddings.AsyncEmbeddingsResource(self)
@@ -397,10 +504,21 @@ class AsyncDedalus(AsyncAPIClient):
     @property
     @override
     def auth_headers(self) -> dict[str, str]:
+        return {**self._bearer, **self._api_key_auth}
+
+    @property
+    def _bearer(self) -> dict[str, str]:
         api_key = self.api_key
         if api_key is None:
             return {}
         return {"Authorization": f"Bearer {api_key}"}
+
+    @property
+    def _api_key_auth(self) -> dict[str, str]:
+        x_api_key = self.x_api_key
+        if x_api_key is None:
+            return {}
+        return {"x-api-key": x_api_key}
 
     @property
     @override
@@ -410,6 +528,8 @@ class AsyncDedalus(AsyncAPIClient):
             "X-Stainless-Async": f"async:{get_async_library()}",
             "User-Agent": "Dedalus-SDK",
             "X-SDK-Version": "1.0.0",
+            "X-Provider": self.provider if self.provider is not None else Omit(),
+            "X-Provider-Key": self.provider_key if self.provider_key is not None else Omit(),
             **self._custom_headers,
         }
 
@@ -420,15 +540,24 @@ class AsyncDedalus(AsyncAPIClient):
         if isinstance(custom_headers.get("Authorization"), Omit):
             return
 
+        if self.x_api_key and headers.get("x-api-key"):
+            return
+        if isinstance(custom_headers.get("x-api-key"), Omit):
+            return
+
         raise TypeError(
-            '"Could not resolve authentication method. Expected the api_key to be set. Or for the `Authorization` headers to be explicitly omitted"'
+            '"Could not resolve authentication method. Expected either api_key or x_api_key to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted"'
         )
 
     def copy(
         self,
         *,
         api_key: str | None = None,
+        x_api_key: str | None = None,
         organization: str | None = None,
+        provider: str | None = None,
+        provider_key: str | None = None,
+        provider_model: str | None = None,
         environment: Literal["production", "development"] | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: float | Timeout | None | NotGiven = not_given,
@@ -464,7 +593,11 @@ class AsyncDedalus(AsyncAPIClient):
         http_client = http_client or self._client
         return self.__class__(
             api_key=api_key or self.api_key,
+            x_api_key=x_api_key or self.x_api_key,
             organization=organization or self.organization,
+            provider=provider or self.provider,
+            provider_key=provider_key or self.provider_key,
+            provider_model=provider_model or self.provider_model,
             base_url=base_url or self.base_url,
             environment=environment or self._environment,
             timeout=self.timeout if isinstance(timeout, NotGiven) else timeout,
@@ -478,6 +611,25 @@ class AsyncDedalus(AsyncAPIClient):
     # Alias for `copy` for nicer inline usage, e.g.
     # client.with_options(timeout=10).foo.create(...)
     with_options = copy
+
+    async def get(
+        self,
+        *,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+    ) -> GetResponse:
+        """Root"""
+        return await self.get(
+            "/",
+            options=make_request_options(
+                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
+            ),
+            cast_to=GetResponse,
+        )
 
     @override
     def _make_status_error(
@@ -515,7 +667,6 @@ class AsyncDedalus(AsyncAPIClient):
 
 class DedalusWithRawResponse:
     def __init__(self, client: Dedalus) -> None:
-        self.root = root.RootResourceWithRawResponse(client.root)
         self.health = health.HealthResourceWithRawResponse(client.health)
         self.models = models.ModelsResourceWithRawResponse(client.models)
         self.embeddings = embeddings.EmbeddingsResourceWithRawResponse(client.embeddings)
@@ -523,10 +674,13 @@ class DedalusWithRawResponse:
         self.images = images.ImagesResourceWithRawResponse(client.images)
         self.chat = chat.ChatResourceWithRawResponse(client.chat)
 
+        self.get = to_raw_response_wrapper(
+            client.get,
+        )
+
 
 class AsyncDedalusWithRawResponse:
     def __init__(self, client: AsyncDedalus) -> None:
-        self.root = root.AsyncRootResourceWithRawResponse(client.root)
         self.health = health.AsyncHealthResourceWithRawResponse(client.health)
         self.models = models.AsyncModelsResourceWithRawResponse(client.models)
         self.embeddings = embeddings.AsyncEmbeddingsResourceWithRawResponse(client.embeddings)
@@ -534,10 +688,13 @@ class AsyncDedalusWithRawResponse:
         self.images = images.AsyncImagesResourceWithRawResponse(client.images)
         self.chat = chat.AsyncChatResourceWithRawResponse(client.chat)
 
+        self.get = async_to_raw_response_wrapper(
+            client.get,
+        )
+
 
 class DedalusWithStreamedResponse:
     def __init__(self, client: Dedalus) -> None:
-        self.root = root.RootResourceWithStreamingResponse(client.root)
         self.health = health.HealthResourceWithStreamingResponse(client.health)
         self.models = models.ModelsResourceWithStreamingResponse(client.models)
         self.embeddings = embeddings.EmbeddingsResourceWithStreamingResponse(client.embeddings)
@@ -545,16 +702,23 @@ class DedalusWithStreamedResponse:
         self.images = images.ImagesResourceWithStreamingResponse(client.images)
         self.chat = chat.ChatResourceWithStreamingResponse(client.chat)
 
+        self.get = to_streamed_response_wrapper(
+            client.get,
+        )
+
 
 class AsyncDedalusWithStreamedResponse:
     def __init__(self, client: AsyncDedalus) -> None:
-        self.root = root.AsyncRootResourceWithStreamingResponse(client.root)
         self.health = health.AsyncHealthResourceWithStreamingResponse(client.health)
         self.models = models.AsyncModelsResourceWithStreamingResponse(client.models)
         self.embeddings = embeddings.AsyncEmbeddingsResourceWithStreamingResponse(client.embeddings)
         self.audio = audio.AsyncAudioResourceWithStreamingResponse(client.audio)
         self.images = images.AsyncImagesResourceWithStreamingResponse(client.images)
         self.chat = chat.AsyncChatResourceWithStreamingResponse(client.chat)
+
+        self.get = async_to_streamed_response_wrapper(
+            client.get,
+        )
 
 
 Client = Dedalus

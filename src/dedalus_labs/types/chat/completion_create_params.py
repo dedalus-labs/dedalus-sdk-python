@@ -6,9 +6,8 @@ from typing import Dict, Union, Iterable, Optional
 from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
 from ..._types import SequenceNotStr
-from .model_id import ModelID
-from .models_param import ModelsParam
 from ..shared_params.dedalus_model import DedalusModel
+from ..shared_params.dedalus_model_choice import DedalusModelChoice
 from ..shared_params.response_format_text import ResponseFormatText
 from ..shared_params.response_format_json_object import ResponseFormatJSONObject
 from ..shared_params.response_format_json_schema import ResponseFormatJSONSchema
@@ -232,7 +231,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
 
     Use {'type': 'json_schema', 'json_schema': {...}} for structured outputs or
     {'type': 'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed
-    models honour this field; Anthropic and Google requests will return an
+    models honor this field; Anthropic and Google requests will return an
     invalid_request_error if it is supplied.
     """
 
@@ -365,7 +364,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     """
 
 
-Model: TypeAlias = Union[ModelID, DedalusModel, ModelsParam]
+Model: TypeAlias = Union[str, DedalusModel, SequenceNotStr[DedalusModelChoice]]
 
 ResponseFormat: TypeAlias = Union[ResponseFormatText, ResponseFormatJSONObject, ResponseFormatJSONSchema]
 

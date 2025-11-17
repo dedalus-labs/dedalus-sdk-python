@@ -11,9 +11,9 @@ from .shared import (
     ResponseFormatJSONObject as ResponseFormatJSONObject,
     ResponseFormatJSONSchema as ResponseFormatJSONSchema,
 )
+from .get_response import GetResponse as GetResponse
 from .images_response import ImagesResponse as ImagesResponse
 from .image_edit_params import ImageEditParams as ImageEditParams
-from .root_get_response import RootGetResponse as RootGetResponse
 from .list_models_response import ListModelsResponse as ListModelsResponse
 from .health_check_response import HealthCheckResponse as HealthCheckResponse
 from .image_generate_params import ImageGenerateParams as ImageGenerateParams
