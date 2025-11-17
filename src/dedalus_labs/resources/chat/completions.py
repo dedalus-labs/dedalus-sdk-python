@@ -288,7 +288,7 @@ class CompletionsResource(SyncAPIResource):
               An object specifying the format that the model must output. Use {'type':
               'json_schema', 'json_schema': {...}} for structured outputs or {'type':
               'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed models
-              honour this field; Anthropic and Google requests will return an
+              honor this field; Anthropic and Google requests will return an
               invalid_request_error if it is supplied.
 
           safety_identifier: Stable identifier used to help detect users who might violate OpenAI usage
@@ -617,7 +617,7 @@ class CompletionsResource(SyncAPIResource):
               An object specifying the format that the model must output. Use {'type':
               'json_schema', 'json_schema': {...}} for structured outputs or {'type':
               'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed models
-              honour this field; Anthropic and Google requests will return an
+              honor this field; Anthropic and Google requests will return an
               invalid_request_error if it is supplied.
 
           safety_identifier: Stable identifier used to help detect users who might violate OpenAI usage
@@ -943,7 +943,7 @@ class CompletionsResource(SyncAPIResource):
               An object specifying the format that the model must output. Use {'type':
               'json_schema', 'json_schema': {...}} for structured outputs or {'type':
               'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed models
-              honour this field; Anthropic and Google requests will return an
+              honor this field; Anthropic and Google requests will return an
               invalid_request_error if it is supplied.
 
           safety_identifier: Stable identifier used to help detect users who might violate OpenAI usage
@@ -1424,7 +1424,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
               An object specifying the format that the model must output. Use {'type':
               'json_schema', 'json_schema': {...}} for structured outputs or {'type':
               'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed models
-              honour this field; Anthropic and Google requests will return an
+              honor this field; Anthropic and Google requests will return an
               invalid_request_error if it is supplied.
 
           safety_identifier: Stable identifier used to help detect users who might violate OpenAI usage
@@ -1753,7 +1753,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
               An object specifying the format that the model must output. Use {'type':
               'json_schema', 'json_schema': {...}} for structured outputs or {'type':
               'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed models
-              honour this field; Anthropic and Google requests will return an
+              honor this field; Anthropic and Google requests will return an
               invalid_request_error if it is supplied.
 
           safety_identifier: Stable identifier used to help detect users who might violate OpenAI usage
@@ -2079,7 +2079,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
               An object specifying the format that the model must output. Use {'type':
               'json_schema', 'json_schema': {...}} for structured outputs or {'type':
               'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed models
-              honour this field; Anthropic and Google requests will return an
+              honor this field; Anthropic and Google requests will return an
               invalid_request_error if it is supplied.
 
           safety_identifier: Stable identifier used to help detect users who might violate OpenAI usage
