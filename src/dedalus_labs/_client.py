@@ -68,6 +68,10 @@ class Dedalus(SyncAPIClient):
 
     _environment: Literal["production", "development"] | NotGiven
 
+    # JWT caching for token exchange
+    _jwt: str | None
+    _jwt_expires_at: float | None
+
     def __init__(
         self,
         *,
@@ -148,6 +152,10 @@ class Dedalus(SyncAPIClient):
 
         self._default_stream_cls = Stream
 
+        # Initialize JWT caching for token exchange
+        self._jwt = None
+        self._jwt_expires_at = None
+
         self.root = root.RootResource(self)
         self.health = health.HealthResource(self)
         self.models = models.ModelsResource(self)
@@ -163,13 +171,71 @@ class Dedalus(SyncAPIClient):
     def qs(self) -> Querystring:
         return Querystring(array_format="comma")
 
+    def _exchange_api_key_for_jwt(self) -> str:
+        """Exchange API key for JWT access token using RFC 8693 token exchange.
+
+        Returns:
+            JWT access token string
+
+        Raises:
+            Exception: If token exchange fails
+        """
+        import time
+
+        if self.api_key is None:
+            raise ValueError("API key is required for token exchange")
+
+        auth_server_url = os.environ.get("DEDALUS_AUTH_SERVER_URL", "https://as.dedaluslabs.ai")
+
+        response = httpx.post(
+            f"{auth_server_url}/oauth2/token",
+            data={
+                "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
+                "subject_token": self.api_key,
+                "subject_token_type": "urn:dedalus:params:oauth:token-type:api-key",
+                "scope": "mcp:tools:call mcp:servers:read",
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+
+        if response.status_code != 200:
+            raise Exception(f"Token exchange failed: {response.status_code} {response.text}")
+
+        token_data = response.json()
+        access_token = token_data["access_token"]
+        expires_in = token_data.get("expires_in", 900)
+
+        # Cache JWT and expiration (with 60s buffer)
+        self._jwt = access_token
+        self._jwt_expires_at = time.time() + expires_in - 60
+
+        return access_token
+
+    def _get_or_refresh_jwt(self) -> str:
+        """Get cached JWT or exchange API key for a new one if expired.
+
+        Returns:
+            Valid JWT access token
+        """
+        import time
+
+        # Check if we have a valid cached JWT
+        if self._jwt and self._jwt_expires_at and time.time() < self._jwt_expires_at:
+            return self._jwt
+
+        # JWT expired or not cached, exchange API key
+        return self._exchange_api_key_for_jwt()
+
     @property
     @override
     def auth_headers(self) -> dict[str, str]:
         api_key = self.api_key
         if api_key is None:
             return {}
-        return {"Authorization": f"Bearer {api_key}"}
+
+        # Exchange API key for JWT and use JWT for authentication
+        jwt = self._get_or_refresh_jwt()
+        return {"Authorization": f"Bearer {jwt}"}
 
     @property
     @override
@@ -299,6 +365,10 @@ class AsyncDedalus(AsyncAPIClient):
 
     _environment: Literal["production", "development"] | NotGiven
 
+    # JWT caching for token exchange
+    _jwt: str | None
+    _jwt_expires_at: float | None
+
     def __init__(
         self,
         *,
@@ -379,6 +449,10 @@ class AsyncDedalus(AsyncAPIClient):
 
         self._default_stream_cls = AsyncStream
 
+        # Initialize JWT caching for token exchange
+        self._jwt = None
+        self._jwt_expires_at = None
+
         self.root = root.AsyncRootResource(self)
         self.health = health.AsyncHealthResource(self)
         self.models = models.AsyncModelsResource(self)
@@ -394,13 +468,75 @@ class AsyncDedalus(AsyncAPIClient):
     def qs(self) -> Querystring:
         return Querystring(array_format="comma")
 
+    def _exchange_api_key_for_jwt(self) -> str:
+        """Exchange API key for JWT access token using RFC 8693 token exchange.
+
+        Note: Uses synchronous HTTP client even in async class because auth_headers
+        is a synchronous property. Token exchange is infrequent (every 15 min).
+
+        Returns:
+            JWT access token string
+
+        Raises:
+            Exception: If token exchange fails
+        """
+        import time
+
+        if self.api_key is None:
+            raise ValueError("API key is required for token exchange")
+
+        auth_server_url = os.environ.get("DEDALUS_AUTH_SERVER_URL", "https://as.dedaluslabs.ai")
+
+        # Use synchronous httpx client for token exchange
+        response = httpx.post(
+            f"{auth_server_url}/oauth2/token",
+            data={
+                "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
+                "subject_token": self.api_key,
+                "subject_token_type": "urn:dedalus:params:oauth:token-type:api-key",
+                "scope": "mcp:tools:call mcp:servers:read",
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+
+        if response.status_code != 200:
+            raise Exception(f"Token exchange failed: {response.status_code} {response.text}")
+
+        token_data = response.json()
+        access_token = token_data["access_token"]
+        expires_in = token_data.get("expires_in", 900)
+
+        # Cache JWT and expiration (with 60s buffer)
+        self._jwt = access_token
+        self._jwt_expires_at = time.time() + expires_in - 60
+
+        return access_token
+
+    def _get_or_refresh_jwt(self) -> str:
+        """Get cached JWT or exchange API key for a new one if expired.
+
+        Returns:
+            Valid JWT access token
+        """
+        import time
+
+        # Check if we have a valid cached JWT
+        if self._jwt and self._jwt_expires_at and time.time() < self._jwt_expires_at:
+            return self._jwt
+
+        # JWT expired or not cached, exchange API key
+        return self._exchange_api_key_for_jwt()
+
     @property
     @override
     def auth_headers(self) -> dict[str, str]:
         api_key = self.api_key
         if api_key is None:
             return {}
-        return {"Authorization": f"Bearer {api_key}"}
+
+        # Exchange API key for JWT and use JWT for authentication
+        jwt = self._get_or_refresh_jwt()
+        return {"Authorization": f"Bearer {jwt}"}
 
     @property
     @override
