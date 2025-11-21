@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0 (2025-11-21)
+
+Full Changelog: [v0.1.1...v0.2.0](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.1...v0.2.0)
+
+### Features
+
+* **api:** config update for dedalus-ai/dev ([197d11b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/197d11bf57da500e05cde2861146da9e3ec278f3))
+
+
+### Chores
+
+* **internal:** codegen related update ([d288b0b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/d288b0b4f8098c0aab0d79d45f27fd7b7cd8d127))
+
 ## 0.1.1 (2025-11-12)
 
 Full Changelog: [v0.1.0...v0.1.1](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0...v0.1.1)
