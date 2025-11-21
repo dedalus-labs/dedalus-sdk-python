@@ -10,17 +10,17 @@ from dedalus_labs.types import (
 )
 ```
 
-# Root
+# Dedalus
 
 Types:
 
 ```python
-from dedalus_labs.types import RootGetResponse
+from dedalus_labs.types import GetResponse
 ```
 
 Methods:
 
-- <code title="get /">client.root.<a href="./src/dedalus_labs/resources/root.py">get</a>() -> <a href="./src/dedalus_labs/types/root_get_response.py">RootGetResponse</a></code>
+- <code title="get /">client.<a href="./src/dedalus_labs/_client.py">get</a>() -> <a href="./src/dedalus_labs/types/get_response.py">GetResponse</a></code>
 
 # Health
 
@@ -116,8 +116,6 @@ from dedalus_labs.types.chat import (
     ChatCompletionTokenLogprob,
     Completion,
     CompletionRequest,
-    ModelID,
-    Models,
     StreamChunk,
     TopLogprob,
 )

@@ -8,14 +8,6 @@ from .chat import (
     ChatResourceWithStreamingResponse,
     AsyncChatResourceWithStreamingResponse,
 )
-from .root import (
-    RootResource,
-    AsyncRootResource,
-    RootResourceWithRawResponse,
-    AsyncRootResourceWithRawResponse,
-    RootResourceWithStreamingResponse,
-    AsyncRootResourceWithStreamingResponse,
-)
 from .audio import (
     AudioResource,
     AsyncAudioResource,
@@ -58,12 +50,6 @@ from .embeddings import (
 )
 
 __all__ = [
-    "RootResource",
-    "AsyncRootResource",
-    "RootResourceWithRawResponse",
-    "AsyncRootResourceWithRawResponse",
-    "RootResourceWithStreamingResponse",
-    "AsyncRootResourceWithStreamingResponse",
     "HealthResource",
     "AsyncHealthResource",
     "HealthResourceWithRawResponse",

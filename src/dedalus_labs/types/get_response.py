@@ -2,8 +2,8 @@
 
 from .._models import BaseModel
 
-__all__ = ["RootGetResponse"]
+__all__ = ["GetResponse"]
 
 
-class RootGetResponse(BaseModel):
+class GetResponse(BaseModel):
     message: str

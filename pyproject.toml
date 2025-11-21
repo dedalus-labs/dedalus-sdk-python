@@ -1,6 +1,6 @@
 [project]
 name = "dedalus_labs"
-version = "0.1.1"
+version = "0.2.0"
 description = "The official Python library for the Dedalus API"
 dynamic = ["readme"]
 license = "MIT"
@@ -25,6 +25,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Operating System :: OS Independent",
   "Operating System :: POSIX",
   "Operating System :: MacOS",
