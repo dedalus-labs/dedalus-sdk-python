@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from typing_extensions import Literal, Required, TypedDict
+from typing_extensions import Literal, TypedDict
 
 __all__ = ["ResponseFormatText"]
 
 
 class ResponseFormatText(TypedDict, total=False):
-    type: Required[Literal["text"]]
-    """The type of response format being defined. Always `text`."""
+    type: Literal["text"]
