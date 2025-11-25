@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, Union, Iterable, Optional
+from typing import Dict, List, Union, Iterable, Optional
 from typing_extensions import Literal, overload
 
 import httpx
@@ -54,53 +54,55 @@ class CompletionsResource(SyncAPIResource):
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
         auto_execute_tools: bool | Omit = omit,
+        cached_content: Optional[str] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
-        disable_automatic_function_calling: Optional[bool] | Omit = omit,
+        disable_automatic_function_calling: bool | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
-        function_call: Union[str, Dict[str, object], None] | Omit = omit,
-        functions: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        function_call: Optional[Literal["auto", "none"]] | Omit = omit,
+        functions: Optional[Iterable[completion_create_params.Function]] | Omit = omit,
         generation_config: Optional[Dict[str, object]] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
-        input: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
-        instructions: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
         mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
-        messages: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
+        messages: Union[Iterable[completion_create_params.MessagesMessage], str, None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
-        modalities: Optional[SequenceNotStr[str]] | Omit = omit,
+        modalities: Optional[List[Literal["text", "audio"]]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
         n: Optional[int] | Omit = omit,
         parallel_tool_calls: Optional[bool] | Omit = omit,
-        prediction: Optional[Dict[str, object]] | Omit = omit,
+        prediction: Optional[completion_create_params.Prediction] | Omit = omit,
         presence_penalty: Optional[float] | Omit = omit,
         prompt_cache_key: Optional[str] | Omit = omit,
-        reasoning_effort: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        prompt_cache_retention: Optional[Literal["24h", "in-memory"]] | Omit = omit,
+        prompt_mode: Optional[Dict[str, object]] | Omit = omit,
+        reasoning_effort: Optional[Literal["high", "low", "medium", "minimal", "none"]] | Omit = omit,
         response_format: Optional[completion_create_params.ResponseFormat] | Omit = omit,
+        safe_prompt: Optional[bool] | Omit = omit,
         safety_identifier: Optional[str] | Omit = omit,
-        safety_settings: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        safety_settings: Optional[Iterable[completion_create_params.SafetySetting]] | Omit = omit,
         search_parameters: Optional[Dict[str, object]] | Omit = omit,
         seed: Optional[int] | Omit = omit,
-        service_tier: Optional[Literal["auto", "default"]] | Omit = omit,
-        stop: Optional[SequenceNotStr[str]] | Omit = omit,
+        service_tier: Optional[Literal["auto", "default", "flex", "priority", "scale", "standard_only"]] | Omit = omit,
+        stop: Union[str, SequenceNotStr[str], None] | Omit = omit,
         store: Optional[bool] | Omit = omit,
-        stream: Literal[False] | Omit = omit,
+        stream: Optional[Literal[False]] | Omit = omit,
         stream_options: Optional[Dict[str, object]] | Omit = omit,
-        system: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
+        system_instruction: Union[Dict[str, object], str, None] | Omit = omit,
         temperature: Optional[float] | Omit = omit,
         thinking: Optional[completion_create_params.Thinking] | Omit = omit,
-        tool_choice: Union[str, Dict[str, object], None] | Omit = omit,
+        tool_choice: Optional[completion_create_params.ToolChoice] | Omit = omit,
         tool_config: Optional[Dict[str, object]] | Omit = omit,
-        tools: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        tools: Optional[Iterable[completion_create_params.Tool]] | Omit = omit,
         top_k: Optional[int] | Omit = omit,
         top_logprobs: Optional[int] | Omit = omit,
         top_p: Optional[float] | Omit = omit,
         user: Optional[str] | Omit = omit,
-        verbosity: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        verbosity: Optional[Literal["high", "low", "medium"]] | Omit = omit,
         web_search_options: Optional[Dict[str, object]] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -113,19 +115,8 @@ class CompletionsResource(SyncAPIResource):
         """
         Create a chat completion.
 
-        Unified chat-completions endpoint that works across many model providers.
-        Supports optional MCP integration, multi-model routing with agentic handoffs,
-        server- or client-executed tools, and both streaming and non-streaming delivery.
-
-        Request body:
-
-        - messages: ordered list of chat turns.
-        - model: identifier or a list of identifiers for routing.
-        - tools: optional tool declarations available to the model.
-        - mcp_servers: optional list of MCP server slugs to enable during the run.
-        - stream: boolean to request incremental output.
-        - config: optional generation parameters (e.g., temperature, max_tokens,
-          metadata).
+        Generates a model response for the given conversation and configuration.
+        Supports OpenAI-compatible parameters and provider-specific extensions.
 
         Headers:
 
@@ -134,8 +125,8 @@ class CompletionsResource(SyncAPIResource):
 
         Behavior:
 
-        - If multiple models are supplied, the router may select or hand off across
-          them.
+        - If multiple models are supplied, the first one is used, and the agent may hand
+          off to another model.
         - Tools may be invoked on the server or signaled for the client to run.
         - Streaming responses emit incremental deltas; non-streaming returns a single
           object.
@@ -176,41 +167,51 @@ class CompletionsResource(SyncAPIResource):
 
         Args:
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
-              or a list for multi-model routing. Single model: 'openai/gpt-4',
-              'anthropic/claude-3-5-sonnet-20241022', 'openai/gpt-4o-mini', or a DedalusModel
-              instance. Multi-model routing: ['openai/gpt-4o-mini', 'openai/gpt-4',
-              'anthropic/claude-3-5-sonnet'] or list of DedalusModel objects - agent will
-              choose optimal model based on task complexity.
+              or a list for multi-model routing. Single model: 'openai/gpt-5',
+              'anthropic/claude-sonnet-4-5-20250929', 'google/gemini-3-pro-preview', or a
+              DedalusModel instance. Multi-model routing: ['openai/gpt-5',
+              'anthropic/claude-sonnet-4-5-20250929', 'google/gemini-3-pro-preview'] or list
+              of DedalusModel objects - agent will choose optimal model based on task
+              complexity.
 
           agent_attributes: Attributes for the agent itself, influencing behavior and model selection.
               Format: {'attribute': value}, where values are 0.0-1.0. Common attributes:
               'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
               values indicate stronger preference for that characteristic.
 
-          audio: Parameters for audio output. Required when requesting audio responses (for
-              example, modalities including 'audio').
+          audio: Parameters for audio output. Required when audio output is requested with
+              `modalities: ["audio"]`.
+              [Learn more](https://platform.openai.com/docs/guides/audio).
 
           auto_execute_tools: When False, skip server-side tool execution and return raw OpenAI-style
               tool_calls in the response.
 
-          deferred: xAI-specific parameter. If set to true, the request returns a request_id for
-              async completion retrieval via GET /v1/chat/deferred-completion/{request_id}.
+          cached_content: Optional. The name of the content
+              [cached](https://ai.google.dev/gemini-api/docs/caching) to use as context to
+              serve the prediction. Format: `cachedContents/{cachedContent}`
 
-          disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
-              the model returns function calls for the client to execute manually.
+          deferred: If set to `true`, the request returns a `request_id`. You can then get the
+              deferred response by GET `/v1/chat/deferred-completion/{request_id}`.
+
+          disable_automatic_function_calling: Google SDK control: disable automatic function calling. Agent workflows handle
+              tools manually.
 
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing the model's likelihood to
               repeat the same line verbatim.
 
-          function_call: Deprecated in favor of 'tool_choice'. Controls which function is called by the
-              model (none, auto, or specific name).
+          function_call: Deprecated in favor of `tool_choice`. Controls which (if any) function is called
+              by the model. `none` means the model will not call a function and instead
+              generates a message. `auto` means the model can pick between generating a
+              message or calling a function. Specifying a particular function via
+              `{"name": "my_function"}` forces the model to call that function. `none` is the
+              default when no functions are present. `auto` is the default if functions are
+              present.
 
-          functions: Deprecated in favor of 'tools'. Legacy list of function definitions the model
-              may generate JSON inputs for.
+          functions: Deprecated in favor of `tools`. A list of functions the model may generate JSON
+              inputs for.
 
-          generation_config: Google generationConfig object. Merged with auto-generated config. Use for
-              Google-specific params (candidateCount, responseMimeType, etc.).
+          generation_config: Generation parameters wrapper (Google-specific)
 
           guardrails: Guardrails to apply to the agent for input/output validation and safety checks.
               Reserved for future use - guardrails configuration format not yet finalized.
@@ -218,28 +219,26 @@ class CompletionsResource(SyncAPIResource):
           handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
               future use - handoff configuration format not yet finalized.
 
-          input: Convenience alias for Responses-style `input`. Used when `messages` is omitted
-              to provide the user prompt directly.
-
-          instructions: Convenience alias for Responses-style `instructions`. Takes precedence over
-              `system` and over system-role messages when provided.
-
           logit_bias: Modify the likelihood of specified tokens appearing in the completion. Accepts a
-              JSON object mapping token IDs (as strings) to bias values from -100 to 100. The
-              bias is added to the logits before sampling; values between -1 and 1 nudge
-              selection probability, while values like -100 or 100 effectively ban or require
-              a token.
+              JSON object that maps tokens (specified by their token ID in the tokenizer) to
+              an associated bias value from -100 to 100. Mathematically, the bias is added to
+              the logits generated by the model prior to sampling. The exact effect will vary
+              per model, but values between -1 and 1 should decrease or increase likelihood of
+              selection; values like -100 or 100 should result in a ban or exclusive selection
+              of the relevant token.
 
-          logprobs: Whether to return log probabilities of the output tokens. If true, returns the
-              log probabilities for each token in the response content.
+          logprobs: Whether to return log probabilities of the output tokens or not. If true,
+              returns the log probabilities of each output token returned in the `content` of
+              `message`.
 
           max_completion_tokens: An upper bound for the number of tokens that can be generated for a completion,
               including visible output and reasoning tokens.
 
-          max_tokens: The maximum number of tokens that can be generated in the chat completion. This
-              value can be used to control costs for text generated via API. This value is now
-              deprecated in favor of 'max_completion_tokens' and is not compatible with
-              o-series models.
+          max_tokens: Maximum number of tokens the model can generate in the completion. The total
+              token count (input + output) is limited by the model's context window. Setting
+              this prevents unexpectedly long responses and helps control costs. For newer
+              OpenAI models, use max_completion_tokens instead (more precise accounting). For
+              other providers, max_tokens remains the standard parameter name.
 
           max_turns: Maximum number of turns for agent execution before terminating (default: 10).
               Each turn represents one model inference cycle. Higher values allow more complex
@@ -254,111 +253,153 @@ class CompletionsResource(SyncAPIResource):
               which is treated as a single user message. Optional if `input` or `instructions`
               is provided.
 
-          metadata: Set of up to 16 key-value string pairs that can be attached to the request for
-              structured metadata.
+          metadata: Set of 16 key-value pairs that can be attached to an object. This can be useful
+              for storing additional information about the object in a structured format, and
+              querying for objects via API or the dashboard. Keys are strings with a maximum
+              length of 64 characters. Values are strings with a maximum length of 512
+              characters.
 
-          modalities: Output types you would like the model to generate. Most models default to
-              ['text']; some support ['text', 'audio'].
+          modalities: Output modalities. Most models generate text by default. Use ['text', 'audio']
+              for audio-capable models.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
               execution. Format: {'model_name': {'attribute': value}}, where values are
               0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
               'accuracy'. Used by agent to select optimal model based on task requirements.
 
-          n: How many chat completion choices to generate for each input message. Keep 'n' as
-              1 to minimize costs.
+          n: How many chat completion choices to generate for each input message. Note that
+              you will be charged based on the number of generated tokens across all of the
+              choices. Keep `n` as `1` to minimize costs.
 
-          parallel_tool_calls: Whether to enable parallel function calling during tool use.
+          parallel_tool_calls: Whether to enable parallel tool calls (Anthropic uses inverted polarity)
 
-          prediction: Configuration for predicted outputs. Improves response times when you already
-              know large portions of the response content.
+          prediction: Static predicted output content, such as the content of a text file that is
+              being regenerated.
 
           presence_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on
               whether they appear in the text so far, increasing the model's likelihood to
               talk about new topics.
 
-          prompt_cache_key: Used by OpenAI to cache responses for similar requests and optimize cache hit
-              rates. Replaces the legacy 'user' field for caching.
+          prompt_cache_key: Used by OpenAI to cache responses for similar requests to optimize your cache
+              hit rates. Replaces the `user` field.
+              [Learn more](https://platform.openai.com/docs/guides/prompt-caching).
 
-          reasoning_effort: Constrains effort on reasoning for supported reasoning models. Higher values use
-              more compute, potentially improving reasoning quality at the cost of latency and
-              tokens.
+          prompt_cache_retention: The retention policy for the prompt cache. Set to `24h` to enable extended
+              prompt caching, which keeps cached prefixes active for longer, up to a maximum
+              of 24 hours.
+              [Learn more](https://platform.openai.com/docs/guides/prompt-caching#prompt-cache-retention).
 
-          response_format:
-              An object specifying the format that the model must output. Use {'type':
-              'json_schema', 'json_schema': {...}} for structured outputs or {'type':
-              'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed models
-              honor this field; Anthropic and Google requests will return an
-              invalid_request_error if it is supplied.
+          prompt_mode: Allows toggling between the reasoning mode and no system prompt. When set to
+              `reasoning` the system prompt for reasoning models will be used.
 
-          safety_identifier: Stable identifier used to help detect users who might violate OpenAI usage
-              policies. Consider hashing end-user identifiers before sending.
+          reasoning_effort: Constrains effort on reasoning for
+              [reasoning models](https://platform.openai.com/docs/guides/reasoning). Currently
+              supported values are `none`, `minimal`, `low`, `medium`, and `high`. Reducing
+              reasoning effort can result in faster responses and fewer tokens used on
+              reasoning in a response. - `gpt-5.1` defaults to `none`, which does not perform
+              reasoning. The supported reasoning values for `gpt-5.1` are `none`, `low`,
+              `medium`, and `high`. Tool calls are supported for all reasoning values in
+              gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort, and
+              do not support `none`. - The `gpt-5-pro` model defaults to (and only supports)
+              `high` reasoning effort.
 
-          safety_settings: Google safety settings (harm categories and thresholds).
+          response_format: An object specifying the format that the model must output. Setting to
+              `{ "type": "json_schema", "json_schema": {...} }` enables Structured Outputs
+              which ensures the model will match your supplied JSON schema. Learn more in the
+              [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
+              Setting to `{ "type": "json_object" }` enables the older JSON mode, which
+              ensures the message the model generates is valid JSON. Using `json_schema` is
+              preferred for models that support it.
 
-          search_parameters: xAI-specific parameter for configuring web search data acquisition. If not set,
-              no data will be acquired by the model.
+          safe_prompt: Whether to inject a safety prompt before all conversations.
 
-          seed: If specified, system will make a best effort to sample deterministically.
-              Determinism is not guaranteed for the same seed across different models or API
-              versions.
+          safety_identifier: A stable identifier used to help detect users of your application that may be
+              violating OpenAI's usage policies. The IDs should be a string that uniquely
+              identifies each user. We recommend hashing their username or email address, in
+              order to avoid sending us any identifying information.
+              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
 
-          service_tier: Specifies the processing tier used for the request. 'auto' uses project
-              defaults, while 'default' forces standard pricing and performance.
+          safety_settings: Safety/content filtering settings (Google-specific)
 
-          stop: Not supported with latest reasoning models 'o3' and 'o4-mini'.
+          search_parameters: Set the parameters to be used for searched data. If not set, no data will be
+              acquired by the model.
 
-                      Up to 4 sequences where the API will stop generating further tokens; the returned text will not contain the stop sequence.
+          seed: Random seed for deterministic output
 
-          store: Whether to store the output of this chat completion request for OpenAI model
-              distillation or eval products. Image inputs over 8MB are dropped if storage is
-              enabled.
+          service_tier: Service tier for request processing
+
+          stop: Not supported with latest reasoning models 'o3' and 'o4-mini'. Up to 4 sequences
+              where the API will stop generating further tokens; the returned text will not
+              contain the stop sequence.
+
+          store: Whether or not to store the output of this chat completion request for use in
+              our [model distillation](https://platform.openai.com/docs/guides/distillation)
+              or [evals](https://platform.openai.com/docs/guides/evals) products. Supports
+              text and image inputs. Note: image inputs over 8MB will be dropped.
 
           stream: If true, the model response data is streamed to the client as it is generated
               using Server-Sent Events.
 
-          stream_options: Options for streaming responses. Only set when 'stream' is true (supports
-              'include_usage' and 'include_obfuscation').
+          stream_options: Options for streaming response. Only set this when you set `stream: true`.
 
-          system: System prompt/instructions. Anthropic: pass-through. Google: converted to
-              systemInstruction. OpenAI: extracted from messages.
+          system_instruction: System-level instructions defining the assistant's behavior, role, and
+              constraints. Sets the context and personality for the entire conversation.
+              Different from user/assistant messages as it provides meta-instructions about
+              how to respond rather than conversation content. OpenAI: Provided as system role
+              message in messages array. Google: Top-level systemInstruction field (adapter
+              extracts from messages). Anthropic: Top-level system parameter (adapter extracts
+              from messages). Accepts both string and structured object formats depending on
+              provider capabilities.
 
-          temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8 make
-              the output more random, while lower values like 0.2 make it more focused and
-              deterministic. We generally recommend altering this or 'top_p' but not both.
+          temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8 will
+              make the output more random, while lower values like 0.2 will make it more
+              focused and deterministic. We generally recommend altering this or top_p but not
+              both.
 
-          thinking: Extended thinking configuration (Anthropic only). Enables thinking blocks
-              showing reasoning process. Requires min 1,024 token budget.
+          thinking: Extended thinking configuration (Anthropic-specific)
 
-          tool_choice: Controls which (if any) tool is called by the model. 'none' stops tool calling,
-              'auto' lets the model decide, and 'required' forces at least one tool
-              invocation. Specific tool payloads force that tool.
+          tool_choice: Controls which (if any) tool is called by the model. `none` means the model will
+              not call any tool and instead generates a message. `auto` means the model can
+              pick between generating a message or calling one or more tools. `required` means
+              the model must call one or more tools. Specifying a particular tool via
+              `{"type": "function", "function": {"name": "my_function"}}` forces the model to
+              call that tool. `none` is the default when no tools are present. `auto` is the
+              default if tools are present.
 
-          tool_config: Google tool configuration (function calling mode, etc.).
+          tool_config: Tool calling configuration (Google-specific)
 
-          tools: A list of tools the model may call. Supports OpenAI function tools and custom
-              tools; use 'mcp_servers' for Dedalus-managed server-side tools.
+          tools: A list of tools the model may call. You can provide either custom tools or
+              function tools. All providers support tools. Adapters handle translation to
+              provider-specific formats.
 
-          top_k: Top-k sampling. Anthropic: pass-through. Google: injected into
-              generationConfig.topK.
+          top_k: Top-k sampling parameter limiting token selection to k most likely candidates.
+              Only considers the top k highest probability tokens at each generation step,
+              setting all other tokens' probabilities to zero. Reduces tail probability mass.
+              Helps prevent selection of highly unlikely tokens, improving output coherence.
+              Supported by Google and Anthropic; not available in OpenAI's API.
 
-          top_logprobs: An integer between 0 and 20 specifying how many of the most likely tokens to
-              return at each position, with log probabilities. Requires 'logprobs' to be true.
+          top_logprobs: An integer between 0 and 20 specifying the number of most likely tokens to
+              return at each token position, each with an associated log probability.
+              `logprobs` must be set to `true` if this parameter is used.
 
           top_p: An alternative to sampling with temperature, called nucleus sampling, where the
               model considers the results of the tokens with top_p probability mass. So 0.1
               means only the tokens comprising the top 10% probability mass are considered. We
-              generally recommend altering this or 'temperature' but not both.
+              generally recommend altering this or temperature but not both.
 
-          user: Stable identifier for your end-users. Helps OpenAI detect and prevent abuse and
-              may boost cache hit rates. This field is being replaced by 'safety_identifier'
-              and 'prompt_cache_key'.
+          user: This field is being replaced by `safety_identifier` and `prompt_cache_key`. Use
+              `prompt_cache_key` instead to maintain caching optimizations. A stable
+              identifier for your end-users. Used to boost cache hit rates by better bucketing
+              similar requests and to help OpenAI detect and prevent abuse.
+              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
 
-          verbosity: Constrains the verbosity of the model's response. Lower values produce concise
-              answers, higher values allow more detail.
+          verbosity: Constrains the verbosity of the model's response. Lower values will result in
+              more concise responses, while higher values will result in more verbose
+              responses. Currently supported values are `low`, `medium`, and `high`.
 
-          web_search_options: Configuration for OpenAI's web search tool. Learn more at
-              https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat.
+          web_search_options: This tool searches the web for relevant results to use in a response. Learn more
+              about the
+              [web search tool](https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat).
 
           extra_headers: Send extra headers
 
@@ -381,52 +422,54 @@ class CompletionsResource(SyncAPIResource):
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
         auto_execute_tools: bool | Omit = omit,
+        cached_content: Optional[str] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
-        disable_automatic_function_calling: Optional[bool] | Omit = omit,
+        disable_automatic_function_calling: bool | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
-        function_call: Union[str, Dict[str, object], None] | Omit = omit,
-        functions: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        function_call: Optional[Literal["auto", "none"]] | Omit = omit,
+        functions: Optional[Iterable[completion_create_params.Function]] | Omit = omit,
         generation_config: Optional[Dict[str, object]] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
-        input: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
-        instructions: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
         mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
-        messages: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
+        messages: Union[Iterable[completion_create_params.MessagesMessage], str, None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
-        modalities: Optional[SequenceNotStr[str]] | Omit = omit,
+        modalities: Optional[List[Literal["text", "audio"]]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
         n: Optional[int] | Omit = omit,
         parallel_tool_calls: Optional[bool] | Omit = omit,
-        prediction: Optional[Dict[str, object]] | Omit = omit,
+        prediction: Optional[completion_create_params.Prediction] | Omit = omit,
         presence_penalty: Optional[float] | Omit = omit,
         prompt_cache_key: Optional[str] | Omit = omit,
-        reasoning_effort: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        prompt_cache_retention: Optional[Literal["24h", "in-memory"]] | Omit = omit,
+        prompt_mode: Optional[Dict[str, object]] | Omit = omit,
+        reasoning_effort: Optional[Literal["high", "low", "medium", "minimal", "none"]] | Omit = omit,
         response_format: Optional[completion_create_params.ResponseFormat] | Omit = omit,
+        safe_prompt: Optional[bool] | Omit = omit,
         safety_identifier: Optional[str] | Omit = omit,
-        safety_settings: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        safety_settings: Optional[Iterable[completion_create_params.SafetySetting]] | Omit = omit,
         search_parameters: Optional[Dict[str, object]] | Omit = omit,
         seed: Optional[int] | Omit = omit,
-        service_tier: Optional[Literal["auto", "default"]] | Omit = omit,
-        stop: Optional[SequenceNotStr[str]] | Omit = omit,
+        service_tier: Optional[Literal["auto", "default", "flex", "priority", "scale", "standard_only"]] | Omit = omit,
+        stop: Union[str, SequenceNotStr[str], None] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream_options: Optional[Dict[str, object]] | Omit = omit,
-        system: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
+        system_instruction: Union[Dict[str, object], str, None] | Omit = omit,
         temperature: Optional[float] | Omit = omit,
         thinking: Optional[completion_create_params.Thinking] | Omit = omit,
-        tool_choice: Union[str, Dict[str, object], None] | Omit = omit,
+        tool_choice: Optional[completion_create_params.ToolChoice] | Omit = omit,
         tool_config: Optional[Dict[str, object]] | Omit = omit,
-        tools: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        tools: Optional[Iterable[completion_create_params.Tool]] | Omit = omit,
         top_k: Optional[int] | Omit = omit,
         top_logprobs: Optional[int] | Omit = omit,
         top_p: Optional[float] | Omit = omit,
         user: Optional[str] | Omit = omit,
-        verbosity: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        verbosity: Optional[Literal["high", "low", "medium"]] | Omit = omit,
         web_search_options: Optional[Dict[str, object]] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -439,19 +482,8 @@ class CompletionsResource(SyncAPIResource):
         """
         Create a chat completion.
 
-        Unified chat-completions endpoint that works across many model providers.
-        Supports optional MCP integration, multi-model routing with agentic handoffs,
-        server- or client-executed tools, and both streaming and non-streaming delivery.
-
-        Request body:
-
-        - messages: ordered list of chat turns.
-        - model: identifier or a list of identifiers for routing.
-        - tools: optional tool declarations available to the model.
-        - mcp_servers: optional list of MCP server slugs to enable during the run.
-        - stream: boolean to request incremental output.
-        - config: optional generation parameters (e.g., temperature, max_tokens,
-          metadata).
+        Generates a model response for the given conversation and configuration.
+        Supports OpenAI-compatible parameters and provider-specific extensions.
 
         Headers:
 
@@ -460,8 +492,8 @@ class CompletionsResource(SyncAPIResource):
 
         Behavior:
 
-        - If multiple models are supplied, the router may select or hand off across
-          them.
+        - If multiple models are supplied, the first one is used, and the agent may hand
+          off to another model.
         - Tools may be invoked on the server or signaled for the client to run.
         - Streaming responses emit incremental deltas; non-streaming returns a single
           object.
@@ -502,11 +534,12 @@ class CompletionsResource(SyncAPIResource):
 
         Args:
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
-              or a list for multi-model routing. Single model: 'openai/gpt-4',
-              'anthropic/claude-3-5-sonnet-20241022', 'openai/gpt-4o-mini', or a DedalusModel
-              instance. Multi-model routing: ['openai/gpt-4o-mini', 'openai/gpt-4',
-              'anthropic/claude-3-5-sonnet'] or list of DedalusModel objects - agent will
-              choose optimal model based on task complexity.
+              or a list for multi-model routing. Single model: 'openai/gpt-5',
+              'anthropic/claude-sonnet-4-5-20250929', 'google/gemini-3-pro-preview', or a
+              DedalusModel instance. Multi-model routing: ['openai/gpt-5',
+              'anthropic/claude-sonnet-4-5-20250929', 'google/gemini-3-pro-preview'] or list
+              of DedalusModel objects - agent will choose optimal model based on task
+              complexity.
 
           stream: If true, the model response data is streamed to the client as it is generated
               using Server-Sent Events.
@@ -516,30 +549,39 @@ class CompletionsResource(SyncAPIResource):
               'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
               values indicate stronger preference for that characteristic.
 
-          audio: Parameters for audio output. Required when requesting audio responses (for
-              example, modalities including 'audio').
+          audio: Parameters for audio output. Required when audio output is requested with
+              `modalities: ["audio"]`.
+              [Learn more](https://platform.openai.com/docs/guides/audio).
 
           auto_execute_tools: When False, skip server-side tool execution and return raw OpenAI-style
               tool_calls in the response.
 
-          deferred: xAI-specific parameter. If set to true, the request returns a request_id for
-              async completion retrieval via GET /v1/chat/deferred-completion/{request_id}.
+          cached_content: Optional. The name of the content
+              [cached](https://ai.google.dev/gemini-api/docs/caching) to use as context to
+              serve the prediction. Format: `cachedContents/{cachedContent}`
 
-          disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
-              the model returns function calls for the client to execute manually.
+          deferred: If set to `true`, the request returns a `request_id`. You can then get the
+              deferred response by GET `/v1/chat/deferred-completion/{request_id}`.
+
+          disable_automatic_function_calling: Google SDK control: disable automatic function calling. Agent workflows handle
+              tools manually.
 
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing the model's likelihood to
               repeat the same line verbatim.
 
-          function_call: Deprecated in favor of 'tool_choice'. Controls which function is called by the
-              model (none, auto, or specific name).
+          function_call: Deprecated in favor of `tool_choice`. Controls which (if any) function is called
+              by the model. `none` means the model will not call a function and instead
+              generates a message. `auto` means the model can pick between generating a
+              message or calling a function. Specifying a particular function via
+              `{"name": "my_function"}` forces the model to call that function. `none` is the
+              default when no functions are present. `auto` is the default if functions are
+              present.
 
-          functions: Deprecated in favor of 'tools'. Legacy list of function definitions the model
-              may generate JSON inputs for.
+          functions: Deprecated in favor of `tools`. A list of functions the model may generate JSON
+              inputs for.
 
-          generation_config: Google generationConfig object. Merged with auto-generated config. Use for
-              Google-specific params (candidateCount, responseMimeType, etc.).
+          generation_config: Generation parameters wrapper (Google-specific)
 
           guardrails: Guardrails to apply to the agent for input/output validation and safety checks.
               Reserved for future use - guardrails configuration format not yet finalized.
@@ -547,28 +589,26 @@ class CompletionsResource(SyncAPIResource):
           handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
               future use - handoff configuration format not yet finalized.
 
-          input: Convenience alias for Responses-style `input`. Used when `messages` is omitted
-              to provide the user prompt directly.
-
-          instructions: Convenience alias for Responses-style `instructions`. Takes precedence over
-              `system` and over system-role messages when provided.
-
           logit_bias: Modify the likelihood of specified tokens appearing in the completion. Accepts a
-              JSON object mapping token IDs (as strings) to bias values from -100 to 100. The
-              bias is added to the logits before sampling; values between -1 and 1 nudge
-              selection probability, while values like -100 or 100 effectively ban or require
-              a token.
+              JSON object that maps tokens (specified by their token ID in the tokenizer) to
+              an associated bias value from -100 to 100. Mathematically, the bias is added to
+              the logits generated by the model prior to sampling. The exact effect will vary
+              per model, but values between -1 and 1 should decrease or increase likelihood of
+              selection; values like -100 or 100 should result in a ban or exclusive selection
+              of the relevant token.
 
-          logprobs: Whether to return log probabilities of the output tokens. If true, returns the
-              log probabilities for each token in the response content.
+          logprobs: Whether to return log probabilities of the output tokens or not. If true,
+              returns the log probabilities of each output token returned in the `content` of
+              `message`.
 
           max_completion_tokens: An upper bound for the number of tokens that can be generated for a completion,
               including visible output and reasoning tokens.
 
-          max_tokens: The maximum number of tokens that can be generated in the chat completion. This
-              value can be used to control costs for text generated via API. This value is now
-              deprecated in favor of 'max_completion_tokens' and is not compatible with
-              o-series models.
+          max_tokens: Maximum number of tokens the model can generate in the completion. The total
+              token count (input + output) is limited by the model's context window. Setting
+              this prevents unexpectedly long responses and helps control costs. For newer
+              OpenAI models, use max_completion_tokens instead (more precise accounting). For
+              other providers, max_tokens remains the standard parameter name.
 
           max_turns: Maximum number of turns for agent execution before terminating (default: 10).
               Each turn represents one model inference cycle. Higher values allow more complex
@@ -583,108 +623,150 @@ class CompletionsResource(SyncAPIResource):
               which is treated as a single user message. Optional if `input` or `instructions`
               is provided.
 
-          metadata: Set of up to 16 key-value string pairs that can be attached to the request for
-              structured metadata.
+          metadata: Set of 16 key-value pairs that can be attached to an object. This can be useful
+              for storing additional information about the object in a structured format, and
+              querying for objects via API or the dashboard. Keys are strings with a maximum
+              length of 64 characters. Values are strings with a maximum length of 512
+              characters.
 
-          modalities: Output types you would like the model to generate. Most models default to
-              ['text']; some support ['text', 'audio'].
+          modalities: Output modalities. Most models generate text by default. Use ['text', 'audio']
+              for audio-capable models.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
               execution. Format: {'model_name': {'attribute': value}}, where values are
               0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
               'accuracy'. Used by agent to select optimal model based on task requirements.
 
-          n: How many chat completion choices to generate for each input message. Keep 'n' as
-              1 to minimize costs.
+          n: How many chat completion choices to generate for each input message. Note that
+              you will be charged based on the number of generated tokens across all of the
+              choices. Keep `n` as `1` to minimize costs.
 
-          parallel_tool_calls: Whether to enable parallel function calling during tool use.
+          parallel_tool_calls: Whether to enable parallel tool calls (Anthropic uses inverted polarity)
 
-          prediction: Configuration for predicted outputs. Improves response times when you already
-              know large portions of the response content.
+          prediction: Static predicted output content, such as the content of a text file that is
+              being regenerated.
 
           presence_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on
               whether they appear in the text so far, increasing the model's likelihood to
               talk about new topics.
 
-          prompt_cache_key: Used by OpenAI to cache responses for similar requests and optimize cache hit
-              rates. Replaces the legacy 'user' field for caching.
+          prompt_cache_key: Used by OpenAI to cache responses for similar requests to optimize your cache
+              hit rates. Replaces the `user` field.
+              [Learn more](https://platform.openai.com/docs/guides/prompt-caching).
 
-          reasoning_effort: Constrains effort on reasoning for supported reasoning models. Higher values use
-              more compute, potentially improving reasoning quality at the cost of latency and
-              tokens.
+          prompt_cache_retention: The retention policy for the prompt cache. Set to `24h` to enable extended
+              prompt caching, which keeps cached prefixes active for longer, up to a maximum
+              of 24 hours.
+              [Learn more](https://platform.openai.com/docs/guides/prompt-caching#prompt-cache-retention).
 
-          response_format:
-              An object specifying the format that the model must output. Use {'type':
-              'json_schema', 'json_schema': {...}} for structured outputs or {'type':
-              'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed models
-              honor this field; Anthropic and Google requests will return an
-              invalid_request_error if it is supplied.
+          prompt_mode: Allows toggling between the reasoning mode and no system prompt. When set to
+              `reasoning` the system prompt for reasoning models will be used.
 
-          safety_identifier: Stable identifier used to help detect users who might violate OpenAI usage
-              policies. Consider hashing end-user identifiers before sending.
+          reasoning_effort: Constrains effort on reasoning for
+              [reasoning models](https://platform.openai.com/docs/guides/reasoning). Currently
+              supported values are `none`, `minimal`, `low`, `medium`, and `high`. Reducing
+              reasoning effort can result in faster responses and fewer tokens used on
+              reasoning in a response. - `gpt-5.1` defaults to `none`, which does not perform
+              reasoning. The supported reasoning values for `gpt-5.1` are `none`, `low`,
+              `medium`, and `high`. Tool calls are supported for all reasoning values in
+              gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort, and
+              do not support `none`. - The `gpt-5-pro` model defaults to (and only supports)
+              `high` reasoning effort.
 
-          safety_settings: Google safety settings (harm categories and thresholds).
+          response_format: An object specifying the format that the model must output. Setting to
+              `{ "type": "json_schema", "json_schema": {...} }` enables Structured Outputs
+              which ensures the model will match your supplied JSON schema. Learn more in the
+              [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
+              Setting to `{ "type": "json_object" }` enables the older JSON mode, which
+              ensures the message the model generates is valid JSON. Using `json_schema` is
+              preferred for models that support it.
 
-          search_parameters: xAI-specific parameter for configuring web search data acquisition. If not set,
-              no data will be acquired by the model.
+          safe_prompt: Whether to inject a safety prompt before all conversations.
 
-          seed: If specified, system will make a best effort to sample deterministically.
-              Determinism is not guaranteed for the same seed across different models or API
-              versions.
+          safety_identifier: A stable identifier used to help detect users of your application that may be
+              violating OpenAI's usage policies. The IDs should be a string that uniquely
+              identifies each user. We recommend hashing their username or email address, in
+              order to avoid sending us any identifying information.
+              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
 
-          service_tier: Specifies the processing tier used for the request. 'auto' uses project
-              defaults, while 'default' forces standard pricing and performance.
+          safety_settings: Safety/content filtering settings (Google-specific)
 
-          stop: Not supported with latest reasoning models 'o3' and 'o4-mini'.
+          search_parameters: Set the parameters to be used for searched data. If not set, no data will be
+              acquired by the model.
 
-                      Up to 4 sequences where the API will stop generating further tokens; the returned text will not contain the stop sequence.
+          seed: Random seed for deterministic output
 
-          store: Whether to store the output of this chat completion request for OpenAI model
-              distillation or eval products. Image inputs over 8MB are dropped if storage is
-              enabled.
+          service_tier: Service tier for request processing
 
-          stream_options: Options for streaming responses. Only set when 'stream' is true (supports
-              'include_usage' and 'include_obfuscation').
+          stop: Not supported with latest reasoning models 'o3' and 'o4-mini'. Up to 4 sequences
+              where the API will stop generating further tokens; the returned text will not
+              contain the stop sequence.
 
-          system: System prompt/instructions. Anthropic: pass-through. Google: converted to
-              systemInstruction. OpenAI: extracted from messages.
+          store: Whether or not to store the output of this chat completion request for use in
+              our [model distillation](https://platform.openai.com/docs/guides/distillation)
+              or [evals](https://platform.openai.com/docs/guides/evals) products. Supports
+              text and image inputs. Note: image inputs over 8MB will be dropped.
 
-          temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8 make
-              the output more random, while lower values like 0.2 make it more focused and
-              deterministic. We generally recommend altering this or 'top_p' but not both.
+          stream_options: Options for streaming response. Only set this when you set `stream: true`.
 
-          thinking: Extended thinking configuration (Anthropic only). Enables thinking blocks
-              showing reasoning process. Requires min 1,024 token budget.
+          system_instruction: System-level instructions defining the assistant's behavior, role, and
+              constraints. Sets the context and personality for the entire conversation.
+              Different from user/assistant messages as it provides meta-instructions about
+              how to respond rather than conversation content. OpenAI: Provided as system role
+              message in messages array. Google: Top-level systemInstruction field (adapter
+              extracts from messages). Anthropic: Top-level system parameter (adapter extracts
+              from messages). Accepts both string and structured object formats depending on
+              provider capabilities.
 
-          tool_choice: Controls which (if any) tool is called by the model. 'none' stops tool calling,
-              'auto' lets the model decide, and 'required' forces at least one tool
-              invocation. Specific tool payloads force that tool.
+          temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8 will
+              make the output more random, while lower values like 0.2 will make it more
+              focused and deterministic. We generally recommend altering this or top_p but not
+              both.
 
-          tool_config: Google tool configuration (function calling mode, etc.).
+          thinking: Extended thinking configuration (Anthropic-specific)
 
-          tools: A list of tools the model may call. Supports OpenAI function tools and custom
-              tools; use 'mcp_servers' for Dedalus-managed server-side tools.
+          tool_choice: Controls which (if any) tool is called by the model. `none` means the model will
+              not call any tool and instead generates a message. `auto` means the model can
+              pick between generating a message or calling one or more tools. `required` means
+              the model must call one or more tools. Specifying a particular tool via
+              `{"type": "function", "function": {"name": "my_function"}}` forces the model to
+              call that tool. `none` is the default when no tools are present. `auto` is the
+              default if tools are present.
 
-          top_k: Top-k sampling. Anthropic: pass-through. Google: injected into
-              generationConfig.topK.
+          tool_config: Tool calling configuration (Google-specific)
 
-          top_logprobs: An integer between 0 and 20 specifying how many of the most likely tokens to
-              return at each position, with log probabilities. Requires 'logprobs' to be true.
+          tools: A list of tools the model may call. You can provide either custom tools or
+              function tools. All providers support tools. Adapters handle translation to
+              provider-specific formats.
+
+          top_k: Top-k sampling parameter limiting token selection to k most likely candidates.
+              Only considers the top k highest probability tokens at each generation step,
+              setting all other tokens' probabilities to zero. Reduces tail probability mass.
+              Helps prevent selection of highly unlikely tokens, improving output coherence.
+              Supported by Google and Anthropic; not available in OpenAI's API.
+
+          top_logprobs: An integer between 0 and 20 specifying the number of most likely tokens to
+              return at each token position, each with an associated log probability.
+              `logprobs` must be set to `true` if this parameter is used.
 
           top_p: An alternative to sampling with temperature, called nucleus sampling, where the
               model considers the results of the tokens with top_p probability mass. So 0.1
               means only the tokens comprising the top 10% probability mass are considered. We
-              generally recommend altering this or 'temperature' but not both.
+              generally recommend altering this or temperature but not both.
 
-          user: Stable identifier for your end-users. Helps OpenAI detect and prevent abuse and
-              may boost cache hit rates. This field is being replaced by 'safety_identifier'
-              and 'prompt_cache_key'.
+          user: This field is being replaced by `safety_identifier` and `prompt_cache_key`. Use
+              `prompt_cache_key` instead to maintain caching optimizations. A stable
+              identifier for your end-users. Used to boost cache hit rates by better bucketing
+              similar requests and to help OpenAI detect and prevent abuse.
+              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
 
-          verbosity: Constrains the verbosity of the model's response. Lower values produce concise
-              answers, higher values allow more detail.
+          verbosity: Constrains the verbosity of the model's response. Lower values will result in
+              more concise responses, while higher values will result in more verbose
+              responses. Currently supported values are `low`, `medium`, and `high`.
 
-          web_search_options: Configuration for OpenAI's web search tool. Learn more at
-              https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat.
+          web_search_options: This tool searches the web for relevant results to use in a response. Learn more
+              about the
+              [web search tool](https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat).
 
           extra_headers: Send extra headers
 
@@ -707,52 +789,54 @@ class CompletionsResource(SyncAPIResource):
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
         auto_execute_tools: bool | Omit = omit,
+        cached_content: Optional[str] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
-        disable_automatic_function_calling: Optional[bool] | Omit = omit,
+        disable_automatic_function_calling: bool | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
-        function_call: Union[str, Dict[str, object], None] | Omit = omit,
-        functions: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        function_call: Optional[Literal["auto", "none"]] | Omit = omit,
+        functions: Optional[Iterable[completion_create_params.Function]] | Omit = omit,
         generation_config: Optional[Dict[str, object]] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
-        input: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
-        instructions: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
         mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
-        messages: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
+        messages: Union[Iterable[completion_create_params.MessagesMessage], str, None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
-        modalities: Optional[SequenceNotStr[str]] | Omit = omit,
+        modalities: Optional[List[Literal["text", "audio"]]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
         n: Optional[int] | Omit = omit,
         parallel_tool_calls: Optional[bool] | Omit = omit,
-        prediction: Optional[Dict[str, object]] | Omit = omit,
+        prediction: Optional[completion_create_params.Prediction] | Omit = omit,
         presence_penalty: Optional[float] | Omit = omit,
         prompt_cache_key: Optional[str] | Omit = omit,
-        reasoning_effort: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        prompt_cache_retention: Optional[Literal["24h", "in-memory"]] | Omit = omit,
+        prompt_mode: Optional[Dict[str, object]] | Omit = omit,
+        reasoning_effort: Optional[Literal["high", "low", "medium", "minimal", "none"]] | Omit = omit,
         response_format: Optional[completion_create_params.ResponseFormat] | Omit = omit,
+        safe_prompt: Optional[bool] | Omit = omit,
         safety_identifier: Optional[str] | Omit = omit,
-        safety_settings: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        safety_settings: Optional[Iterable[completion_create_params.SafetySetting]] | Omit = omit,
         search_parameters: Optional[Dict[str, object]] | Omit = omit,
         seed: Optional[int] | Omit = omit,
-        service_tier: Optional[Literal["auto", "default"]] | Omit = omit,
-        stop: Optional[SequenceNotStr[str]] | Omit = omit,
+        service_tier: Optional[Literal["auto", "default", "flex", "priority", "scale", "standard_only"]] | Omit = omit,
+        stop: Union[str, SequenceNotStr[str], None] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream_options: Optional[Dict[str, object]] | Omit = omit,
-        system: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
+        system_instruction: Union[Dict[str, object], str, None] | Omit = omit,
         temperature: Optional[float] | Omit = omit,
         thinking: Optional[completion_create_params.Thinking] | Omit = omit,
-        tool_choice: Union[str, Dict[str, object], None] | Omit = omit,
+        tool_choice: Optional[completion_create_params.ToolChoice] | Omit = omit,
         tool_config: Optional[Dict[str, object]] | Omit = omit,
-        tools: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        tools: Optional[Iterable[completion_create_params.Tool]] | Omit = omit,
         top_k: Optional[int] | Omit = omit,
         top_logprobs: Optional[int] | Omit = omit,
         top_p: Optional[float] | Omit = omit,
         user: Optional[str] | Omit = omit,
-        verbosity: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        verbosity: Optional[Literal["high", "low", "medium"]] | Omit = omit,
         web_search_options: Optional[Dict[str, object]] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -765,19 +849,8 @@ class CompletionsResource(SyncAPIResource):
         """
         Create a chat completion.
 
-        Unified chat-completions endpoint that works across many model providers.
-        Supports optional MCP integration, multi-model routing with agentic handoffs,
-        server- or client-executed tools, and both streaming and non-streaming delivery.
-
-        Request body:
-
-        - messages: ordered list of chat turns.
-        - model: identifier or a list of identifiers for routing.
-        - tools: optional tool declarations available to the model.
-        - mcp_servers: optional list of MCP server slugs to enable during the run.
-        - stream: boolean to request incremental output.
-        - config: optional generation parameters (e.g., temperature, max_tokens,
-          metadata).
+        Generates a model response for the given conversation and configuration.
+        Supports OpenAI-compatible parameters and provider-specific extensions.
 
         Headers:
 
@@ -786,8 +859,8 @@ class CompletionsResource(SyncAPIResource):
 
         Behavior:
 
-        - If multiple models are supplied, the router may select or hand off across
-          them.
+        - If multiple models are supplied, the first one is used, and the agent may hand
+          off to another model.
         - Tools may be invoked on the server or signaled for the client to run.
         - Streaming responses emit incremental deltas; non-streaming returns a single
           object.
@@ -828,11 +901,12 @@ class CompletionsResource(SyncAPIResource):
 
         Args:
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
-              or a list for multi-model routing. Single model: 'openai/gpt-4',
-              'anthropic/claude-3-5-sonnet-20241022', 'openai/gpt-4o-mini', or a DedalusModel
-              instance. Multi-model routing: ['openai/gpt-4o-mini', 'openai/gpt-4',
-              'anthropic/claude-3-5-sonnet'] or list of DedalusModel objects - agent will
-              choose optimal model based on task complexity.
+              or a list for multi-model routing. Single model: 'openai/gpt-5',
+              'anthropic/claude-sonnet-4-5-20250929', 'google/gemini-3-pro-preview', or a
+              DedalusModel instance. Multi-model routing: ['openai/gpt-5',
+              'anthropic/claude-sonnet-4-5-20250929', 'google/gemini-3-pro-preview'] or list
+              of DedalusModel objects - agent will choose optimal model based on task
+              complexity.
 
           stream: If true, the model response data is streamed to the client as it is generated
               using Server-Sent Events.
@@ -842,30 +916,39 @@ class CompletionsResource(SyncAPIResource):
               'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
               values indicate stronger preference for that characteristic.
 
-          audio: Parameters for audio output. Required when requesting audio responses (for
-              example, modalities including 'audio').
+          audio: Parameters for audio output. Required when audio output is requested with
+              `modalities: ["audio"]`.
+              [Learn more](https://platform.openai.com/docs/guides/audio).
 
           auto_execute_tools: When False, skip server-side tool execution and return raw OpenAI-style
               tool_calls in the response.
 
-          deferred: xAI-specific parameter. If set to true, the request returns a request_id for
-              async completion retrieval via GET /v1/chat/deferred-completion/{request_id}.
+          cached_content: Optional. The name of the content
+              [cached](https://ai.google.dev/gemini-api/docs/caching) to use as context to
+              serve the prediction. Format: `cachedContents/{cachedContent}`
 
-          disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
-              the model returns function calls for the client to execute manually.
+          deferred: If set to `true`, the request returns a `request_id`. You can then get the
+              deferred response by GET `/v1/chat/deferred-completion/{request_id}`.
+
+          disable_automatic_function_calling: Google SDK control: disable automatic function calling. Agent workflows handle
+              tools manually.
 
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing the model's likelihood to
               repeat the same line verbatim.
 
-          function_call: Deprecated in favor of 'tool_choice'. Controls which function is called by the
-              model (none, auto, or specific name).
+          function_call: Deprecated in favor of `tool_choice`. Controls which (if any) function is called
+              by the model. `none` means the model will not call a function and instead
+              generates a message. `auto` means the model can pick between generating a
+              message or calling a function. Specifying a particular function via
+              `{"name": "my_function"}` forces the model to call that function. `none` is the
+              default when no functions are present. `auto` is the default if functions are
+              present.
 
-          functions: Deprecated in favor of 'tools'. Legacy list of function definitions the model
-              may generate JSON inputs for.
+          functions: Deprecated in favor of `tools`. A list of functions the model may generate JSON
+              inputs for.
 
-          generation_config: Google generationConfig object. Merged with auto-generated config. Use for
-              Google-specific params (candidateCount, responseMimeType, etc.).
+          generation_config: Generation parameters wrapper (Google-specific)
 
           guardrails: Guardrails to apply to the agent for input/output validation and safety checks.
               Reserved for future use - guardrails configuration format not yet finalized.
@@ -873,28 +956,26 @@ class CompletionsResource(SyncAPIResource):
           handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
               future use - handoff configuration format not yet finalized.
 
-          input: Convenience alias for Responses-style `input`. Used when `messages` is omitted
-              to provide the user prompt directly.
-
-          instructions: Convenience alias for Responses-style `instructions`. Takes precedence over
-              `system` and over system-role messages when provided.
-
           logit_bias: Modify the likelihood of specified tokens appearing in the completion. Accepts a
-              JSON object mapping token IDs (as strings) to bias values from -100 to 100. The
-              bias is added to the logits before sampling; values between -1 and 1 nudge
-              selection probability, while values like -100 or 100 effectively ban or require
-              a token.
+              JSON object that maps tokens (specified by their token ID in the tokenizer) to
+              an associated bias value from -100 to 100. Mathematically, the bias is added to
+              the logits generated by the model prior to sampling. The exact effect will vary
+              per model, but values between -1 and 1 should decrease or increase likelihood of
+              selection; values like -100 or 100 should result in a ban or exclusive selection
+              of the relevant token.
 
-          logprobs: Whether to return log probabilities of the output tokens. If true, returns the
-              log probabilities for each token in the response content.
+          logprobs: Whether to return log probabilities of the output tokens or not. If true,
+              returns the log probabilities of each output token returned in the `content` of
+              `message`.
 
           max_completion_tokens: An upper bound for the number of tokens that can be generated for a completion,
               including visible output and reasoning tokens.
 
-          max_tokens: The maximum number of tokens that can be generated in the chat completion. This
-              value can be used to control costs for text generated via API. This value is now
-              deprecated in favor of 'max_completion_tokens' and is not compatible with
-              o-series models.
+          max_tokens: Maximum number of tokens the model can generate in the completion. The total
+              token count (input + output) is limited by the model's context window. Setting
+              this prevents unexpectedly long responses and helps control costs. For newer
+              OpenAI models, use max_completion_tokens instead (more precise accounting). For
+              other providers, max_tokens remains the standard parameter name.
 
           max_turns: Maximum number of turns for agent execution before terminating (default: 10).
               Each turn represents one model inference cycle. Higher values allow more complex
@@ -909,108 +990,150 @@ class CompletionsResource(SyncAPIResource):
               which is treated as a single user message. Optional if `input` or `instructions`
               is provided.
 
-          metadata: Set of up to 16 key-value string pairs that can be attached to the request for
-              structured metadata.
+          metadata: Set of 16 key-value pairs that can be attached to an object. This can be useful
+              for storing additional information about the object in a structured format, and
+              querying for objects via API or the dashboard. Keys are strings with a maximum
+              length of 64 characters. Values are strings with a maximum length of 512
+              characters.
 
-          modalities: Output types you would like the model to generate. Most models default to
-              ['text']; some support ['text', 'audio'].
+          modalities: Output modalities. Most models generate text by default. Use ['text', 'audio']
+              for audio-capable models.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
               execution. Format: {'model_name': {'attribute': value}}, where values are
               0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
               'accuracy'. Used by agent to select optimal model based on task requirements.
 
-          n: How many chat completion choices to generate for each input message. Keep 'n' as
-              1 to minimize costs.
+          n: How many chat completion choices to generate for each input message. Note that
+              you will be charged based on the number of generated tokens across all of the
+              choices. Keep `n` as `1` to minimize costs.
 
-          parallel_tool_calls: Whether to enable parallel function calling during tool use.
+          parallel_tool_calls: Whether to enable parallel tool calls (Anthropic uses inverted polarity)
 
-          prediction: Configuration for predicted outputs. Improves response times when you already
-              know large portions of the response content.
+          prediction: Static predicted output content, such as the content of a text file that is
+              being regenerated.
 
           presence_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on
               whether they appear in the text so far, increasing the model's likelihood to
               talk about new topics.
 
-          prompt_cache_key: Used by OpenAI to cache responses for similar requests and optimize cache hit
-              rates. Replaces the legacy 'user' field for caching.
+          prompt_cache_key: Used by OpenAI to cache responses for similar requests to optimize your cache
+              hit rates. Replaces the `user` field.
+              [Learn more](https://platform.openai.com/docs/guides/prompt-caching).
 
-          reasoning_effort: Constrains effort on reasoning for supported reasoning models. Higher values use
-              more compute, potentially improving reasoning quality at the cost of latency and
-              tokens.
+          prompt_cache_retention: The retention policy for the prompt cache. Set to `24h` to enable extended
+              prompt caching, which keeps cached prefixes active for longer, up to a maximum
+              of 24 hours.
+              [Learn more](https://platform.openai.com/docs/guides/prompt-caching#prompt-cache-retention).
 
-          response_format:
-              An object specifying the format that the model must output. Use {'type':
-              'json_schema', 'json_schema': {...}} for structured outputs or {'type':
-              'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed models
-              honor this field; Anthropic and Google requests will return an
-              invalid_request_error if it is supplied.
+          prompt_mode: Allows toggling between the reasoning mode and no system prompt. When set to
+              `reasoning` the system prompt for reasoning models will be used.
 
-          safety_identifier: Stable identifier used to help detect users who might violate OpenAI usage
-              policies. Consider hashing end-user identifiers before sending.
+          reasoning_effort: Constrains effort on reasoning for
+              [reasoning models](https://platform.openai.com/docs/guides/reasoning). Currently
+              supported values are `none`, `minimal`, `low`, `medium`, and `high`. Reducing
+              reasoning effort can result in faster responses and fewer tokens used on
+              reasoning in a response. - `gpt-5.1` defaults to `none`, which does not perform
+              reasoning. The supported reasoning values for `gpt-5.1` are `none`, `low`,
+              `medium`, and `high`. Tool calls are supported for all reasoning values in
+              gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort, and
+              do not support `none`. - The `gpt-5-pro` model defaults to (and only supports)
+              `high` reasoning effort.
 
-          safety_settings: Google safety settings (harm categories and thresholds).
+          response_format: An object specifying the format that the model must output. Setting to
+              `{ "type": "json_schema", "json_schema": {...} }` enables Structured Outputs
+              which ensures the model will match your supplied JSON schema. Learn more in the
+              [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
+              Setting to `{ "type": "json_object" }` enables the older JSON mode, which
+              ensures the message the model generates is valid JSON. Using `json_schema` is
+              preferred for models that support it.
 
-          search_parameters: xAI-specific parameter for configuring web search data acquisition. If not set,
-              no data will be acquired by the model.
+          safe_prompt: Whether to inject a safety prompt before all conversations.
 
-          seed: If specified, system will make a best effort to sample deterministically.
-              Determinism is not guaranteed for the same seed across different models or API
-              versions.
+          safety_identifier: A stable identifier used to help detect users of your application that may be
+              violating OpenAI's usage policies. The IDs should be a string that uniquely
+              identifies each user. We recommend hashing their username or email address, in
+              order to avoid sending us any identifying information.
+              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
 
-          service_tier: Specifies the processing tier used for the request. 'auto' uses project
-              defaults, while 'default' forces standard pricing and performance.
+          safety_settings: Safety/content filtering settings (Google-specific)
 
-          stop: Not supported with latest reasoning models 'o3' and 'o4-mini'.
+          search_parameters: Set the parameters to be used for searched data. If not set, no data will be
+              acquired by the model.
 
-                      Up to 4 sequences where the API will stop generating further tokens; the returned text will not contain the stop sequence.
+          seed: Random seed for deterministic output
 
-          store: Whether to store the output of this chat completion request for OpenAI model
-              distillation or eval products. Image inputs over 8MB are dropped if storage is
-              enabled.
+          service_tier: Service tier for request processing
 
-          stream_options: Options for streaming responses. Only set when 'stream' is true (supports
-              'include_usage' and 'include_obfuscation').
+          stop: Not supported with latest reasoning models 'o3' and 'o4-mini'. Up to 4 sequences
+              where the API will stop generating further tokens; the returned text will not
+              contain the stop sequence.
 
-          system: System prompt/instructions. Anthropic: pass-through. Google: converted to
-              systemInstruction. OpenAI: extracted from messages.
+          store: Whether or not to store the output of this chat completion request for use in
+              our [model distillation](https://platform.openai.com/docs/guides/distillation)
+              or [evals](https://platform.openai.com/docs/guides/evals) products. Supports
+              text and image inputs. Note: image inputs over 8MB will be dropped.
 
-          temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8 make
-              the output more random, while lower values like 0.2 make it more focused and
-              deterministic. We generally recommend altering this or 'top_p' but not both.
+          stream_options: Options for streaming response. Only set this when you set `stream: true`.
 
-          thinking: Extended thinking configuration (Anthropic only). Enables thinking blocks
-              showing reasoning process. Requires min 1,024 token budget.
+          system_instruction: System-level instructions defining the assistant's behavior, role, and
+              constraints. Sets the context and personality for the entire conversation.
+              Different from user/assistant messages as it provides meta-instructions about
+              how to respond rather than conversation content. OpenAI: Provided as system role
+              message in messages array. Google: Top-level systemInstruction field (adapter
+              extracts from messages). Anthropic: Top-level system parameter (adapter extracts
+              from messages). Accepts both string and structured object formats depending on
+              provider capabilities.
 
-          tool_choice: Controls which (if any) tool is called by the model. 'none' stops tool calling,
-              'auto' lets the model decide, and 'required' forces at least one tool
-              invocation. Specific tool payloads force that tool.
+          temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8 will
+              make the output more random, while lower values like 0.2 will make it more
+              focused and deterministic. We generally recommend altering this or top_p but not
+              both.
 
-          tool_config: Google tool configuration (function calling mode, etc.).
+          thinking: Extended thinking configuration (Anthropic-specific)
 
-          tools: A list of tools the model may call. Supports OpenAI function tools and custom
-              tools; use 'mcp_servers' for Dedalus-managed server-side tools.
+          tool_choice: Controls which (if any) tool is called by the model. `none` means the model will
+              not call any tool and instead generates a message. `auto` means the model can
+              pick between generating a message or calling one or more tools. `required` means
+              the model must call one or more tools. Specifying a particular tool via
+              `{"type": "function", "function": {"name": "my_function"}}` forces the model to
+              call that tool. `none` is the default when no tools are present. `auto` is the
+              default if tools are present.
 
-          top_k: Top-k sampling. Anthropic: pass-through. Google: injected into
-              generationConfig.topK.
+          tool_config: Tool calling configuration (Google-specific)
 
-          top_logprobs: An integer between 0 and 20 specifying how many of the most likely tokens to
-              return at each position, with log probabilities. Requires 'logprobs' to be true.
+          tools: A list of tools the model may call. You can provide either custom tools or
+              function tools. All providers support tools. Adapters handle translation to
+              provider-specific formats.
+
+          top_k: Top-k sampling parameter limiting token selection to k most likely candidates.
+              Only considers the top k highest probability tokens at each generation step,
+              setting all other tokens' probabilities to zero. Reduces tail probability mass.
+              Helps prevent selection of highly unlikely tokens, improving output coherence.
+              Supported by Google and Anthropic; not available in OpenAI's API.
+
+          top_logprobs: An integer between 0 and 20 specifying the number of most likely tokens to
+              return at each token position, each with an associated log probability.
+              `logprobs` must be set to `true` if this parameter is used.
 
           top_p: An alternative to sampling with temperature, called nucleus sampling, where the
               model considers the results of the tokens with top_p probability mass. So 0.1
               means only the tokens comprising the top 10% probability mass are considered. We
-              generally recommend altering this or 'temperature' but not both.
+              generally recommend altering this or temperature but not both.
 
-          user: Stable identifier for your end-users. Helps OpenAI detect and prevent abuse and
-              may boost cache hit rates. This field is being replaced by 'safety_identifier'
-              and 'prompt_cache_key'.
+          user: This field is being replaced by `safety_identifier` and `prompt_cache_key`. Use
+              `prompt_cache_key` instead to maintain caching optimizations. A stable
+              identifier for your end-users. Used to boost cache hit rates by better bucketing
+              similar requests and to help OpenAI detect and prevent abuse.
+              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
 
-          verbosity: Constrains the verbosity of the model's response. Lower values produce concise
-              answers, higher values allow more detail.
+          verbosity: Constrains the verbosity of the model's response. Lower values will result in
+              more concise responses, while higher values will result in more verbose
+              responses. Currently supported values are `low`, `medium`, and `high`.
 
-          web_search_options: Configuration for OpenAI's web search tool. Learn more at
-              https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat.
+          web_search_options: This tool searches the web for relevant results to use in a response. Learn more
+              about the
+              [web search tool](https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat).
 
           extra_headers: Send extra headers
 
@@ -1032,53 +1155,55 @@ class CompletionsResource(SyncAPIResource):
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
         auto_execute_tools: bool | Omit = omit,
+        cached_content: Optional[str] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
-        disable_automatic_function_calling: Optional[bool] | Omit = omit,
+        disable_automatic_function_calling: bool | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
-        function_call: Union[str, Dict[str, object], None] | Omit = omit,
-        functions: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        function_call: Optional[Literal["auto", "none"]] | Omit = omit,
+        functions: Optional[Iterable[completion_create_params.Function]] | Omit = omit,
         generation_config: Optional[Dict[str, object]] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
-        input: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
-        instructions: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
         mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
-        messages: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
+        messages: Union[Iterable[completion_create_params.MessagesMessage], str, None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
-        modalities: Optional[SequenceNotStr[str]] | Omit = omit,
+        modalities: Optional[List[Literal["text", "audio"]]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
         n: Optional[int] | Omit = omit,
         parallel_tool_calls: Optional[bool] | Omit = omit,
-        prediction: Optional[Dict[str, object]] | Omit = omit,
+        prediction: Optional[completion_create_params.Prediction] | Omit = omit,
         presence_penalty: Optional[float] | Omit = omit,
         prompt_cache_key: Optional[str] | Omit = omit,
-        reasoning_effort: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        prompt_cache_retention: Optional[Literal["24h", "in-memory"]] | Omit = omit,
+        prompt_mode: Optional[Dict[str, object]] | Omit = omit,
+        reasoning_effort: Optional[Literal["high", "low", "medium", "minimal", "none"]] | Omit = omit,
         response_format: Optional[completion_create_params.ResponseFormat] | Omit = omit,
+        safe_prompt: Optional[bool] | Omit = omit,
         safety_identifier: Optional[str] | Omit = omit,
-        safety_settings: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        safety_settings: Optional[Iterable[completion_create_params.SafetySetting]] | Omit = omit,
         search_parameters: Optional[Dict[str, object]] | Omit = omit,
         seed: Optional[int] | Omit = omit,
-        service_tier: Optional[Literal["auto", "default"]] | Omit = omit,
-        stop: Optional[SequenceNotStr[str]] | Omit = omit,
+        service_tier: Optional[Literal["auto", "default", "flex", "priority", "scale", "standard_only"]] | Omit = omit,
+        stop: Union[str, SequenceNotStr[str], None] | Omit = omit,
         store: Optional[bool] | Omit = omit,
-        stream: Literal[False] | Literal[True] | Omit = omit,
+        stream: Optional[Literal[False]] | Literal[True] | Omit = omit,
         stream_options: Optional[Dict[str, object]] | Omit = omit,
-        system: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
+        system_instruction: Union[Dict[str, object], str, None] | Omit = omit,
         temperature: Optional[float] | Omit = omit,
         thinking: Optional[completion_create_params.Thinking] | Omit = omit,
-        tool_choice: Union[str, Dict[str, object], None] | Omit = omit,
+        tool_choice: Optional[completion_create_params.ToolChoice] | Omit = omit,
         tool_config: Optional[Dict[str, object]] | Omit = omit,
-        tools: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        tools: Optional[Iterable[completion_create_params.Tool]] | Omit = omit,
         top_k: Optional[int] | Omit = omit,
         top_logprobs: Optional[int] | Omit = omit,
         top_p: Optional[float] | Omit = omit,
         user: Optional[str] | Omit = omit,
-        verbosity: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        verbosity: Optional[Literal["high", "low", "medium"]] | Omit = omit,
         web_search_options: Optional[Dict[str, object]] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -1096,6 +1221,7 @@ class CompletionsResource(SyncAPIResource):
                     "agent_attributes": agent_attributes,
                     "audio": audio,
                     "auto_execute_tools": auto_execute_tools,
+                    "cached_content": cached_content,
                     "deferred": deferred,
                     "disable_automatic_function_calling": disable_automatic_function_calling,
                     "frequency_penalty": frequency_penalty,
@@ -1104,8 +1230,6 @@ class CompletionsResource(SyncAPIResource):
                     "generation_config": generation_config,
                     "guardrails": guardrails,
                     "handoff_config": handoff_config,
-                    "input": input,
-                    "instructions": instructions,
                     "logit_bias": logit_bias,
                     "logprobs": logprobs,
                     "max_completion_tokens": max_completion_tokens,
@@ -1121,8 +1245,11 @@ class CompletionsResource(SyncAPIResource):
                     "prediction": prediction,
                     "presence_penalty": presence_penalty,
                     "prompt_cache_key": prompt_cache_key,
+                    "prompt_cache_retention": prompt_cache_retention,
+                    "prompt_mode": prompt_mode,
                     "reasoning_effort": reasoning_effort,
                     "response_format": response_format,
+                    "safe_prompt": safe_prompt,
                     "safety_identifier": safety_identifier,
                     "safety_settings": safety_settings,
                     "search_parameters": search_parameters,
@@ -1132,7 +1259,7 @@ class CompletionsResource(SyncAPIResource):
                     "store": store,
                     "stream": stream,
                     "stream_options": stream_options,
-                    "system": system,
+                    "system_instruction": system_instruction,
                     "temperature": temperature,
                     "thinking": thinking,
                     "tool_choice": tool_choice,
@@ -1190,53 +1317,55 @@ class AsyncCompletionsResource(AsyncAPIResource):
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
         auto_execute_tools: bool | Omit = omit,
+        cached_content: Optional[str] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
-        disable_automatic_function_calling: Optional[bool] | Omit = omit,
+        disable_automatic_function_calling: bool | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
-        function_call: Union[str, Dict[str, object], None] | Omit = omit,
-        functions: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        function_call: Optional[Literal["auto", "none"]] | Omit = omit,
+        functions: Optional[Iterable[completion_create_params.Function]] | Omit = omit,
         generation_config: Optional[Dict[str, object]] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
-        input: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
-        instructions: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
         mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
-        messages: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
+        messages: Union[Iterable[completion_create_params.MessagesMessage], str, None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
-        modalities: Optional[SequenceNotStr[str]] | Omit = omit,
+        modalities: Optional[List[Literal["text", "audio"]]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
         n: Optional[int] | Omit = omit,
         parallel_tool_calls: Optional[bool] | Omit = omit,
-        prediction: Optional[Dict[str, object]] | Omit = omit,
+        prediction: Optional[completion_create_params.Prediction] | Omit = omit,
         presence_penalty: Optional[float] | Omit = omit,
         prompt_cache_key: Optional[str] | Omit = omit,
-        reasoning_effort: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        prompt_cache_retention: Optional[Literal["24h", "in-memory"]] | Omit = omit,
+        prompt_mode: Optional[Dict[str, object]] | Omit = omit,
+        reasoning_effort: Optional[Literal["high", "low", "medium", "minimal", "none"]] | Omit = omit,
         response_format: Optional[completion_create_params.ResponseFormat] | Omit = omit,
+        safe_prompt: Optional[bool] | Omit = omit,
         safety_identifier: Optional[str] | Omit = omit,
-        safety_settings: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        safety_settings: Optional[Iterable[completion_create_params.SafetySetting]] | Omit = omit,
         search_parameters: Optional[Dict[str, object]] | Omit = omit,
         seed: Optional[int] | Omit = omit,
-        service_tier: Optional[Literal["auto", "default"]] | Omit = omit,
-        stop: Optional[SequenceNotStr[str]] | Omit = omit,
+        service_tier: Optional[Literal["auto", "default", "flex", "priority", "scale", "standard_only"]] | Omit = omit,
+        stop: Union[str, SequenceNotStr[str], None] | Omit = omit,
         store: Optional[bool] | Omit = omit,
-        stream: Literal[False] | Omit = omit,
+        stream: Optional[Literal[False]] | Omit = omit,
         stream_options: Optional[Dict[str, object]] | Omit = omit,
-        system: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
+        system_instruction: Union[Dict[str, object], str, None] | Omit = omit,
         temperature: Optional[float] | Omit = omit,
         thinking: Optional[completion_create_params.Thinking] | Omit = omit,
-        tool_choice: Union[str, Dict[str, object], None] | Omit = omit,
+        tool_choice: Optional[completion_create_params.ToolChoice] | Omit = omit,
         tool_config: Optional[Dict[str, object]] | Omit = omit,
-        tools: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        tools: Optional[Iterable[completion_create_params.Tool]] | Omit = omit,
         top_k: Optional[int] | Omit = omit,
         top_logprobs: Optional[int] | Omit = omit,
         top_p: Optional[float] | Omit = omit,
         user: Optional[str] | Omit = omit,
-        verbosity: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        verbosity: Optional[Literal["high", "low", "medium"]] | Omit = omit,
         web_search_options: Optional[Dict[str, object]] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -1249,19 +1378,8 @@ class AsyncCompletionsResource(AsyncAPIResource):
         """
         Create a chat completion.
 
-        Unified chat-completions endpoint that works across many model providers.
-        Supports optional MCP integration, multi-model routing with agentic handoffs,
-        server- or client-executed tools, and both streaming and non-streaming delivery.
-
-        Request body:
-
-        - messages: ordered list of chat turns.
-        - model: identifier or a list of identifiers for routing.
-        - tools: optional tool declarations available to the model.
-        - mcp_servers: optional list of MCP server slugs to enable during the run.
-        - stream: boolean to request incremental output.
-        - config: optional generation parameters (e.g., temperature, max_tokens,
-          metadata).
+        Generates a model response for the given conversation and configuration.
+        Supports OpenAI-compatible parameters and provider-specific extensions.
 
         Headers:
 
@@ -1270,8 +1388,8 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
         Behavior:
 
-        - If multiple models are supplied, the router may select or hand off across
-          them.
+        - If multiple models are supplied, the first one is used, and the agent may hand
+          off to another model.
         - Tools may be invoked on the server or signaled for the client to run.
         - Streaming responses emit incremental deltas; non-streaming returns a single
           object.
@@ -1312,41 +1430,51 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
         Args:
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
-              or a list for multi-model routing. Single model: 'openai/gpt-4',
-              'anthropic/claude-3-5-sonnet-20241022', 'openai/gpt-4o-mini', or a DedalusModel
-              instance. Multi-model routing: ['openai/gpt-4o-mini', 'openai/gpt-4',
-              'anthropic/claude-3-5-sonnet'] or list of DedalusModel objects - agent will
-              choose optimal model based on task complexity.
+              or a list for multi-model routing. Single model: 'openai/gpt-5',
+              'anthropic/claude-sonnet-4-5-20250929', 'google/gemini-3-pro-preview', or a
+              DedalusModel instance. Multi-model routing: ['openai/gpt-5',
+              'anthropic/claude-sonnet-4-5-20250929', 'google/gemini-3-pro-preview'] or list
+              of DedalusModel objects - agent will choose optimal model based on task
+              complexity.
 
           agent_attributes: Attributes for the agent itself, influencing behavior and model selection.
               Format: {'attribute': value}, where values are 0.0-1.0. Common attributes:
               'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
               values indicate stronger preference for that characteristic.
 
-          audio: Parameters for audio output. Required when requesting audio responses (for
-              example, modalities including 'audio').
+          audio: Parameters for audio output. Required when audio output is requested with
+              `modalities: ["audio"]`.
+              [Learn more](https://platform.openai.com/docs/guides/audio).
 
           auto_execute_tools: When False, skip server-side tool execution and return raw OpenAI-style
               tool_calls in the response.
 
-          deferred: xAI-specific parameter. If set to true, the request returns a request_id for
-              async completion retrieval via GET /v1/chat/deferred-completion/{request_id}.
+          cached_content: Optional. The name of the content
+              [cached](https://ai.google.dev/gemini-api/docs/caching) to use as context to
+              serve the prediction. Format: `cachedContents/{cachedContent}`
 
-          disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
-              the model returns function calls for the client to execute manually.
+          deferred: If set to `true`, the request returns a `request_id`. You can then get the
+              deferred response by GET `/v1/chat/deferred-completion/{request_id}`.
+
+          disable_automatic_function_calling: Google SDK control: disable automatic function calling. Agent workflows handle
+              tools manually.
 
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing the model's likelihood to
               repeat the same line verbatim.
 
-          function_call: Deprecated in favor of 'tool_choice'. Controls which function is called by the
-              model (none, auto, or specific name).
+          function_call: Deprecated in favor of `tool_choice`. Controls which (if any) function is called
+              by the model. `none` means the model will not call a function and instead
+              generates a message. `auto` means the model can pick between generating a
+              message or calling a function. Specifying a particular function via
+              `{"name": "my_function"}` forces the model to call that function. `none` is the
+              default when no functions are present. `auto` is the default if functions are
+              present.
 
-          functions: Deprecated in favor of 'tools'. Legacy list of function definitions the model
-              may generate JSON inputs for.
+          functions: Deprecated in favor of `tools`. A list of functions the model may generate JSON
+              inputs for.
 
-          generation_config: Google generationConfig object. Merged with auto-generated config. Use for
-              Google-specific params (candidateCount, responseMimeType, etc.).
+          generation_config: Generation parameters wrapper (Google-specific)
 
           guardrails: Guardrails to apply to the agent for input/output validation and safety checks.
               Reserved for future use - guardrails configuration format not yet finalized.
@@ -1354,28 +1482,26 @@ class AsyncCompletionsResource(AsyncAPIResource):
           handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
               future use - handoff configuration format not yet finalized.
 
-          input: Convenience alias for Responses-style `input`. Used when `messages` is omitted
-              to provide the user prompt directly.
-
-          instructions: Convenience alias for Responses-style `instructions`. Takes precedence over
-              `system` and over system-role messages when provided.
-
           logit_bias: Modify the likelihood of specified tokens appearing in the completion. Accepts a
-              JSON object mapping token IDs (as strings) to bias values from -100 to 100. The
-              bias is added to the logits before sampling; values between -1 and 1 nudge
-              selection probability, while values like -100 or 100 effectively ban or require
-              a token.
+              JSON object that maps tokens (specified by their token ID in the tokenizer) to
+              an associated bias value from -100 to 100. Mathematically, the bias is added to
+              the logits generated by the model prior to sampling. The exact effect will vary
+              per model, but values between -1 and 1 should decrease or increase likelihood of
+              selection; values like -100 or 100 should result in a ban or exclusive selection
+              of the relevant token.
 
-          logprobs: Whether to return log probabilities of the output tokens. If true, returns the
-              log probabilities for each token in the response content.
+          logprobs: Whether to return log probabilities of the output tokens or not. If true,
+              returns the log probabilities of each output token returned in the `content` of
+              `message`.
 
           max_completion_tokens: An upper bound for the number of tokens that can be generated for a completion,
               including visible output and reasoning tokens.
 
-          max_tokens: The maximum number of tokens that can be generated in the chat completion. This
-              value can be used to control costs for text generated via API. This value is now
-              deprecated in favor of 'max_completion_tokens' and is not compatible with
-              o-series models.
+          max_tokens: Maximum number of tokens the model can generate in the completion. The total
+              token count (input + output) is limited by the model's context window. Setting
+              this prevents unexpectedly long responses and helps control costs. For newer
+              OpenAI models, use max_completion_tokens instead (more precise accounting). For
+              other providers, max_tokens remains the standard parameter name.
 
           max_turns: Maximum number of turns for agent execution before terminating (default: 10).
               Each turn represents one model inference cycle. Higher values allow more complex
@@ -1390,111 +1516,153 @@ class AsyncCompletionsResource(AsyncAPIResource):
               which is treated as a single user message. Optional if `input` or `instructions`
               is provided.
 
-          metadata: Set of up to 16 key-value string pairs that can be attached to the request for
-              structured metadata.
+          metadata: Set of 16 key-value pairs that can be attached to an object. This can be useful
+              for storing additional information about the object in a structured format, and
+              querying for objects via API or the dashboard. Keys are strings with a maximum
+              length of 64 characters. Values are strings with a maximum length of 512
+              characters.
 
-          modalities: Output types you would like the model to generate. Most models default to
-              ['text']; some support ['text', 'audio'].
+          modalities: Output modalities. Most models generate text by default. Use ['text', 'audio']
+              for audio-capable models.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
               execution. Format: {'model_name': {'attribute': value}}, where values are
               0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
               'accuracy'. Used by agent to select optimal model based on task requirements.
 
-          n: How many chat completion choices to generate for each input message. Keep 'n' as
-              1 to minimize costs.
+          n: How many chat completion choices to generate for each input message. Note that
+              you will be charged based on the number of generated tokens across all of the
+              choices. Keep `n` as `1` to minimize costs.
 
-          parallel_tool_calls: Whether to enable parallel function calling during tool use.
+          parallel_tool_calls: Whether to enable parallel tool calls (Anthropic uses inverted polarity)
 
-          prediction: Configuration for predicted outputs. Improves response times when you already
-              know large portions of the response content.
+          prediction: Static predicted output content, such as the content of a text file that is
+              being regenerated.
 
           presence_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on
               whether they appear in the text so far, increasing the model's likelihood to
               talk about new topics.
 
-          prompt_cache_key: Used by OpenAI to cache responses for similar requests and optimize cache hit
-              rates. Replaces the legacy 'user' field for caching.
+          prompt_cache_key: Used by OpenAI to cache responses for similar requests to optimize your cache
+              hit rates. Replaces the `user` field.
+              [Learn more](https://platform.openai.com/docs/guides/prompt-caching).
 
-          reasoning_effort: Constrains effort on reasoning for supported reasoning models. Higher values use
-              more compute, potentially improving reasoning quality at the cost of latency and
-              tokens.
+          prompt_cache_retention: The retention policy for the prompt cache. Set to `24h` to enable extended
+              prompt caching, which keeps cached prefixes active for longer, up to a maximum
+              of 24 hours.
+              [Learn more](https://platform.openai.com/docs/guides/prompt-caching#prompt-cache-retention).
 
-          response_format:
-              An object specifying the format that the model must output. Use {'type':
-              'json_schema', 'json_schema': {...}} for structured outputs or {'type':
-              'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed models
-              honor this field; Anthropic and Google requests will return an
-              invalid_request_error if it is supplied.
+          prompt_mode: Allows toggling between the reasoning mode and no system prompt. When set to
+              `reasoning` the system prompt for reasoning models will be used.
 
-          safety_identifier: Stable identifier used to help detect users who might violate OpenAI usage
-              policies. Consider hashing end-user identifiers before sending.
+          reasoning_effort: Constrains effort on reasoning for
+              [reasoning models](https://platform.openai.com/docs/guides/reasoning). Currently
+              supported values are `none`, `minimal`, `low`, `medium`, and `high`. Reducing
+              reasoning effort can result in faster responses and fewer tokens used on
+              reasoning in a response. - `gpt-5.1` defaults to `none`, which does not perform
+              reasoning. The supported reasoning values for `gpt-5.1` are `none`, `low`,
+              `medium`, and `high`. Tool calls are supported for all reasoning values in
+              gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort, and
+              do not support `none`. - The `gpt-5-pro` model defaults to (and only supports)
+              `high` reasoning effort.
 
-          safety_settings: Google safety settings (harm categories and thresholds).
+          response_format: An object specifying the format that the model must output. Setting to
+              `{ "type": "json_schema", "json_schema": {...} }` enables Structured Outputs
+              which ensures the model will match your supplied JSON schema. Learn more in the
+              [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
+              Setting to `{ "type": "json_object" }` enables the older JSON mode, which
+              ensures the message the model generates is valid JSON. Using `json_schema` is
+              preferred for models that support it.
 
-          search_parameters: xAI-specific parameter for configuring web search data acquisition. If not set,
-              no data will be acquired by the model.
+          safe_prompt: Whether to inject a safety prompt before all conversations.
 
-          seed: If specified, system will make a best effort to sample deterministically.
-              Determinism is not guaranteed for the same seed across different models or API
-              versions.
+          safety_identifier: A stable identifier used to help detect users of your application that may be
+              violating OpenAI's usage policies. The IDs should be a string that uniquely
+              identifies each user. We recommend hashing their username or email address, in
+              order to avoid sending us any identifying information.
+              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
 
-          service_tier: Specifies the processing tier used for the request. 'auto' uses project
-              defaults, while 'default' forces standard pricing and performance.
+          safety_settings: Safety/content filtering settings (Google-specific)
 
-          stop: Not supported with latest reasoning models 'o3' and 'o4-mini'.
+          search_parameters: Set the parameters to be used for searched data. If not set, no data will be
+              acquired by the model.
 
-                      Up to 4 sequences where the API will stop generating further tokens; the returned text will not contain the stop sequence.
+          seed: Random seed for deterministic output
 
-          store: Whether to store the output of this chat completion request for OpenAI model
-              distillation or eval products. Image inputs over 8MB are dropped if storage is
-              enabled.
+          service_tier: Service tier for request processing
+
+          stop: Not supported with latest reasoning models 'o3' and 'o4-mini'. Up to 4 sequences
+              where the API will stop generating further tokens; the returned text will not
+              contain the stop sequence.
+
+          store: Whether or not to store the output of this chat completion request for use in
+              our [model distillation](https://platform.openai.com/docs/guides/distillation)
+              or [evals](https://platform.openai.com/docs/guides/evals) products. Supports
+              text and image inputs. Note: image inputs over 8MB will be dropped.
 
           stream: If true, the model response data is streamed to the client as it is generated
               using Server-Sent Events.
 
-          stream_options: Options for streaming responses. Only set when 'stream' is true (supports
-              'include_usage' and 'include_obfuscation').
+          stream_options: Options for streaming response. Only set this when you set `stream: true`.
 
-          system: System prompt/instructions. Anthropic: pass-through. Google: converted to
-              systemInstruction. OpenAI: extracted from messages.
+          system_instruction: System-level instructions defining the assistant's behavior, role, and
+              constraints. Sets the context and personality for the entire conversation.
+              Different from user/assistant messages as it provides meta-instructions about
+              how to respond rather than conversation content. OpenAI: Provided as system role
+              message in messages array. Google: Top-level systemInstruction field (adapter
+              extracts from messages). Anthropic: Top-level system parameter (adapter extracts
+              from messages). Accepts both string and structured object formats depending on
+              provider capabilities.
 
-          temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8 make
-              the output more random, while lower values like 0.2 make it more focused and
-              deterministic. We generally recommend altering this or 'top_p' but not both.
+          temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8 will
+              make the output more random, while lower values like 0.2 will make it more
+              focused and deterministic. We generally recommend altering this or top_p but not
+              both.
 
-          thinking: Extended thinking configuration (Anthropic only). Enables thinking blocks
-              showing reasoning process. Requires min 1,024 token budget.
+          thinking: Extended thinking configuration (Anthropic-specific)
 
-          tool_choice: Controls which (if any) tool is called by the model. 'none' stops tool calling,
-              'auto' lets the model decide, and 'required' forces at least one tool
-              invocation. Specific tool payloads force that tool.
+          tool_choice: Controls which (if any) tool is called by the model. `none` means the model will
+              not call any tool and instead generates a message. `auto` means the model can
+              pick between generating a message or calling one or more tools. `required` means
+              the model must call one or more tools. Specifying a particular tool via
+              `{"type": "function", "function": {"name": "my_function"}}` forces the model to
+              call that tool. `none` is the default when no tools are present. `auto` is the
+              default if tools are present.
 
-          tool_config: Google tool configuration (function calling mode, etc.).
+          tool_config: Tool calling configuration (Google-specific)
 
-          tools: A list of tools the model may call. Supports OpenAI function tools and custom
-              tools; use 'mcp_servers' for Dedalus-managed server-side tools.
+          tools: A list of tools the model may call. You can provide either custom tools or
+              function tools. All providers support tools. Adapters handle translation to
+              provider-specific formats.
 
-          top_k: Top-k sampling. Anthropic: pass-through. Google: injected into
-              generationConfig.topK.
+          top_k: Top-k sampling parameter limiting token selection to k most likely candidates.
+              Only considers the top k highest probability tokens at each generation step,
+              setting all other tokens' probabilities to zero. Reduces tail probability mass.
+              Helps prevent selection of highly unlikely tokens, improving output coherence.
+              Supported by Google and Anthropic; not available in OpenAI's API.
 
-          top_logprobs: An integer between 0 and 20 specifying how many of the most likely tokens to
-              return at each position, with log probabilities. Requires 'logprobs' to be true.
+          top_logprobs: An integer between 0 and 20 specifying the number of most likely tokens to
+              return at each token position, each with an associated log probability.
+              `logprobs` must be set to `true` if this parameter is used.
 
           top_p: An alternative to sampling with temperature, called nucleus sampling, where the
               model considers the results of the tokens with top_p probability mass. So 0.1
               means only the tokens comprising the top 10% probability mass are considered. We
-              generally recommend altering this or 'temperature' but not both.
+              generally recommend altering this or temperature but not both.
 
-          user: Stable identifier for your end-users. Helps OpenAI detect and prevent abuse and
-              may boost cache hit rates. This field is being replaced by 'safety_identifier'
-              and 'prompt_cache_key'.
+          user: This field is being replaced by `safety_identifier` and `prompt_cache_key`. Use
+              `prompt_cache_key` instead to maintain caching optimizations. A stable
+              identifier for your end-users. Used to boost cache hit rates by better bucketing
+              similar requests and to help OpenAI detect and prevent abuse.
+              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
 
-          verbosity: Constrains the verbosity of the model's response. Lower values produce concise
-              answers, higher values allow more detail.
+          verbosity: Constrains the verbosity of the model's response. Lower values will result in
+              more concise responses, while higher values will result in more verbose
+              responses. Currently supported values are `low`, `medium`, and `high`.
 
-          web_search_options: Configuration for OpenAI's web search tool. Learn more at
-              https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat.
+          web_search_options: This tool searches the web for relevant results to use in a response. Learn more
+              about the
+              [web search tool](https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat).
 
           extra_headers: Send extra headers
 
@@ -1517,52 +1685,54 @@ class AsyncCompletionsResource(AsyncAPIResource):
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
         auto_execute_tools: bool | Omit = omit,
+        cached_content: Optional[str] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
-        disable_automatic_function_calling: Optional[bool] | Omit = omit,
+        disable_automatic_function_calling: bool | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
-        function_call: Union[str, Dict[str, object], None] | Omit = omit,
-        functions: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        function_call: Optional[Literal["auto", "none"]] | Omit = omit,
+        functions: Optional[Iterable[completion_create_params.Function]] | Omit = omit,
         generation_config: Optional[Dict[str, object]] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
-        input: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
-        instructions: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
         mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
-        messages: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
+        messages: Union[Iterable[completion_create_params.MessagesMessage], str, None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
-        modalities: Optional[SequenceNotStr[str]] | Omit = omit,
+        modalities: Optional[List[Literal["text", "audio"]]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
         n: Optional[int] | Omit = omit,
         parallel_tool_calls: Optional[bool] | Omit = omit,
-        prediction: Optional[Dict[str, object]] | Omit = omit,
+        prediction: Optional[completion_create_params.Prediction] | Omit = omit,
         presence_penalty: Optional[float] | Omit = omit,
         prompt_cache_key: Optional[str] | Omit = omit,
-        reasoning_effort: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        prompt_cache_retention: Optional[Literal["24h", "in-memory"]] | Omit = omit,
+        prompt_mode: Optional[Dict[str, object]] | Omit = omit,
+        reasoning_effort: Optional[Literal["high", "low", "medium", "minimal", "none"]] | Omit = omit,
         response_format: Optional[completion_create_params.ResponseFormat] | Omit = omit,
+        safe_prompt: Optional[bool] | Omit = omit,
         safety_identifier: Optional[str] | Omit = omit,
-        safety_settings: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        safety_settings: Optional[Iterable[completion_create_params.SafetySetting]] | Omit = omit,
         search_parameters: Optional[Dict[str, object]] | Omit = omit,
         seed: Optional[int] | Omit = omit,
-        service_tier: Optional[Literal["auto", "default"]] | Omit = omit,
-        stop: Optional[SequenceNotStr[str]] | Omit = omit,
+        service_tier: Optional[Literal["auto", "default", "flex", "priority", "scale", "standard_only"]] | Omit = omit,
+        stop: Union[str, SequenceNotStr[str], None] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream_options: Optional[Dict[str, object]] | Omit = omit,
-        system: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
+        system_instruction: Union[Dict[str, object], str, None] | Omit = omit,
         temperature: Optional[float] | Omit = omit,
         thinking: Optional[completion_create_params.Thinking] | Omit = omit,
-        tool_choice: Union[str, Dict[str, object], None] | Omit = omit,
+        tool_choice: Optional[completion_create_params.ToolChoice] | Omit = omit,
         tool_config: Optional[Dict[str, object]] | Omit = omit,
-        tools: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        tools: Optional[Iterable[completion_create_params.Tool]] | Omit = omit,
         top_k: Optional[int] | Omit = omit,
         top_logprobs: Optional[int] | Omit = omit,
         top_p: Optional[float] | Omit = omit,
         user: Optional[str] | Omit = omit,
-        verbosity: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        verbosity: Optional[Literal["high", "low", "medium"]] | Omit = omit,
         web_search_options: Optional[Dict[str, object]] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -1575,19 +1745,8 @@ class AsyncCompletionsResource(AsyncAPIResource):
         """
         Create a chat completion.
 
-        Unified chat-completions endpoint that works across many model providers.
-        Supports optional MCP integration, multi-model routing with agentic handoffs,
-        server- or client-executed tools, and both streaming and non-streaming delivery.
-
-        Request body:
-
-        - messages: ordered list of chat turns.
-        - model: identifier or a list of identifiers for routing.
-        - tools: optional tool declarations available to the model.
-        - mcp_servers: optional list of MCP server slugs to enable during the run.
-        - stream: boolean to request incremental output.
-        - config: optional generation parameters (e.g., temperature, max_tokens,
-          metadata).
+        Generates a model response for the given conversation and configuration.
+        Supports OpenAI-compatible parameters and provider-specific extensions.
 
         Headers:
 
@@ -1596,8 +1755,8 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
         Behavior:
 
-        - If multiple models are supplied, the router may select or hand off across
-          them.
+        - If multiple models are supplied, the first one is used, and the agent may hand
+          off to another model.
         - Tools may be invoked on the server or signaled for the client to run.
         - Streaming responses emit incremental deltas; non-streaming returns a single
           object.
@@ -1638,11 +1797,12 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
         Args:
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
-              or a list for multi-model routing. Single model: 'openai/gpt-4',
-              'anthropic/claude-3-5-sonnet-20241022', 'openai/gpt-4o-mini', or a DedalusModel
-              instance. Multi-model routing: ['openai/gpt-4o-mini', 'openai/gpt-4',
-              'anthropic/claude-3-5-sonnet'] or list of DedalusModel objects - agent will
-              choose optimal model based on task complexity.
+              or a list for multi-model routing. Single model: 'openai/gpt-5',
+              'anthropic/claude-sonnet-4-5-20250929', 'google/gemini-3-pro-preview', or a
+              DedalusModel instance. Multi-model routing: ['openai/gpt-5',
+              'anthropic/claude-sonnet-4-5-20250929', 'google/gemini-3-pro-preview'] or list
+              of DedalusModel objects - agent will choose optimal model based on task
+              complexity.
 
           stream: If true, the model response data is streamed to the client as it is generated
               using Server-Sent Events.
@@ -1652,30 +1812,39 @@ class AsyncCompletionsResource(AsyncAPIResource):
               'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
               values indicate stronger preference for that characteristic.
 
-          audio: Parameters for audio output. Required when requesting audio responses (for
-              example, modalities including 'audio').
+          audio: Parameters for audio output. Required when audio output is requested with
+              `modalities: ["audio"]`.
+              [Learn more](https://platform.openai.com/docs/guides/audio).
 
           auto_execute_tools: When False, skip server-side tool execution and return raw OpenAI-style
               tool_calls in the response.
 
-          deferred: xAI-specific parameter. If set to true, the request returns a request_id for
-              async completion retrieval via GET /v1/chat/deferred-completion/{request_id}.
+          cached_content: Optional. The name of the content
+              [cached](https://ai.google.dev/gemini-api/docs/caching) to use as context to
+              serve the prediction. Format: `cachedContents/{cachedContent}`
 
-          disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
-              the model returns function calls for the client to execute manually.
+          deferred: If set to `true`, the request returns a `request_id`. You can then get the
+              deferred response by GET `/v1/chat/deferred-completion/{request_id}`.
+
+          disable_automatic_function_calling: Google SDK control: disable automatic function calling. Agent workflows handle
+              tools manually.
 
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing the model's likelihood to
               repeat the same line verbatim.
 
-          function_call: Deprecated in favor of 'tool_choice'. Controls which function is called by the
-              model (none, auto, or specific name).
+          function_call: Deprecated in favor of `tool_choice`. Controls which (if any) function is called
+              by the model. `none` means the model will not call a function and instead
+              generates a message. `auto` means the model can pick between generating a
+              message or calling a function. Specifying a particular function via
+              `{"name": "my_function"}` forces the model to call that function. `none` is the
+              default when no functions are present. `auto` is the default if functions are
+              present.
 
-          functions: Deprecated in favor of 'tools'. Legacy list of function definitions the model
-              may generate JSON inputs for.
+          functions: Deprecated in favor of `tools`. A list of functions the model may generate JSON
+              inputs for.
 
-          generation_config: Google generationConfig object. Merged with auto-generated config. Use for
-              Google-specific params (candidateCount, responseMimeType, etc.).
+          generation_config: Generation parameters wrapper (Google-specific)
 
           guardrails: Guardrails to apply to the agent for input/output validation and safety checks.
               Reserved for future use - guardrails configuration format not yet finalized.
@@ -1683,28 +1852,26 @@ class AsyncCompletionsResource(AsyncAPIResource):
           handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
               future use - handoff configuration format not yet finalized.
 
-          input: Convenience alias for Responses-style `input`. Used when `messages` is omitted
-              to provide the user prompt directly.
-
-          instructions: Convenience alias for Responses-style `instructions`. Takes precedence over
-              `system` and over system-role messages when provided.
-
           logit_bias: Modify the likelihood of specified tokens appearing in the completion. Accepts a
-              JSON object mapping token IDs (as strings) to bias values from -100 to 100. The
-              bias is added to the logits before sampling; values between -1 and 1 nudge
-              selection probability, while values like -100 or 100 effectively ban or require
-              a token.
+              JSON object that maps tokens (specified by their token ID in the tokenizer) to
+              an associated bias value from -100 to 100. Mathematically, the bias is added to
+              the logits generated by the model prior to sampling. The exact effect will vary
+              per model, but values between -1 and 1 should decrease or increase likelihood of
+              selection; values like -100 or 100 should result in a ban or exclusive selection
+              of the relevant token.
 
-          logprobs: Whether to return log probabilities of the output tokens. If true, returns the
-              log probabilities for each token in the response content.
+          logprobs: Whether to return log probabilities of the output tokens or not. If true,
+              returns the log probabilities of each output token returned in the `content` of
+              `message`.
 
           max_completion_tokens: An upper bound for the number of tokens that can be generated for a completion,
               including visible output and reasoning tokens.
 
-          max_tokens: The maximum number of tokens that can be generated in the chat completion. This
-              value can be used to control costs for text generated via API. This value is now
-              deprecated in favor of 'max_completion_tokens' and is not compatible with
-              o-series models.
+          max_tokens: Maximum number of tokens the model can generate in the completion. The total
+              token count (input + output) is limited by the model's context window. Setting
+              this prevents unexpectedly long responses and helps control costs. For newer
+              OpenAI models, use max_completion_tokens instead (more precise accounting). For
+              other providers, max_tokens remains the standard parameter name.
 
           max_turns: Maximum number of turns for agent execution before terminating (default: 10).
               Each turn represents one model inference cycle. Higher values allow more complex
@@ -1719,108 +1886,150 @@ class AsyncCompletionsResource(AsyncAPIResource):
               which is treated as a single user message. Optional if `input` or `instructions`
               is provided.
 
-          metadata: Set of up to 16 key-value string pairs that can be attached to the request for
-              structured metadata.
+          metadata: Set of 16 key-value pairs that can be attached to an object. This can be useful
+              for storing additional information about the object in a structured format, and
+              querying for objects via API or the dashboard. Keys are strings with a maximum
+              length of 64 characters. Values are strings with a maximum length of 512
+              characters.
 
-          modalities: Output types you would like the model to generate. Most models default to
-              ['text']; some support ['text', 'audio'].
+          modalities: Output modalities. Most models generate text by default. Use ['text', 'audio']
+              for audio-capable models.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
               execution. Format: {'model_name': {'attribute': value}}, where values are
               0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
               'accuracy'. Used by agent to select optimal model based on task requirements.
 
-          n: How many chat completion choices to generate for each input message. Keep 'n' as
-              1 to minimize costs.
+          n: How many chat completion choices to generate for each input message. Note that
+              you will be charged based on the number of generated tokens across all of the
+              choices. Keep `n` as `1` to minimize costs.
 
-          parallel_tool_calls: Whether to enable parallel function calling during tool use.
+          parallel_tool_calls: Whether to enable parallel tool calls (Anthropic uses inverted polarity)
 
-          prediction: Configuration for predicted outputs. Improves response times when you already
-              know large portions of the response content.
+          prediction: Static predicted output content, such as the content of a text file that is
+              being regenerated.
 
           presence_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on
               whether they appear in the text so far, increasing the model's likelihood to
               talk about new topics.
 
-          prompt_cache_key: Used by OpenAI to cache responses for similar requests and optimize cache hit
-              rates. Replaces the legacy 'user' field for caching.
+          prompt_cache_key: Used by OpenAI to cache responses for similar requests to optimize your cache
+              hit rates. Replaces the `user` field.
+              [Learn more](https://platform.openai.com/docs/guides/prompt-caching).
 
-          reasoning_effort: Constrains effort on reasoning for supported reasoning models. Higher values use
-              more compute, potentially improving reasoning quality at the cost of latency and
-              tokens.
+          prompt_cache_retention: The retention policy for the prompt cache. Set to `24h` to enable extended
+              prompt caching, which keeps cached prefixes active for longer, up to a maximum
+              of 24 hours.
+              [Learn more](https://platform.openai.com/docs/guides/prompt-caching#prompt-cache-retention).
 
-          response_format:
-              An object specifying the format that the model must output. Use {'type':
-              'json_schema', 'json_schema': {...}} for structured outputs or {'type':
-              'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed models
-              honor this field; Anthropic and Google requests will return an
-              invalid_request_error if it is supplied.
+          prompt_mode: Allows toggling between the reasoning mode and no system prompt. When set to
+              `reasoning` the system prompt for reasoning models will be used.
 
-          safety_identifier: Stable identifier used to help detect users who might violate OpenAI usage
-              policies. Consider hashing end-user identifiers before sending.
+          reasoning_effort: Constrains effort on reasoning for
+              [reasoning models](https://platform.openai.com/docs/guides/reasoning). Currently
+              supported values are `none`, `minimal`, `low`, `medium`, and `high`. Reducing
+              reasoning effort can result in faster responses and fewer tokens used on
+              reasoning in a response. - `gpt-5.1` defaults to `none`, which does not perform
+              reasoning. The supported reasoning values for `gpt-5.1` are `none`, `low`,
+              `medium`, and `high`. Tool calls are supported for all reasoning values in
+              gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort, and
+              do not support `none`. - The `gpt-5-pro` model defaults to (and only supports)
+              `high` reasoning effort.
 
-          safety_settings: Google safety settings (harm categories and thresholds).
+          response_format: An object specifying the format that the model must output. Setting to
+              `{ "type": "json_schema", "json_schema": {...} }` enables Structured Outputs
+              which ensures the model will match your supplied JSON schema. Learn more in the
+              [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
+              Setting to `{ "type": "json_object" }` enables the older JSON mode, which
+              ensures the message the model generates is valid JSON. Using `json_schema` is
+              preferred for models that support it.
 
-          search_parameters: xAI-specific parameter for configuring web search data acquisition. If not set,
-              no data will be acquired by the model.
+          safe_prompt: Whether to inject a safety prompt before all conversations.
 
-          seed: If specified, system will make a best effort to sample deterministically.
-              Determinism is not guaranteed for the same seed across different models or API
-              versions.
+          safety_identifier: A stable identifier used to help detect users of your application that may be
+              violating OpenAI's usage policies. The IDs should be a string that uniquely
+              identifies each user. We recommend hashing their username or email address, in
+              order to avoid sending us any identifying information.
+              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
 
-          service_tier: Specifies the processing tier used for the request. 'auto' uses project
-              defaults, while 'default' forces standard pricing and performance.
+          safety_settings: Safety/content filtering settings (Google-specific)
 
-          stop: Not supported with latest reasoning models 'o3' and 'o4-mini'.
+          search_parameters: Set the parameters to be used for searched data. If not set, no data will be
+              acquired by the model.
 
-                      Up to 4 sequences where the API will stop generating further tokens; the returned text will not contain the stop sequence.
+          seed: Random seed for deterministic output
 
-          store: Whether to store the output of this chat completion request for OpenAI model
-              distillation or eval products. Image inputs over 8MB are dropped if storage is
-              enabled.
+          service_tier: Service tier for request processing
 
-          stream_options: Options for streaming responses. Only set when 'stream' is true (supports
-              'include_usage' and 'include_obfuscation').
+          stop: Not supported with latest reasoning models 'o3' and 'o4-mini'. Up to 4 sequences
+              where the API will stop generating further tokens; the returned text will not
+              contain the stop sequence.
 
-          system: System prompt/instructions. Anthropic: pass-through. Google: converted to
-              systemInstruction. OpenAI: extracted from messages.
+          store: Whether or not to store the output of this chat completion request for use in
+              our [model distillation](https://platform.openai.com/docs/guides/distillation)
+              or [evals](https://platform.openai.com/docs/guides/evals) products. Supports
+              text and image inputs. Note: image inputs over 8MB will be dropped.
 
-          temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8 make
-              the output more random, while lower values like 0.2 make it more focused and
-              deterministic. We generally recommend altering this or 'top_p' but not both.
+          stream_options: Options for streaming response. Only set this when you set `stream: true`.
 
-          thinking: Extended thinking configuration (Anthropic only). Enables thinking blocks
-              showing reasoning process. Requires min 1,024 token budget.
+          system_instruction: System-level instructions defining the assistant's behavior, role, and
+              constraints. Sets the context and personality for the entire conversation.
+              Different from user/assistant messages as it provides meta-instructions about
+              how to respond rather than conversation content. OpenAI: Provided as system role
+              message in messages array. Google: Top-level systemInstruction field (adapter
+              extracts from messages). Anthropic: Top-level system parameter (adapter extracts
+              from messages). Accepts both string and structured object formats depending on
+              provider capabilities.
 
-          tool_choice: Controls which (if any) tool is called by the model. 'none' stops tool calling,
-              'auto' lets the model decide, and 'required' forces at least one tool
-              invocation. Specific tool payloads force that tool.
+          temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8 will
+              make the output more random, while lower values like 0.2 will make it more
+              focused and deterministic. We generally recommend altering this or top_p but not
+              both.
 
-          tool_config: Google tool configuration (function calling mode, etc.).
+          thinking: Extended thinking configuration (Anthropic-specific)
 
-          tools: A list of tools the model may call. Supports OpenAI function tools and custom
-              tools; use 'mcp_servers' for Dedalus-managed server-side tools.
+          tool_choice: Controls which (if any) tool is called by the model. `none` means the model will
+              not call any tool and instead generates a message. `auto` means the model can
+              pick between generating a message or calling one or more tools. `required` means
+              the model must call one or more tools. Specifying a particular tool via
+              `{"type": "function", "function": {"name": "my_function"}}` forces the model to
+              call that tool. `none` is the default when no tools are present. `auto` is the
+              default if tools are present.
 
-          top_k: Top-k sampling. Anthropic: pass-through. Google: injected into
-              generationConfig.topK.
+          tool_config: Tool calling configuration (Google-specific)
 
-          top_logprobs: An integer between 0 and 20 specifying how many of the most likely tokens to
-              return at each position, with log probabilities. Requires 'logprobs' to be true.
+          tools: A list of tools the model may call. You can provide either custom tools or
+              function tools. All providers support tools. Adapters handle translation to
+              provider-specific formats.
+
+          top_k: Top-k sampling parameter limiting token selection to k most likely candidates.
+              Only considers the top k highest probability tokens at each generation step,
+              setting all other tokens' probabilities to zero. Reduces tail probability mass.
+              Helps prevent selection of highly unlikely tokens, improving output coherence.
+              Supported by Google and Anthropic; not available in OpenAI's API.
+
+          top_logprobs: An integer between 0 and 20 specifying the number of most likely tokens to
+              return at each token position, each with an associated log probability.
+              `logprobs` must be set to `true` if this parameter is used.
 
           top_p: An alternative to sampling with temperature, called nucleus sampling, where the
               model considers the results of the tokens with top_p probability mass. So 0.1
               means only the tokens comprising the top 10% probability mass are considered. We
-              generally recommend altering this or 'temperature' but not both.
+              generally recommend altering this or temperature but not both.
 
-          user: Stable identifier for your end-users. Helps OpenAI detect and prevent abuse and
-              may boost cache hit rates. This field is being replaced by 'safety_identifier'
-              and 'prompt_cache_key'.
+          user: This field is being replaced by `safety_identifier` and `prompt_cache_key`. Use
+              `prompt_cache_key` instead to maintain caching optimizations. A stable
+              identifier for your end-users. Used to boost cache hit rates by better bucketing
+              similar requests and to help OpenAI detect and prevent abuse.
+              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
 
-          verbosity: Constrains the verbosity of the model's response. Lower values produce concise
-              answers, higher values allow more detail.
+          verbosity: Constrains the verbosity of the model's response. Lower values will result in
+              more concise responses, while higher values will result in more verbose
+              responses. Currently supported values are `low`, `medium`, and `high`.
 
-          web_search_options: Configuration for OpenAI's web search tool. Learn more at
-              https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat.
+          web_search_options: This tool searches the web for relevant results to use in a response. Learn more
+              about the
+              [web search tool](https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat).
 
           extra_headers: Send extra headers
 
@@ -1843,52 +2052,54 @@ class AsyncCompletionsResource(AsyncAPIResource):
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
         auto_execute_tools: bool | Omit = omit,
+        cached_content: Optional[str] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
-        disable_automatic_function_calling: Optional[bool] | Omit = omit,
+        disable_automatic_function_calling: bool | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
-        function_call: Union[str, Dict[str, object], None] | Omit = omit,
-        functions: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        function_call: Optional[Literal["auto", "none"]] | Omit = omit,
+        functions: Optional[Iterable[completion_create_params.Function]] | Omit = omit,
         generation_config: Optional[Dict[str, object]] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
-        input: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
-        instructions: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
         mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
-        messages: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
+        messages: Union[Iterable[completion_create_params.MessagesMessage], str, None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
-        modalities: Optional[SequenceNotStr[str]] | Omit = omit,
+        modalities: Optional[List[Literal["text", "audio"]]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
         n: Optional[int] | Omit = omit,
         parallel_tool_calls: Optional[bool] | Omit = omit,
-        prediction: Optional[Dict[str, object]] | Omit = omit,
+        prediction: Optional[completion_create_params.Prediction] | Omit = omit,
         presence_penalty: Optional[float] | Omit = omit,
         prompt_cache_key: Optional[str] | Omit = omit,
-        reasoning_effort: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        prompt_cache_retention: Optional[Literal["24h", "in-memory"]] | Omit = omit,
+        prompt_mode: Optional[Dict[str, object]] | Omit = omit,
+        reasoning_effort: Optional[Literal["high", "low", "medium", "minimal", "none"]] | Omit = omit,
         response_format: Optional[completion_create_params.ResponseFormat] | Omit = omit,
+        safe_prompt: Optional[bool] | Omit = omit,
         safety_identifier: Optional[str] | Omit = omit,
-        safety_settings: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        safety_settings: Optional[Iterable[completion_create_params.SafetySetting]] | Omit = omit,
         search_parameters: Optional[Dict[str, object]] | Omit = omit,
         seed: Optional[int] | Omit = omit,
-        service_tier: Optional[Literal["auto", "default"]] | Omit = omit,
-        stop: Optional[SequenceNotStr[str]] | Omit = omit,
+        service_tier: Optional[Literal["auto", "default", "flex", "priority", "scale", "standard_only"]] | Omit = omit,
+        stop: Union[str, SequenceNotStr[str], None] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream_options: Optional[Dict[str, object]] | Omit = omit,
-        system: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
+        system_instruction: Union[Dict[str, object], str, None] | Omit = omit,
         temperature: Optional[float] | Omit = omit,
         thinking: Optional[completion_create_params.Thinking] | Omit = omit,
-        tool_choice: Union[str, Dict[str, object], None] | Omit = omit,
+        tool_choice: Optional[completion_create_params.ToolChoice] | Omit = omit,
         tool_config: Optional[Dict[str, object]] | Omit = omit,
-        tools: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        tools: Optional[Iterable[completion_create_params.Tool]] | Omit = omit,
         top_k: Optional[int] | Omit = omit,
         top_logprobs: Optional[int] | Omit = omit,
         top_p: Optional[float] | Omit = omit,
         user: Optional[str] | Omit = omit,
-        verbosity: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        verbosity: Optional[Literal["high", "low", "medium"]] | Omit = omit,
         web_search_options: Optional[Dict[str, object]] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -1901,19 +2112,8 @@ class AsyncCompletionsResource(AsyncAPIResource):
         """
         Create a chat completion.
 
-        Unified chat-completions endpoint that works across many model providers.
-        Supports optional MCP integration, multi-model routing with agentic handoffs,
-        server- or client-executed tools, and both streaming and non-streaming delivery.
-
-        Request body:
-
-        - messages: ordered list of chat turns.
-        - model: identifier or a list of identifiers for routing.
-        - tools: optional tool declarations available to the model.
-        - mcp_servers: optional list of MCP server slugs to enable during the run.
-        - stream: boolean to request incremental output.
-        - config: optional generation parameters (e.g., temperature, max_tokens,
-          metadata).
+        Generates a model response for the given conversation and configuration.
+        Supports OpenAI-compatible parameters and provider-specific extensions.
 
         Headers:
 
@@ -1922,8 +2122,8 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
         Behavior:
 
-        - If multiple models are supplied, the router may select or hand off across
-          them.
+        - If multiple models are supplied, the first one is used, and the agent may hand
+          off to another model.
         - Tools may be invoked on the server or signaled for the client to run.
         - Streaming responses emit incremental deltas; non-streaming returns a single
           object.
@@ -1964,11 +2164,12 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
         Args:
           model: Model(s) to use for completion. Can be a single model ID, a DedalusModel object,
-              or a list for multi-model routing. Single model: 'openai/gpt-4',
-              'anthropic/claude-3-5-sonnet-20241022', 'openai/gpt-4o-mini', or a DedalusModel
-              instance. Multi-model routing: ['openai/gpt-4o-mini', 'openai/gpt-4',
-              'anthropic/claude-3-5-sonnet'] or list of DedalusModel objects - agent will
-              choose optimal model based on task complexity.
+              or a list for multi-model routing. Single model: 'openai/gpt-5',
+              'anthropic/claude-sonnet-4-5-20250929', 'google/gemini-3-pro-preview', or a
+              DedalusModel instance. Multi-model routing: ['openai/gpt-5',
+              'anthropic/claude-sonnet-4-5-20250929', 'google/gemini-3-pro-preview'] or list
+              of DedalusModel objects - agent will choose optimal model based on task
+              complexity.
 
           stream: If true, the model response data is streamed to the client as it is generated
               using Server-Sent Events.
@@ -1978,30 +2179,39 @@ class AsyncCompletionsResource(AsyncAPIResource):
               'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
               values indicate stronger preference for that characteristic.
 
-          audio: Parameters for audio output. Required when requesting audio responses (for
-              example, modalities including 'audio').
+          audio: Parameters for audio output. Required when audio output is requested with
+              `modalities: ["audio"]`.
+              [Learn more](https://platform.openai.com/docs/guides/audio).
 
           auto_execute_tools: When False, skip server-side tool execution and return raw OpenAI-style
               tool_calls in the response.
 
-          deferred: xAI-specific parameter. If set to true, the request returns a request_id for
-              async completion retrieval via GET /v1/chat/deferred-completion/{request_id}.
+          cached_content: Optional. The name of the content
+              [cached](https://ai.google.dev/gemini-api/docs/caching) to use as context to
+              serve the prediction. Format: `cachedContents/{cachedContent}`
 
-          disable_automatic_function_calling: Google-only flag to disable the SDK's automatic function execution. When true,
-              the model returns function calls for the client to execute manually.
+          deferred: If set to `true`, the request returns a `request_id`. You can then get the
+              deferred response by GET `/v1/chat/deferred-completion/{request_id}`.
+
+          disable_automatic_function_calling: Google SDK control: disable automatic function calling. Agent workflows handle
+              tools manually.
 
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing the model's likelihood to
               repeat the same line verbatim.
 
-          function_call: Deprecated in favor of 'tool_choice'. Controls which function is called by the
-              model (none, auto, or specific name).
+          function_call: Deprecated in favor of `tool_choice`. Controls which (if any) function is called
+              by the model. `none` means the model will not call a function and instead
+              generates a message. `auto` means the model can pick between generating a
+              message or calling a function. Specifying a particular function via
+              `{"name": "my_function"}` forces the model to call that function. `none` is the
+              default when no functions are present. `auto` is the default if functions are
+              present.
 
-          functions: Deprecated in favor of 'tools'. Legacy list of function definitions the model
-              may generate JSON inputs for.
+          functions: Deprecated in favor of `tools`. A list of functions the model may generate JSON
+              inputs for.
 
-          generation_config: Google generationConfig object. Merged with auto-generated config. Use for
-              Google-specific params (candidateCount, responseMimeType, etc.).
+          generation_config: Generation parameters wrapper (Google-specific)
 
           guardrails: Guardrails to apply to the agent for input/output validation and safety checks.
               Reserved for future use - guardrails configuration format not yet finalized.
@@ -2009,28 +2219,26 @@ class AsyncCompletionsResource(AsyncAPIResource):
           handoff_config: Configuration for multi-model handoffs and agent orchestration. Reserved for
               future use - handoff configuration format not yet finalized.
 
-          input: Convenience alias for Responses-style `input`. Used when `messages` is omitted
-              to provide the user prompt directly.
-
-          instructions: Convenience alias for Responses-style `instructions`. Takes precedence over
-              `system` and over system-role messages when provided.
-
           logit_bias: Modify the likelihood of specified tokens appearing in the completion. Accepts a
-              JSON object mapping token IDs (as strings) to bias values from -100 to 100. The
-              bias is added to the logits before sampling; values between -1 and 1 nudge
-              selection probability, while values like -100 or 100 effectively ban or require
-              a token.
+              JSON object that maps tokens (specified by their token ID in the tokenizer) to
+              an associated bias value from -100 to 100. Mathematically, the bias is added to
+              the logits generated by the model prior to sampling. The exact effect will vary
+              per model, but values between -1 and 1 should decrease or increase likelihood of
+              selection; values like -100 or 100 should result in a ban or exclusive selection
+              of the relevant token.
 
-          logprobs: Whether to return log probabilities of the output tokens. If true, returns the
-              log probabilities for each token in the response content.
+          logprobs: Whether to return log probabilities of the output tokens or not. If true,
+              returns the log probabilities of each output token returned in the `content` of
+              `message`.
 
           max_completion_tokens: An upper bound for the number of tokens that can be generated for a completion,
               including visible output and reasoning tokens.
 
-          max_tokens: The maximum number of tokens that can be generated in the chat completion. This
-              value can be used to control costs for text generated via API. This value is now
-              deprecated in favor of 'max_completion_tokens' and is not compatible with
-              o-series models.
+          max_tokens: Maximum number of tokens the model can generate in the completion. The total
+              token count (input + output) is limited by the model's context window. Setting
+              this prevents unexpectedly long responses and helps control costs. For newer
+              OpenAI models, use max_completion_tokens instead (more precise accounting). For
+              other providers, max_tokens remains the standard parameter name.
 
           max_turns: Maximum number of turns for agent execution before terminating (default: 10).
               Each turn represents one model inference cycle. Higher values allow more complex
@@ -2045,108 +2253,150 @@ class AsyncCompletionsResource(AsyncAPIResource):
               which is treated as a single user message. Optional if `input` or `instructions`
               is provided.
 
-          metadata: Set of up to 16 key-value string pairs that can be attached to the request for
-              structured metadata.
+          metadata: Set of 16 key-value pairs that can be attached to an object. This can be useful
+              for storing additional information about the object in a structured format, and
+              querying for objects via API or the dashboard. Keys are strings with a maximum
+              length of 64 characters. Values are strings with a maximum length of 512
+              characters.
 
-          modalities: Output types you would like the model to generate. Most models default to
-              ['text']; some support ['text', 'audio'].
+          modalities: Output modalities. Most models generate text by default. Use ['text', 'audio']
+              for audio-capable models.
 
           model_attributes: Attributes for individual models used in routing decisions during multi-model
               execution. Format: {'model_name': {'attribute': value}}, where values are
               0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
               'accuracy'. Used by agent to select optimal model based on task requirements.
 
-          n: How many chat completion choices to generate for each input message. Keep 'n' as
-              1 to minimize costs.
+          n: How many chat completion choices to generate for each input message. Note that
+              you will be charged based on the number of generated tokens across all of the
+              choices. Keep `n` as `1` to minimize costs.
 
-          parallel_tool_calls: Whether to enable parallel function calling during tool use.
+          parallel_tool_calls: Whether to enable parallel tool calls (Anthropic uses inverted polarity)
 
-          prediction: Configuration for predicted outputs. Improves response times when you already
-              know large portions of the response content.
+          prediction: Static predicted output content, such as the content of a text file that is
+              being regenerated.
 
           presence_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on
               whether they appear in the text so far, increasing the model's likelihood to
               talk about new topics.
 
-          prompt_cache_key: Used by OpenAI to cache responses for similar requests and optimize cache hit
-              rates. Replaces the legacy 'user' field for caching.
+          prompt_cache_key: Used by OpenAI to cache responses for similar requests to optimize your cache
+              hit rates. Replaces the `user` field.
+              [Learn more](https://platform.openai.com/docs/guides/prompt-caching).
 
-          reasoning_effort: Constrains effort on reasoning for supported reasoning models. Higher values use
-              more compute, potentially improving reasoning quality at the cost of latency and
-              tokens.
+          prompt_cache_retention: The retention policy for the prompt cache. Set to `24h` to enable extended
+              prompt caching, which keeps cached prefixes active for longer, up to a maximum
+              of 24 hours.
+              [Learn more](https://platform.openai.com/docs/guides/prompt-caching#prompt-cache-retention).
 
-          response_format:
-              An object specifying the format that the model must output. Use {'type':
-              'json_schema', 'json_schema': {...}} for structured outputs or {'type':
-              'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed models
-              honor this field; Anthropic and Google requests will return an
-              invalid_request_error if it is supplied.
+          prompt_mode: Allows toggling between the reasoning mode and no system prompt. When set to
+              `reasoning` the system prompt for reasoning models will be used.
 
-          safety_identifier: Stable identifier used to help detect users who might violate OpenAI usage
-              policies. Consider hashing end-user identifiers before sending.
+          reasoning_effort: Constrains effort on reasoning for
+              [reasoning models](https://platform.openai.com/docs/guides/reasoning). Currently
+              supported values are `none`, `minimal`, `low`, `medium`, and `high`. Reducing
+              reasoning effort can result in faster responses and fewer tokens used on
+              reasoning in a response. - `gpt-5.1` defaults to `none`, which does not perform
+              reasoning. The supported reasoning values for `gpt-5.1` are `none`, `low`,
+              `medium`, and `high`. Tool calls are supported for all reasoning values in
+              gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort, and
+              do not support `none`. - The `gpt-5-pro` model defaults to (and only supports)
+              `high` reasoning effort.
 
-          safety_settings: Google safety settings (harm categories and thresholds).
+          response_format: An object specifying the format that the model must output. Setting to
+              `{ "type": "json_schema", "json_schema": {...} }` enables Structured Outputs
+              which ensures the model will match your supplied JSON schema. Learn more in the
+              [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
+              Setting to `{ "type": "json_object" }` enables the older JSON mode, which
+              ensures the message the model generates is valid JSON. Using `json_schema` is
+              preferred for models that support it.
 
-          search_parameters: xAI-specific parameter for configuring web search data acquisition. If not set,
-              no data will be acquired by the model.
+          safe_prompt: Whether to inject a safety prompt before all conversations.
 
-          seed: If specified, system will make a best effort to sample deterministically.
-              Determinism is not guaranteed for the same seed across different models or API
-              versions.
+          safety_identifier: A stable identifier used to help detect users of your application that may be
+              violating OpenAI's usage policies. The IDs should be a string that uniquely
+              identifies each user. We recommend hashing their username or email address, in
+              order to avoid sending us any identifying information.
+              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
 
-          service_tier: Specifies the processing tier used for the request. 'auto' uses project
-              defaults, while 'default' forces standard pricing and performance.
+          safety_settings: Safety/content filtering settings (Google-specific)
 
-          stop: Not supported with latest reasoning models 'o3' and 'o4-mini'.
+          search_parameters: Set the parameters to be used for searched data. If not set, no data will be
+              acquired by the model.
 
-                      Up to 4 sequences where the API will stop generating further tokens; the returned text will not contain the stop sequence.
+          seed: Random seed for deterministic output
 
-          store: Whether to store the output of this chat completion request for OpenAI model
-              distillation or eval products. Image inputs over 8MB are dropped if storage is
-              enabled.
+          service_tier: Service tier for request processing
 
-          stream_options: Options for streaming responses. Only set when 'stream' is true (supports
-              'include_usage' and 'include_obfuscation').
+          stop: Not supported with latest reasoning models 'o3' and 'o4-mini'. Up to 4 sequences
+              where the API will stop generating further tokens; the returned text will not
+              contain the stop sequence.
 
-          system: System prompt/instructions. Anthropic: pass-through. Google: converted to
-              systemInstruction. OpenAI: extracted from messages.
+          store: Whether or not to store the output of this chat completion request for use in
+              our [model distillation](https://platform.openai.com/docs/guides/distillation)
+              or [evals](https://platform.openai.com/docs/guides/evals) products. Supports
+              text and image inputs. Note: image inputs over 8MB will be dropped.
 
-          temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8 make
-              the output more random, while lower values like 0.2 make it more focused and
-              deterministic. We generally recommend altering this or 'top_p' but not both.
+          stream_options: Options for streaming response. Only set this when you set `stream: true`.
 
-          thinking: Extended thinking configuration (Anthropic only). Enables thinking blocks
-              showing reasoning process. Requires min 1,024 token budget.
+          system_instruction: System-level instructions defining the assistant's behavior, role, and
+              constraints. Sets the context and personality for the entire conversation.
+              Different from user/assistant messages as it provides meta-instructions about
+              how to respond rather than conversation content. OpenAI: Provided as system role
+              message in messages array. Google: Top-level systemInstruction field (adapter
+              extracts from messages). Anthropic: Top-level system parameter (adapter extracts
+              from messages). Accepts both string and structured object formats depending on
+              provider capabilities.
 
-          tool_choice: Controls which (if any) tool is called by the model. 'none' stops tool calling,
-              'auto' lets the model decide, and 'required' forces at least one tool
-              invocation. Specific tool payloads force that tool.
+          temperature: What sampling temperature to use, between 0 and 2. Higher values like 0.8 will
+              make the output more random, while lower values like 0.2 will make it more
+              focused and deterministic. We generally recommend altering this or top_p but not
+              both.
 
-          tool_config: Google tool configuration (function calling mode, etc.).
+          thinking: Extended thinking configuration (Anthropic-specific)
 
-          tools: A list of tools the model may call. Supports OpenAI function tools and custom
-              tools; use 'mcp_servers' for Dedalus-managed server-side tools.
+          tool_choice: Controls which (if any) tool is called by the model. `none` means the model will
+              not call any tool and instead generates a message. `auto` means the model can
+              pick between generating a message or calling one or more tools. `required` means
+              the model must call one or more tools. Specifying a particular tool via
+              `{"type": "function", "function": {"name": "my_function"}}` forces the model to
+              call that tool. `none` is the default when no tools are present. `auto` is the
+              default if tools are present.
 
-          top_k: Top-k sampling. Anthropic: pass-through. Google: injected into
-              generationConfig.topK.
+          tool_config: Tool calling configuration (Google-specific)
 
-          top_logprobs: An integer between 0 and 20 specifying how many of the most likely tokens to
-              return at each position, with log probabilities. Requires 'logprobs' to be true.
+          tools: A list of tools the model may call. You can provide either custom tools or
+              function tools. All providers support tools. Adapters handle translation to
+              provider-specific formats.
+
+          top_k: Top-k sampling parameter limiting token selection to k most likely candidates.
+              Only considers the top k highest probability tokens at each generation step,
+              setting all other tokens' probabilities to zero. Reduces tail probability mass.
+              Helps prevent selection of highly unlikely tokens, improving output coherence.
+              Supported by Google and Anthropic; not available in OpenAI's API.
+
+          top_logprobs: An integer between 0 and 20 specifying the number of most likely tokens to
+              return at each token position, each with an associated log probability.
+              `logprobs` must be set to `true` if this parameter is used.
 
           top_p: An alternative to sampling with temperature, called nucleus sampling, where the
               model considers the results of the tokens with top_p probability mass. So 0.1
               means only the tokens comprising the top 10% probability mass are considered. We
-              generally recommend altering this or 'temperature' but not both.
+              generally recommend altering this or temperature but not both.
 
-          user: Stable identifier for your end-users. Helps OpenAI detect and prevent abuse and
-              may boost cache hit rates. This field is being replaced by 'safety_identifier'
-              and 'prompt_cache_key'.
+          user: This field is being replaced by `safety_identifier` and `prompt_cache_key`. Use
+              `prompt_cache_key` instead to maintain caching optimizations. A stable
+              identifier for your end-users. Used to boost cache hit rates by better bucketing
+              similar requests and to help OpenAI detect and prevent abuse.
+              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
 
-          verbosity: Constrains the verbosity of the model's response. Lower values produce concise
-              answers, higher values allow more detail.
+          verbosity: Constrains the verbosity of the model's response. Lower values will result in
+              more concise responses, while higher values will result in more verbose
+              responses. Currently supported values are `low`, `medium`, and `high`.
 
-          web_search_options: Configuration for OpenAI's web search tool. Learn more at
-              https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat.
+          web_search_options: This tool searches the web for relevant results to use in a response. Learn more
+              about the
+              [web search tool](https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat).
 
           extra_headers: Send extra headers
 
@@ -2168,53 +2418,55 @@ class AsyncCompletionsResource(AsyncAPIResource):
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
         audio: Optional[Dict[str, object]] | Omit = omit,
         auto_execute_tools: bool | Omit = omit,
+        cached_content: Optional[str] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
-        disable_automatic_function_calling: Optional[bool] | Omit = omit,
+        disable_automatic_function_calling: bool | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
-        function_call: Union[str, Dict[str, object], None] | Omit = omit,
-        functions: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        function_call: Optional[Literal["auto", "none"]] | Omit = omit,
+        functions: Optional[Iterable[completion_create_params.Function]] | Omit = omit,
         generation_config: Optional[Dict[str, object]] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
-        input: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
-        instructions: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
         mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
-        messages: Union[Iterable[Dict[str, object]], str, None] | Omit = omit,
+        messages: Union[Iterable[completion_create_params.MessagesMessage], str, None] | Omit = omit,
         metadata: Optional[Dict[str, str]] | Omit = omit,
-        modalities: Optional[SequenceNotStr[str]] | Omit = omit,
+        modalities: Optional[List[Literal["text", "audio"]]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
         n: Optional[int] | Omit = omit,
         parallel_tool_calls: Optional[bool] | Omit = omit,
-        prediction: Optional[Dict[str, object]] | Omit = omit,
+        prediction: Optional[completion_create_params.Prediction] | Omit = omit,
         presence_penalty: Optional[float] | Omit = omit,
         prompt_cache_key: Optional[str] | Omit = omit,
-        reasoning_effort: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        prompt_cache_retention: Optional[Literal["24h", "in-memory"]] | Omit = omit,
+        prompt_mode: Optional[Dict[str, object]] | Omit = omit,
+        reasoning_effort: Optional[Literal["high", "low", "medium", "minimal", "none"]] | Omit = omit,
         response_format: Optional[completion_create_params.ResponseFormat] | Omit = omit,
+        safe_prompt: Optional[bool] | Omit = omit,
         safety_identifier: Optional[str] | Omit = omit,
-        safety_settings: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        safety_settings: Optional[Iterable[completion_create_params.SafetySetting]] | Omit = omit,
         search_parameters: Optional[Dict[str, object]] | Omit = omit,
         seed: Optional[int] | Omit = omit,
-        service_tier: Optional[Literal["auto", "default"]] | Omit = omit,
-        stop: Optional[SequenceNotStr[str]] | Omit = omit,
+        service_tier: Optional[Literal["auto", "default", "flex", "priority", "scale", "standard_only"]] | Omit = omit,
+        stop: Union[str, SequenceNotStr[str], None] | Omit = omit,
         store: Optional[bool] | Omit = omit,
-        stream: Literal[False] | Literal[True] | Omit = omit,
+        stream: Optional[Literal[False]] | Literal[True] | Omit = omit,
         stream_options: Optional[Dict[str, object]] | Omit = omit,
-        system: Union[str, Iterable[Dict[str, object]], None] | Omit = omit,
+        system_instruction: Union[Dict[str, object], str, None] | Omit = omit,
         temperature: Optional[float] | Omit = omit,
         thinking: Optional[completion_create_params.Thinking] | Omit = omit,
-        tool_choice: Union[str, Dict[str, object], None] | Omit = omit,
+        tool_choice: Optional[completion_create_params.ToolChoice] | Omit = omit,
         tool_config: Optional[Dict[str, object]] | Omit = omit,
-        tools: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        tools: Optional[Iterable[completion_create_params.Tool]] | Omit = omit,
         top_k: Optional[int] | Omit = omit,
         top_logprobs: Optional[int] | Omit = omit,
         top_p: Optional[float] | Omit = omit,
         user: Optional[str] | Omit = omit,
-        verbosity: Optional[Literal["low", "medium", "high"]] | Omit = omit,
+        verbosity: Optional[Literal["high", "low", "medium"]] | Omit = omit,
         web_search_options: Optional[Dict[str, object]] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -2232,6 +2484,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
                     "agent_attributes": agent_attributes,
                     "audio": audio,
                     "auto_execute_tools": auto_execute_tools,
+                    "cached_content": cached_content,
                     "deferred": deferred,
                     "disable_automatic_function_calling": disable_automatic_function_calling,
                     "frequency_penalty": frequency_penalty,
@@ -2240,8 +2493,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
                     "generation_config": generation_config,
                     "guardrails": guardrails,
                     "handoff_config": handoff_config,
-                    "input": input,
-                    "instructions": instructions,
                     "logit_bias": logit_bias,
                     "logprobs": logprobs,
                     "max_completion_tokens": max_completion_tokens,
@@ -2257,8 +2508,11 @@ class AsyncCompletionsResource(AsyncAPIResource):
                     "prediction": prediction,
                     "presence_penalty": presence_penalty,
                     "prompt_cache_key": prompt_cache_key,
+                    "prompt_cache_retention": prompt_cache_retention,
+                    "prompt_mode": prompt_mode,
                     "reasoning_effort": reasoning_effort,
                     "response_format": response_format,
+                    "safe_prompt": safe_prompt,
                     "safety_identifier": safety_identifier,
                     "safety_settings": safety_settings,
                     "search_parameters": search_parameters,
@@ -2268,7 +2522,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
                     "store": store,
                     "stream": stream,
                     "stream_options": stream_options,
-                    "system": system,
+                    "system_instruction": system_instruction,
                     "temperature": temperature,
                     "thinking": thinking,
                     "tool_choice": tool_choice,
