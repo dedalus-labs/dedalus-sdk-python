@@ -16,14 +16,6 @@ from .audio import (
     AudioResourceWithStreamingResponse,
     AsyncAudioResourceWithStreamingResponse,
 )
-from .health import (
-    HealthResource,
-    AsyncHealthResource,
-    HealthResourceWithRawResponse,
-    AsyncHealthResourceWithRawResponse,
-    HealthResourceWithStreamingResponse,
-    AsyncHealthResourceWithStreamingResponse,
-)
 from .images import (
     ImagesResource,
     AsyncImagesResource,
@@ -50,12 +42,6 @@ from .embeddings import (
 )
 
 __all__ = [
-    "HealthResource",
-    "AsyncHealthResource",
-    "HealthResourceWithRawResponse",
-    "AsyncHealthResourceWithRawResponse",
-    "HealthResourceWithStreamingResponse",
-    "AsyncHealthResourceWithStreamingResponse",
     "ModelsResource",
     "AsyncModelsResource",
     "ModelsResourceWithRawResponse",

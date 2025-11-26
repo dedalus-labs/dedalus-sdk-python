@@ -794,20 +794,20 @@ class TestDedalus:
     @mock.patch("dedalus_labs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     def test_retrying_timeout_errors_doesnt_leak(self, respx_mock: MockRouter, client: Dedalus) -> None:
-        respx_mock.get("/health").mock(side_effect=httpx.TimeoutException("Test timeout error"))
+        respx_mock.post("/v1/chat/completions").mock(side_effect=httpx.TimeoutException("Test timeout error"))
 
         with pytest.raises(APITimeoutError):
-            client.health.with_streaming_response.check().__enter__()
+            client.chat.completions.with_streaming_response.create(model="openai/gpt-5").__enter__()
 
         assert _get_open_connections(client) == 0
 
     @mock.patch("dedalus_labs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     def test_retrying_status_errors_doesnt_leak(self, respx_mock: MockRouter, client: Dedalus) -> None:
-        respx_mock.get("/health").mock(return_value=httpx.Response(500))
+        respx_mock.post("/v1/chat/completions").mock(return_value=httpx.Response(500))
 
         with pytest.raises(APIStatusError):
-            client.health.with_streaming_response.check().__enter__()
+            client.chat.completions.with_streaming_response.create(model="openai/gpt-5").__enter__()
         assert _get_open_connections(client) == 0
 
     @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
@@ -834,9 +834,9 @@ class TestDedalus:
                 return httpx.Response(500)
             return httpx.Response(200)
 
-        respx_mock.get("/health").mock(side_effect=retry_handler)
+        respx_mock.post("/v1/chat/completions").mock(side_effect=retry_handler)
 
-        response = client.health.with_raw_response.check()
+        response = client.chat.completions.with_raw_response.create(model="openai/gpt-5")
 
         assert response.retries_taken == failures_before_success
         assert int(response.http_request.headers.get("x-stainless-retry-count")) == failures_before_success
@@ -858,9 +858,11 @@ class TestDedalus:
                 return httpx.Response(500)
             return httpx.Response(200)
 
-        respx_mock.get("/health").mock(side_effect=retry_handler)
+        respx_mock.post("/v1/chat/completions").mock(side_effect=retry_handler)
 
-        response = client.health.with_raw_response.check(extra_headers={"x-stainless-retry-count": Omit()})
+        response = client.chat.completions.with_raw_response.create(
+            model="openai/gpt-5", extra_headers={"x-stainless-retry-count": Omit()}
+        )
 
         assert len(response.http_request.headers.get_list("x-stainless-retry-count")) == 0
 
@@ -881,9 +883,11 @@ class TestDedalus:
                 return httpx.Response(500)
             return httpx.Response(200)
 
-        respx_mock.get("/health").mock(side_effect=retry_handler)
+        respx_mock.post("/v1/chat/completions").mock(side_effect=retry_handler)
 
-        response = client.health.with_raw_response.check(extra_headers={"x-stainless-retry-count": "42"})
+        response = client.chat.completions.with_raw_response.create(
+            model="openai/gpt-5", extra_headers={"x-stainless-retry-count": "42"}
+        )
 
         assert response.http_request.headers.get("x-stainless-retry-count") == "42"
 
@@ -1691,20 +1695,20 @@ class TestAsyncDedalus:
     async def test_retrying_timeout_errors_doesnt_leak(
         self, respx_mock: MockRouter, async_client: AsyncDedalus
     ) -> None:
-        respx_mock.get("/health").mock(side_effect=httpx.TimeoutException("Test timeout error"))
+        respx_mock.post("/v1/chat/completions").mock(side_effect=httpx.TimeoutException("Test timeout error"))
 
         with pytest.raises(APITimeoutError):
-            await async_client.health.with_streaming_response.check().__aenter__()
+            await async_client.chat.completions.with_streaming_response.create(model="openai/gpt-5").__aenter__()
 
         assert _get_open_connections(async_client) == 0
 
     @mock.patch("dedalus_labs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     async def test_retrying_status_errors_doesnt_leak(self, respx_mock: MockRouter, async_client: AsyncDedalus) -> None:
-        respx_mock.get("/health").mock(return_value=httpx.Response(500))
+        respx_mock.post("/v1/chat/completions").mock(return_value=httpx.Response(500))
 
         with pytest.raises(APIStatusError):
-            await async_client.health.with_streaming_response.check().__aenter__()
+            await async_client.chat.completions.with_streaming_response.create(model="openai/gpt-5").__aenter__()
         assert _get_open_connections(async_client) == 0
 
     @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
@@ -1731,9 +1735,9 @@ class TestAsyncDedalus:
                 return httpx.Response(500)
             return httpx.Response(200)
 
-        respx_mock.get("/health").mock(side_effect=retry_handler)
+        respx_mock.post("/v1/chat/completions").mock(side_effect=retry_handler)
 
-        response = await client.health.with_raw_response.check()
+        response = await client.chat.completions.with_raw_response.create(model="openai/gpt-5")
 
         assert response.retries_taken == failures_before_success
         assert int(response.http_request.headers.get("x-stainless-retry-count")) == failures_before_success
@@ -1755,9 +1759,11 @@ class TestAsyncDedalus:
                 return httpx.Response(500)
             return httpx.Response(200)
 
-        respx_mock.get("/health").mock(side_effect=retry_handler)
+        respx_mock.post("/v1/chat/completions").mock(side_effect=retry_handler)
 
-        response = await client.health.with_raw_response.check(extra_headers={"x-stainless-retry-count": Omit()})
+        response = await client.chat.completions.with_raw_response.create(
+            model="openai/gpt-5", extra_headers={"x-stainless-retry-count": Omit()}
+        )
 
         assert len(response.http_request.headers.get_list("x-stainless-retry-count")) == 0
 
@@ -1778,9 +1784,11 @@ class TestAsyncDedalus:
                 return httpx.Response(500)
             return httpx.Response(200)
 
-        respx_mock.get("/health").mock(side_effect=retry_handler)
+        respx_mock.post("/v1/chat/completions").mock(side_effect=retry_handler)
 
-        response = await client.health.with_raw_response.check(extra_headers={"x-stainless-retry-count": "42"})
+        response = await client.chat.completions.with_raw_response.create(
+            model="openai/gpt-5", extra_headers={"x-stainless-retry-count": "42"}
+        )
 
         assert response.http_request.headers.get("x-stainless-retry-count") == "42"
 

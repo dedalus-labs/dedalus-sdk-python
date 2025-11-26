@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Dict, Mapping, cast
+from typing import TYPE_CHECKING, Any, Dict, Mapping, cast
 from typing_extensions import Self, Literal, override
 
 import httpx
@@ -11,9 +11,7 @@ import httpx
 from . import _exceptions
 from ._qs import Querystring
 from ._types import (
-    Body,
     Omit,
-    Query,
     Headers,
     Timeout,
     NotGiven,
@@ -23,25 +21,23 @@ from ._types import (
     not_given,
 )
 from ._utils import is_given, get_async_library
+from ._compat import cached_property
 from ._version import __version__
-from ._response import (
-    to_raw_response_wrapper,
-    to_streamed_response_wrapper,
-    async_to_raw_response_wrapper,
-    async_to_streamed_response_wrapper,
-)
-from .resources import health, images, models, embeddings
 from ._streaming import Stream as Stream, AsyncStream as AsyncStream
 from ._exceptions import APIStatusError
 from ._base_client import (
     DEFAULT_MAX_RETRIES,
     SyncAPIClient,
     AsyncAPIClient,
-    make_request_options,
 )
-from .resources.chat import chat
-from .resources.audio import audio
-from .types.get_response import GetResponse
+
+if TYPE_CHECKING:
+    from .resources import chat, audio, images, models, embeddings
+    from .resources.images import ImagesResource, AsyncImagesResource
+    from .resources.models import ModelsResource, AsyncModelsResource
+    from .resources.chat.chat import ChatResource, AsyncChatResource
+    from .resources.embeddings import EmbeddingsResource, AsyncEmbeddingsResource
+    from .resources.audio.audio import AudioResource, AsyncAudioResource
 
 __all__ = [
     "ENVIRONMENTS",
@@ -62,15 +58,6 @@ ENVIRONMENTS: Dict[str, str] = {
 
 
 class Dedalus(SyncAPIClient):
-    health: health.HealthResource
-    models: models.ModelsResource
-    embeddings: embeddings.EmbeddingsResource
-    audio: audio.AudioResource
-    images: images.ImagesResource
-    chat: chat.ChatResource
-    with_raw_response: DedalusWithRawResponse
-    with_streaming_response: DedalusWithStreamedResponse
-
     # client options
     api_key: str | None
     x_api_key: str | None
@@ -185,14 +172,43 @@ class Dedalus(SyncAPIClient):
 
         self._default_stream_cls = Stream
 
-        self.health = health.HealthResource(self)
-        self.models = models.ModelsResource(self)
-        self.embeddings = embeddings.EmbeddingsResource(self)
-        self.audio = audio.AudioResource(self)
-        self.images = images.ImagesResource(self)
-        self.chat = chat.ChatResource(self)
-        self.with_raw_response = DedalusWithRawResponse(self)
-        self.with_streaming_response = DedalusWithStreamedResponse(self)
+    @cached_property
+    def models(self) -> ModelsResource:
+        from .resources.models import ModelsResource
+
+        return ModelsResource(self)
+
+    @cached_property
+    def embeddings(self) -> EmbeddingsResource:
+        from .resources.embeddings import EmbeddingsResource
+
+        return EmbeddingsResource(self)
+
+    @cached_property
+    def audio(self) -> AudioResource:
+        from .resources.audio import AudioResource
+
+        return AudioResource(self)
+
+    @cached_property
+    def images(self) -> ImagesResource:
+        from .resources.images import ImagesResource
+
+        return ImagesResource(self)
+
+    @cached_property
+    def chat(self) -> ChatResource:
+        from .resources.chat import ChatResource
+
+        return ChatResource(self)
+
+    @cached_property
+    def with_raw_response(self) -> DedalusWithRawResponse:
+        return DedalusWithRawResponse(self)
+
+    @cached_property
+    def with_streaming_response(self) -> DedalusWithStreamedResponse:
+        return DedalusWithStreamedResponse(self)
 
     @property
     @override
@@ -310,25 +326,6 @@ class Dedalus(SyncAPIClient):
     # client.with_options(timeout=10).foo.create(...)
     with_options = copy
 
-    def get(
-        self,
-        *,
-        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
-        # The extra values given here take precedence over values defined on the client or passed to this method.
-        extra_headers: Headers | None = None,
-        extra_query: Query | None = None,
-        extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> GetResponse:
-        """Root"""
-        return self.get(
-            "/",
-            options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
-            ),
-            cast_to=GetResponse,
-        )
-
     @override
     def _make_status_error(
         self,
@@ -364,15 +361,6 @@ class Dedalus(SyncAPIClient):
 
 
 class AsyncDedalus(AsyncAPIClient):
-    health: health.AsyncHealthResource
-    models: models.AsyncModelsResource
-    embeddings: embeddings.AsyncEmbeddingsResource
-    audio: audio.AsyncAudioResource
-    images: images.AsyncImagesResource
-    chat: chat.AsyncChatResource
-    with_raw_response: AsyncDedalusWithRawResponse
-    with_streaming_response: AsyncDedalusWithStreamedResponse
-
     # client options
     api_key: str | None
     x_api_key: str | None
@@ -487,14 +475,43 @@ class AsyncDedalus(AsyncAPIClient):
 
         self._default_stream_cls = AsyncStream
 
-        self.health = health.AsyncHealthResource(self)
-        self.models = models.AsyncModelsResource(self)
-        self.embeddings = embeddings.AsyncEmbeddingsResource(self)
-        self.audio = audio.AsyncAudioResource(self)
-        self.images = images.AsyncImagesResource(self)
-        self.chat = chat.AsyncChatResource(self)
-        self.with_raw_response = AsyncDedalusWithRawResponse(self)
-        self.with_streaming_response = AsyncDedalusWithStreamedResponse(self)
+    @cached_property
+    def models(self) -> AsyncModelsResource:
+        from .resources.models import AsyncModelsResource
+
+        return AsyncModelsResource(self)
+
+    @cached_property
+    def embeddings(self) -> AsyncEmbeddingsResource:
+        from .resources.embeddings import AsyncEmbeddingsResource
+
+        return AsyncEmbeddingsResource(self)
+
+    @cached_property
+    def audio(self) -> AsyncAudioResource:
+        from .resources.audio import AsyncAudioResource
+
+        return AsyncAudioResource(self)
+
+    @cached_property
+    def images(self) -> AsyncImagesResource:
+        from .resources.images import AsyncImagesResource
+
+        return AsyncImagesResource(self)
+
+    @cached_property
+    def chat(self) -> AsyncChatResource:
+        from .resources.chat import AsyncChatResource
+
+        return AsyncChatResource(self)
+
+    @cached_property
+    def with_raw_response(self) -> AsyncDedalusWithRawResponse:
+        return AsyncDedalusWithRawResponse(self)
+
+    @cached_property
+    def with_streaming_response(self) -> AsyncDedalusWithStreamedResponse:
+        return AsyncDedalusWithStreamedResponse(self)
 
     @property
     @override
@@ -612,25 +629,6 @@ class AsyncDedalus(AsyncAPIClient):
     # client.with_options(timeout=10).foo.create(...)
     with_options = copy
 
-    async def get(
-        self,
-        *,
-        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
-        # The extra values given here take precedence over values defined on the client or passed to this method.
-        extra_headers: Headers | None = None,
-        extra_query: Query | None = None,
-        extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> GetResponse:
-        """Root"""
-        return await self.get(
-            "/",
-            options=make_request_options(
-                extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
-            ),
-            cast_to=GetResponse,
-        )
-
     @override
     def _make_status_error(
         self,
@@ -666,59 +664,151 @@ class AsyncDedalus(AsyncAPIClient):
 
 
 class DedalusWithRawResponse:
-    def __init__(self, client: Dedalus) -> None:
-        self.health = health.HealthResourceWithRawResponse(client.health)
-        self.models = models.ModelsResourceWithRawResponse(client.models)
-        self.embeddings = embeddings.EmbeddingsResourceWithRawResponse(client.embeddings)
-        self.audio = audio.AudioResourceWithRawResponse(client.audio)
-        self.images = images.ImagesResourceWithRawResponse(client.images)
-        self.chat = chat.ChatResourceWithRawResponse(client.chat)
+    _client: Dedalus
 
-        self.get = to_raw_response_wrapper(
-            client.get,
-        )
+    def __init__(self, client: Dedalus) -> None:
+        self._client = client
+
+    @cached_property
+    def models(self) -> models.ModelsResourceWithRawResponse:
+        from .resources.models import ModelsResourceWithRawResponse
+
+        return ModelsResourceWithRawResponse(self._client.models)
+
+    @cached_property
+    def embeddings(self) -> embeddings.EmbeddingsResourceWithRawResponse:
+        from .resources.embeddings import EmbeddingsResourceWithRawResponse
+
+        return EmbeddingsResourceWithRawResponse(self._client.embeddings)
+
+    @cached_property
+    def audio(self) -> audio.AudioResourceWithRawResponse:
+        from .resources.audio import AudioResourceWithRawResponse
+
+        return AudioResourceWithRawResponse(self._client.audio)
+
+    @cached_property
+    def images(self) -> images.ImagesResourceWithRawResponse:
+        from .resources.images import ImagesResourceWithRawResponse
+
+        return ImagesResourceWithRawResponse(self._client.images)
+
+    @cached_property
+    def chat(self) -> chat.ChatResourceWithRawResponse:
+        from .resources.chat import ChatResourceWithRawResponse
+
+        return ChatResourceWithRawResponse(self._client.chat)
 
 
 class AsyncDedalusWithRawResponse:
-    def __init__(self, client: AsyncDedalus) -> None:
-        self.health = health.AsyncHealthResourceWithRawResponse(client.health)
-        self.models = models.AsyncModelsResourceWithRawResponse(client.models)
-        self.embeddings = embeddings.AsyncEmbeddingsResourceWithRawResponse(client.embeddings)
-        self.audio = audio.AsyncAudioResourceWithRawResponse(client.audio)
-        self.images = images.AsyncImagesResourceWithRawResponse(client.images)
-        self.chat = chat.AsyncChatResourceWithRawResponse(client.chat)
+    _client: AsyncDedalus
 
-        self.get = async_to_raw_response_wrapper(
-            client.get,
-        )
+    def __init__(self, client: AsyncDedalus) -> None:
+        self._client = client
+
+    @cached_property
+    def models(self) -> models.AsyncModelsResourceWithRawResponse:
+        from .resources.models import AsyncModelsResourceWithRawResponse
+
+        return AsyncModelsResourceWithRawResponse(self._client.models)
+
+    @cached_property
+    def embeddings(self) -> embeddings.AsyncEmbeddingsResourceWithRawResponse:
+        from .resources.embeddings import AsyncEmbeddingsResourceWithRawResponse
+
+        return AsyncEmbeddingsResourceWithRawResponse(self._client.embeddings)
+
+    @cached_property
+    def audio(self) -> audio.AsyncAudioResourceWithRawResponse:
+        from .resources.audio import AsyncAudioResourceWithRawResponse
+
+        return AsyncAudioResourceWithRawResponse(self._client.audio)
+
+    @cached_property
+    def images(self) -> images.AsyncImagesResourceWithRawResponse:
+        from .resources.images import AsyncImagesResourceWithRawResponse
+
+        return AsyncImagesResourceWithRawResponse(self._client.images)
+
+    @cached_property
+    def chat(self) -> chat.AsyncChatResourceWithRawResponse:
+        from .resources.chat import AsyncChatResourceWithRawResponse
+
+        return AsyncChatResourceWithRawResponse(self._client.chat)
 
 
 class DedalusWithStreamedResponse:
-    def __init__(self, client: Dedalus) -> None:
-        self.health = health.HealthResourceWithStreamingResponse(client.health)
-        self.models = models.ModelsResourceWithStreamingResponse(client.models)
-        self.embeddings = embeddings.EmbeddingsResourceWithStreamingResponse(client.embeddings)
-        self.audio = audio.AudioResourceWithStreamingResponse(client.audio)
-        self.images = images.ImagesResourceWithStreamingResponse(client.images)
-        self.chat = chat.ChatResourceWithStreamingResponse(client.chat)
+    _client: Dedalus
 
-        self.get = to_streamed_response_wrapper(
-            client.get,
-        )
+    def __init__(self, client: Dedalus) -> None:
+        self._client = client
+
+    @cached_property
+    def models(self) -> models.ModelsResourceWithStreamingResponse:
+        from .resources.models import ModelsResourceWithStreamingResponse
+
+        return ModelsResourceWithStreamingResponse(self._client.models)
+
+    @cached_property
+    def embeddings(self) -> embeddings.EmbeddingsResourceWithStreamingResponse:
+        from .resources.embeddings import EmbeddingsResourceWithStreamingResponse
+
+        return EmbeddingsResourceWithStreamingResponse(self._client.embeddings)
+
+    @cached_property
+    def audio(self) -> audio.AudioResourceWithStreamingResponse:
+        from .resources.audio import AudioResourceWithStreamingResponse
+
+        return AudioResourceWithStreamingResponse(self._client.audio)
+
+    @cached_property
+    def images(self) -> images.ImagesResourceWithStreamingResponse:
+        from .resources.images import ImagesResourceWithStreamingResponse
+
+        return ImagesResourceWithStreamingResponse(self._client.images)
+
+    @cached_property
+    def chat(self) -> chat.ChatResourceWithStreamingResponse:
+        from .resources.chat import ChatResourceWithStreamingResponse
+
+        return ChatResourceWithStreamingResponse(self._client.chat)
 
 
 class AsyncDedalusWithStreamedResponse:
-    def __init__(self, client: AsyncDedalus) -> None:
-        self.health = health.AsyncHealthResourceWithStreamingResponse(client.health)
-        self.models = models.AsyncModelsResourceWithStreamingResponse(client.models)
-        self.embeddings = embeddings.AsyncEmbeddingsResourceWithStreamingResponse(client.embeddings)
-        self.audio = audio.AsyncAudioResourceWithStreamingResponse(client.audio)
-        self.images = images.AsyncImagesResourceWithStreamingResponse(client.images)
-        self.chat = chat.AsyncChatResourceWithStreamingResponse(client.chat)
+    _client: AsyncDedalus
 
-        self.get = async_to_streamed_response_wrapper(
-            client.get,
-        )
+    def __init__(self, client: AsyncDedalus) -> None:
+        self._client = client
+
+    @cached_property
+    def models(self) -> models.AsyncModelsResourceWithStreamingResponse:
+        from .resources.models import AsyncModelsResourceWithStreamingResponse
+
+        return AsyncModelsResourceWithStreamingResponse(self._client.models)
+
+    @cached_property
+    def embeddings(self) -> embeddings.AsyncEmbeddingsResourceWithStreamingResponse:
+        from .resources.embeddings import AsyncEmbeddingsResourceWithStreamingResponse
+
+        return AsyncEmbeddingsResourceWithStreamingResponse(self._client.embeddings)
+
+    @cached_property
+    def audio(self) -> audio.AsyncAudioResourceWithStreamingResponse:
+        from .resources.audio import AsyncAudioResourceWithStreamingResponse
+
+        return AsyncAudioResourceWithStreamingResponse(self._client.audio)
+
+    @cached_property
+    def images(self) -> images.AsyncImagesResourceWithStreamingResponse:
+        from .resources.images import AsyncImagesResourceWithStreamingResponse
+
+        return AsyncImagesResourceWithStreamingResponse(self._client.images)
+
+    @cached_property
+    def chat(self) -> chat.AsyncChatResourceWithStreamingResponse:
+        from .resources.chat import AsyncChatResourceWithStreamingResponse
+
+        return AsyncChatResourceWithStreamingResponse(self._client.chat)
 
 
 Client = Dedalus

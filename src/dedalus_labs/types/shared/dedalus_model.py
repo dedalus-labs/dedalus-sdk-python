@@ -1,44 +1,13 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import TYPE_CHECKING, Dict, List, Union, Optional
-from typing_extensions import Literal, TypeAlias
-
-from pydantic import Field as FieldInfo
+from typing import Dict, List, Union, Optional
+from typing_extensions import Literal
 
 from ..._models import BaseModel
+from ..chat.reasoning import Reasoning
+from ..chat.tool_choice import ToolChoice
 
-__all__ = ["DedalusModel", "Settings", "SettingsReasoning", "SettingsToolChoice", "SettingsToolChoiceMCPToolChoice"]
-
-
-class SettingsReasoning(BaseModel):
-    effort: Optional[Literal["minimal", "low", "medium", "high"]] = None
-
-    generate_summary: Optional[Literal["auto", "concise", "detailed"]] = None
-
-    summary: Optional[Literal["auto", "concise", "detailed"]] = None
-
-    if TYPE_CHECKING:
-        # Some versions of Pydantic <2.8.0 have a bug and don’t allow assigning a
-        # value to this field, so for compatibility we avoid doing it at runtime.
-        __pydantic_extra__: Dict[str, object] = FieldInfo(init=False)  # pyright: ignore[reportIncompatibleVariableOverride]
-
-        # Stub to indicate that arbitrary properties are accepted.
-        # To access properties that are not valid identifiers you can use `getattr`, e.g.
-        # `getattr(obj, '$type')`
-        def __getattr__(self, attr: str) -> object: ...
-    else:
-        __pydantic_extra__: Dict[str, object]
-
-
-class SettingsToolChoiceMCPToolChoice(BaseModel):
-    name: str
-
-    server_label: str
-
-
-SettingsToolChoice: TypeAlias = Union[
-    Literal["auto", "required", "none"], str, Dict[str, object], SettingsToolChoiceMCPToolChoice, None
-]
+__all__ = ["DedalusModel", "Settings"]
 
 
 class Settings(BaseModel):
@@ -47,8 +16,6 @@ class Settings(BaseModel):
     audio: Optional[Dict[str, object]] = None
 
     deferred: Optional[bool] = None
-
-    disable_automatic_function_calling: Optional[bool] = None
 
     extra_args: Optional[Dict[str, object]] = None
 
@@ -90,7 +57,7 @@ class Settings(BaseModel):
 
     prompt_cache_key: Optional[str] = None
 
-    reasoning: Optional[SettingsReasoning] = None
+    reasoning: Optional[Reasoning] = None
 
     reasoning_effort: Optional[str] = None
 
@@ -139,7 +106,7 @@ class Settings(BaseModel):
 
     timeout: Optional[float] = None
 
-    tool_choice: Optional[SettingsToolChoice] = None
+    tool_choice: Optional[ToolChoice] = None
 
     tool_config: Optional[Dict[str, object]] = None
 
