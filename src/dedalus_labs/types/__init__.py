@@ -7,15 +7,15 @@ from .model import Model as Model
 from .shared import (
     DedalusModel as DedalusModel,
     DedalusModelChoice as DedalusModelChoice,
+    FunctionDefinition as FunctionDefinition,
+    FunctionParameters as FunctionParameters,
     ResponseFormatText as ResponseFormatText,
     ResponseFormatJSONObject as ResponseFormatJSONObject,
     ResponseFormatJSONSchema as ResponseFormatJSONSchema,
 )
-from .get_response import GetResponse as GetResponse
 from .images_response import ImagesResponse as ImagesResponse
 from .image_edit_params import ImageEditParams as ImageEditParams
 from .list_models_response import ListModelsResponse as ListModelsResponse
-from .health_check_response import HealthCheckResponse as HealthCheckResponse
 from .image_generate_params import ImageGenerateParams as ImageGenerateParams
 from .embedding_create_params import EmbeddingCreateParams as EmbeddingCreateParams
 from .create_embedding_response import CreateEmbeddingResponse as CreateEmbeddingResponse

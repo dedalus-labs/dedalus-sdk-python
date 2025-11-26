@@ -33,15 +33,13 @@ class TestCompletions:
             agent_attributes={
                 "accuracy": 0.9,
                 "complexity": 0.8,
-                "efficiency": 0.7,
             },
             audio={"foo": "bar"},
-            auto_execute_tools=True,
+            automatic_tool_execution=True,
             cached_content="cachedContent",
             deferred=True,
-            disable_automatic_function_calling=True,
             frequency_penalty=-2,
-            function_call="auto",
+            function_call="function_call",
             functions=[
                 {
                     "name": "name",
@@ -65,26 +63,25 @@ class TestCompletions:
                     "name": "name",
                 }
             ],
-            metadata={"foo": "string"},
-            modalities=["text"],
+            metadata={"foo": "bar"},
+            modalities=["string"],
             model_attributes={
-                "openai/gpt-5": {
-                    "cost": 0.3,
-                    "intelligence": 0.95,
-                    "speed": 0.7,
+                "gpt-5": {
+                    "accuracy": 0.95,
+                    "speed": 0.6,
                 }
             },
             n=1,
             parallel_tool_calls=True,
             prediction={
-                "content": {"foo": "bar"},
+                "content": "string",
                 "type": "content",
             },
             presence_penalty=-2,
             prompt_cache_key="prompt_cache_key",
-            prompt_cache_retention="24h",
+            prompt_cache_retention="prompt_cache_retention",
             prompt_mode={"foo": "bar"},
-            reasoning_effort="high",
+            reasoning_effort="reasoning_effort",
             response_format={"type": "text"},
             safe_prompt=True,
             safety_identifier="safety_identifier",
@@ -96,20 +93,21 @@ class TestCompletions:
             ],
             search_parameters={"foo": "bar"},
             seed=0,
-            service_tier="auto",
-            stop="string",
+            service_tier="service_tier",
+            stop=["string"],
+            stop_sequences=["string"],
             store=True,
             stream=False,
             stream_options={"foo": "bar"},
             system_instruction={"foo": "bar"},
             temperature=0,
             thinking={
-                "budget_tokens": 0,
+                "budget_tokens": 1024,
                 "type": "enabled",
             },
             tool_choice={
-                "disable_parallel_tool_use": True,
                 "type": "auto",
+                "disable_parallel_tool_use": True,
             },
             tool_config={"foo": "bar"},
             tools=[
@@ -127,7 +125,7 @@ class TestCompletions:
             top_logprobs=0,
             top_p=0,
             user="user",
-            verbosity="high",
+            verbosity="verbosity",
             web_search_options={"foo": "bar"},
         )
         assert_matches_type(Completion, completion, path=["response"])
@@ -176,15 +174,13 @@ class TestCompletions:
             agent_attributes={
                 "accuracy": 0.9,
                 "complexity": 0.8,
-                "efficiency": 0.7,
             },
             audio={"foo": "bar"},
-            auto_execute_tools=True,
+            automatic_tool_execution=True,
             cached_content="cachedContent",
             deferred=True,
-            disable_automatic_function_calling=True,
             frequency_penalty=-2,
-            function_call="auto",
+            function_call="function_call",
             functions=[
                 {
                     "name": "name",
@@ -208,26 +204,25 @@ class TestCompletions:
                     "name": "name",
                 }
             ],
-            metadata={"foo": "string"},
-            modalities=["text"],
+            metadata={"foo": "bar"},
+            modalities=["string"],
             model_attributes={
-                "openai/gpt-5": {
-                    "cost": 0.3,
-                    "intelligence": 0.95,
-                    "speed": 0.7,
+                "gpt-5": {
+                    "accuracy": 0.95,
+                    "speed": 0.6,
                 }
             },
             n=1,
             parallel_tool_calls=True,
             prediction={
-                "content": {"foo": "bar"},
+                "content": "string",
                 "type": "content",
             },
             presence_penalty=-2,
             prompt_cache_key="prompt_cache_key",
-            prompt_cache_retention="24h",
+            prompt_cache_retention="prompt_cache_retention",
             prompt_mode={"foo": "bar"},
-            reasoning_effort="high",
+            reasoning_effort="reasoning_effort",
             response_format={"type": "text"},
             safe_prompt=True,
             safety_identifier="safety_identifier",
@@ -239,19 +234,20 @@ class TestCompletions:
             ],
             search_parameters={"foo": "bar"},
             seed=0,
-            service_tier="auto",
-            stop="string",
+            service_tier="service_tier",
+            stop=["string"],
+            stop_sequences=["string"],
             store=True,
             stream_options={"foo": "bar"},
             system_instruction={"foo": "bar"},
             temperature=0,
             thinking={
-                "budget_tokens": 0,
+                "budget_tokens": 1024,
                 "type": "enabled",
             },
             tool_choice={
-                "disable_parallel_tool_use": True,
                 "type": "auto",
+                "disable_parallel_tool_use": True,
             },
             tool_config={"foo": "bar"},
             tools=[
@@ -269,7 +265,7 @@ class TestCompletions:
             top_logprobs=0,
             top_p=0,
             user="user",
-            verbosity="high",
+            verbosity="verbosity",
             web_search_options={"foo": "bar"},
         )
         completion_stream.response.close()
@@ -323,15 +319,13 @@ class TestAsyncCompletions:
             agent_attributes={
                 "accuracy": 0.9,
                 "complexity": 0.8,
-                "efficiency": 0.7,
             },
             audio={"foo": "bar"},
-            auto_execute_tools=True,
+            automatic_tool_execution=True,
             cached_content="cachedContent",
             deferred=True,
-            disable_automatic_function_calling=True,
             frequency_penalty=-2,
-            function_call="auto",
+            function_call="function_call",
             functions=[
                 {
                     "name": "name",
@@ -355,26 +349,25 @@ class TestAsyncCompletions:
                     "name": "name",
                 }
             ],
-            metadata={"foo": "string"},
-            modalities=["text"],
+            metadata={"foo": "bar"},
+            modalities=["string"],
             model_attributes={
-                "openai/gpt-5": {
-                    "cost": 0.3,
-                    "intelligence": 0.95,
-                    "speed": 0.7,
+                "gpt-5": {
+                    "accuracy": 0.95,
+                    "speed": 0.6,
                 }
             },
             n=1,
             parallel_tool_calls=True,
             prediction={
-                "content": {"foo": "bar"},
+                "content": "string",
                 "type": "content",
             },
             presence_penalty=-2,
             prompt_cache_key="prompt_cache_key",
-            prompt_cache_retention="24h",
+            prompt_cache_retention="prompt_cache_retention",
             prompt_mode={"foo": "bar"},
-            reasoning_effort="high",
+            reasoning_effort="reasoning_effort",
             response_format={"type": "text"},
             safe_prompt=True,
             safety_identifier="safety_identifier",
@@ -386,20 +379,21 @@ class TestAsyncCompletions:
             ],
             search_parameters={"foo": "bar"},
             seed=0,
-            service_tier="auto",
-            stop="string",
+            service_tier="service_tier",
+            stop=["string"],
+            stop_sequences=["string"],
             store=True,
             stream=False,
             stream_options={"foo": "bar"},
             system_instruction={"foo": "bar"},
             temperature=0,
             thinking={
-                "budget_tokens": 0,
+                "budget_tokens": 1024,
                 "type": "enabled",
             },
             tool_choice={
-                "disable_parallel_tool_use": True,
                 "type": "auto",
+                "disable_parallel_tool_use": True,
             },
             tool_config={"foo": "bar"},
             tools=[
@@ -417,7 +411,7 @@ class TestAsyncCompletions:
             top_logprobs=0,
             top_p=0,
             user="user",
-            verbosity="high",
+            verbosity="verbosity",
             web_search_options={"foo": "bar"},
         )
         assert_matches_type(Completion, completion, path=["response"])
@@ -466,15 +460,13 @@ class TestAsyncCompletions:
             agent_attributes={
                 "accuracy": 0.9,
                 "complexity": 0.8,
-                "efficiency": 0.7,
             },
             audio={"foo": "bar"},
-            auto_execute_tools=True,
+            automatic_tool_execution=True,
             cached_content="cachedContent",
             deferred=True,
-            disable_automatic_function_calling=True,
             frequency_penalty=-2,
-            function_call="auto",
+            function_call="function_call",
             functions=[
                 {
                     "name": "name",
@@ -498,26 +490,25 @@ class TestAsyncCompletions:
                     "name": "name",
                 }
             ],
-            metadata={"foo": "string"},
-            modalities=["text"],
+            metadata={"foo": "bar"},
+            modalities=["string"],
             model_attributes={
-                "openai/gpt-5": {
-                    "cost": 0.3,
-                    "intelligence": 0.95,
-                    "speed": 0.7,
+                "gpt-5": {
+                    "accuracy": 0.95,
+                    "speed": 0.6,
                 }
             },
             n=1,
             parallel_tool_calls=True,
             prediction={
-                "content": {"foo": "bar"},
+                "content": "string",
                 "type": "content",
             },
             presence_penalty=-2,
             prompt_cache_key="prompt_cache_key",
-            prompt_cache_retention="24h",
+            prompt_cache_retention="prompt_cache_retention",
             prompt_mode={"foo": "bar"},
-            reasoning_effort="high",
+            reasoning_effort="reasoning_effort",
             response_format={"type": "text"},
             safe_prompt=True,
             safety_identifier="safety_identifier",
@@ -529,19 +520,20 @@ class TestAsyncCompletions:
             ],
             search_parameters={"foo": "bar"},
             seed=0,
-            service_tier="auto",
-            stop="string",
+            service_tier="service_tier",
+            stop=["string"],
+            stop_sequences=["string"],
             store=True,
             stream_options={"foo": "bar"},
             system_instruction={"foo": "bar"},
             temperature=0,
             thinking={
-                "budget_tokens": 0,
+                "budget_tokens": 1024,
                 "type": "enabled",
             },
             tool_choice={
-                "disable_parallel_tool_use": True,
                 "type": "auto",
+                "disable_parallel_tool_use": True,
             },
             tool_config={"foo": "bar"},
             tools=[
@@ -559,7 +551,7 @@ class TestAsyncCompletions:
             top_logprobs=0,
             top_p=0,
             user="user",
-            verbosity="high",
+            verbosity="verbosity",
             web_search_options={"foo": "bar"},
         )
         await completion_stream.response.aclose()
