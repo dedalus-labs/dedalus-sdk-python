@@ -5,6 +5,7 @@ from typing_extensions import Literal, Annotated, TypeAlias
 
 from ..._utils import PropertyInfo
 from ..._models import BaseModel
+from ..chat.input_token_details import InputTokenDetails
 
 __all__ = [
     "TranscriptionCreateResponse",
@@ -16,7 +17,6 @@ __all__ = [
     "CreateTranscriptionResponseJSONLogprob",
     "CreateTranscriptionResponseJSONUsage",
     "CreateTranscriptionResponseJSONUsageTranscriptTextUsageTokens",
-    "CreateTranscriptionResponseJSONUsageTranscriptTextUsageTokensInputTokenDetails",
     "CreateTranscriptionResponseJSONUsageTranscriptTextUsageDuration",
 ]
 
@@ -113,14 +113,6 @@ class CreateTranscriptionResponseJSONLogprob(BaseModel):
     """The log probability of the token."""
 
 
-class CreateTranscriptionResponseJSONUsageTranscriptTextUsageTokensInputTokenDetails(BaseModel):
-    audio_tokens: Optional[int] = None
-    """Number of audio tokens billed for this request."""
-
-    text_tokens: Optional[int] = None
-    """Number of text tokens billed for this request."""
-
-
 class CreateTranscriptionResponseJSONUsageTranscriptTextUsageTokens(BaseModel):
     input_tokens: int
     """Number of input tokens billed for this request."""
@@ -134,7 +126,7 @@ class CreateTranscriptionResponseJSONUsageTranscriptTextUsageTokens(BaseModel):
     type: Literal["tokens"]
     """The type of the usage object. Always `tokens` for this variant."""
 
-    input_token_details: Optional[CreateTranscriptionResponseJSONUsageTranscriptTextUsageTokensInputTokenDetails] = None
+    input_token_details: Optional[InputTokenDetails] = None
     """Details about the input tokens billed for this request."""
 
 

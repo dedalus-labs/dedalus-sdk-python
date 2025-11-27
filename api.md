@@ -4,35 +4,13 @@
 from dedalus_labs.types import (
     DedalusModel,
     DedalusModelChoice,
+    FunctionDefinition,
+    FunctionParameters,
     ResponseFormatJSONObject,
     ResponseFormatJSONSchema,
     ResponseFormatText,
 )
 ```
-
-# Root
-
-Types:
-
-```python
-from dedalus_labs.types import RootGetResponse
-```
-
-Methods:
-
-- <code title="get /">client.root.<a href="./src/dedalus_labs/resources/root.py">get</a>() -> <a href="./src/dedalus_labs/types/root_get_response.py">RootGetResponse</a></code>
-
-# Health
-
-Types:
-
-```python
-from dedalus_labs.types import HealthCheckResponse
-```
-
-Methods:
-
-- <code title="get /health">client.health.<a href="./src/dedalus_labs/resources/health.py">check</a>() -> <a href="./src/dedalus_labs/types/health_check_response.py">HealthCheckResponse</a></code>
 
 # Models
 
@@ -113,13 +91,54 @@ Types:
 
 ```python
 from dedalus_labs.types.chat import (
+    Annotation,
+    ChatCompletionAssistantMessageParam,
+    ChatCompletionAudio,
+    ChatCompletionAudioParam,
+    ChatCompletionContentPartAudioParam,
+    ChatCompletionContentPartFileParam,
+    ChatCompletionContentPartImageParam,
+    ChatCompletionContentPartRefusalParam,
+    ChatCompletionContentPartTextParam,
+    ChatCompletionDeveloperMessageParam,
+    ChatCompletionFunctionMessageParam,
+    ChatCompletionFunctions,
+    ChatCompletionMessage,
+    ChatCompletionMessageCustomToolCall,
+    ChatCompletionMessageToolCall,
+    ChatCompletionSystemMessageParam,
     ChatCompletionTokenLogprob,
+    ChatCompletionToolMessageParam,
+    ChatCompletionToolParam,
+    ChatCompletionUserMessageParam,
+    Choice,
+    ChoiceDelta,
+    ChoiceDeltaFunctionCall,
+    ChoiceDeltaToolCall,
+    ChoiceDeltaToolCallFunction,
+    ChoiceLogprobs,
+    ChunkChoice,
     Completion,
     CompletionRequest,
-    ModelID,
-    Models,
+    CompletionTokensDetails,
+    CompletionUsage,
+    Custom,
+    Function,
+    FunctionCall,
+    InputTokenDetails,
+    PredictionContent,
+    PromptTokensDetails,
+    Reasoning,
     StreamChunk,
+    ThinkingConfigDisabled,
+    ThinkingConfigEnabled,
+    ToolChoice,
+    ToolChoiceAny,
+    ToolChoiceAuto,
+    ToolChoiceNone,
+    ToolChoiceTool,
     TopLogprob,
+    URLCitation,
 )
 ```
 

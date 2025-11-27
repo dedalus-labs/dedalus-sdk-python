@@ -2,34 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Union, Iterable, Optional
-from typing_extensions import Literal, Required, TypeAlias, TypedDict
+from typing import Dict, Union, Iterable, Optional
+from typing_extensions import Literal, Required, TypedDict
 
 from ..._types import SequenceNotStr
+from ..chat.reasoning_param import ReasoningParam
+from ..chat.tool_choice_param import ToolChoiceParam
 
-__all__ = ["DedalusModel", "Settings", "SettingsReasoning", "SettingsToolChoice", "SettingsToolChoiceMCPToolChoice"]
-
-
-class SettingsReasoningTyped(TypedDict, total=False):
-    effort: Optional[Literal["minimal", "low", "medium", "high"]]
-
-    generate_summary: Optional[Literal["auto", "concise", "detailed"]]
-
-    summary: Optional[Literal["auto", "concise", "detailed"]]
-
-
-SettingsReasoning: TypeAlias = Union[SettingsReasoningTyped, Dict[str, object]]
-
-
-class SettingsToolChoiceMCPToolChoice(TypedDict, total=False):
-    name: Required[str]
-
-    server_label: Required[str]
-
-
-SettingsToolChoice: TypeAlias = Union[
-    Literal["auto", "required", "none"], str, Dict[str, object], SettingsToolChoiceMCPToolChoice
-]
+__all__ = ["DedalusModel", "Settings"]
 
 
 class Settings(TypedDict, total=False):
@@ -38,8 +18,6 @@ class Settings(TypedDict, total=False):
     audio: Optional[Dict[str, object]]
 
     deferred: Optional[bool]
-
-    disable_automatic_function_calling: bool
 
     extra_args: Optional[Dict[str, object]]
 
@@ -81,26 +59,11 @@ class Settings(TypedDict, total=False):
 
     prompt_cache_key: Optional[str]
 
-    reasoning: Optional[SettingsReasoning]
+    reasoning: Optional[ReasoningParam]
 
     reasoning_effort: Optional[str]
 
     response_format: Optional[Dict[str, object]]
-
-    response_include: Optional[
-        List[
-            Literal[
-                "file_search_call.results",
-                "web_search_call.results",
-                "web_search_call.action.sources",
-                "message.input_image.image_url",
-                "computer_call_output.output.image_url",
-                "code_interpreter_call.outputs",
-                "reasoning.encrypted_content",
-                "message.output_text.logprobs",
-            ]
-        ]
-    ]
 
     safety_identifier: Optional[str]
 
@@ -130,7 +93,7 @@ class Settings(TypedDict, total=False):
 
     timeout: Optional[float]
 
-    tool_choice: Optional[SettingsToolChoice]
+    tool_choice: Optional[ToolChoiceParam]
 
     tool_config: Optional[Dict[str, object]]
 
@@ -143,8 +106,6 @@ class Settings(TypedDict, total=False):
     truncation: Optional[Literal["auto", "disabled"]]
 
     turn_detection: Optional[Dict[str, object]]
-
-    use_responses: bool
 
     user: Optional[str]
 

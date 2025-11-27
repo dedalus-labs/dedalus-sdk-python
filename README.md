@@ -30,17 +30,19 @@ from dedalus_labs import Dedalus
 
 client = Dedalus(
     api_key=os.environ.get("DEDALUS_API_KEY"),  # This is the default and can be omitted
-    # defaults to "production".
-    environment="development",
 )
 
 completion = client.chat.completions.create(
     model="openai/gpt-5-nano",
     messages=[
         {
+            "role": "system",
+            "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+        },
+        {
             "role": "user",
             "content": "Hello, how are you today?",
-        }
+        },
     ],
 )
 print(completion.id)
@@ -62,8 +64,6 @@ from dedalus_labs import AsyncDedalus
 
 client = AsyncDedalus(
     api_key=os.environ.get("DEDALUS_API_KEY"),  # This is the default and can be omitted
-    # defaults to "production".
-    environment="development",
 )
 
 
@@ -72,9 +72,13 @@ async def main() -> None:
         model="openai/gpt-5-nano",
         messages=[
             {
+                "role": "system",
+                "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+            },
+            {
                 "role": "user",
                 "content": "Hello, how are you today?",
-            }
+            },
         ],
     )
     print(completion.id)
@@ -113,9 +117,13 @@ async def main() -> None:
             model="openai/gpt-5-nano",
             messages=[
                 {
+                    "role": "system",
+                    "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+                },
+                {
                     "role": "user",
                     "content": "Hello, how are you today?",
-                }
+                },
             ],
         )
         print(completion.id)
@@ -185,6 +193,25 @@ Nested request parameters are [TypedDicts](https://docs.python.org/3/library/typ
 
 Typed requests and responses provide autocomplete and documentation within your editor. If you would like to see type errors in VS Code to help catch bugs earlier, set `python.analysis.typeCheckingMode` to `basic`.
 
+## Nested params
+
+Nested parameters are dictionaries, typed using `TypedDict`, for example:
+
+```python
+from dedalus_labs import Dedalus
+
+client = Dedalus()
+
+completion = client.chat.completions.create(
+    model="openai/gpt-5",
+    prediction={
+        "content": "string",
+        "type": "content",
+    },
+)
+print(completion.prediction)
+```
+
 ## File uploads
 
 Request parameters that correspond to file uploads can be passed as `bytes`, or a [`PathLike`](https://docs.python.org/3/library/os.html#os.PathLike) instance or a tuple of `(filename, contents, media type)`.
@@ -219,7 +246,19 @@ from dedalus_labs import Dedalus
 client = Dedalus()
 
 try:
-    client.health.check()
+    client.chat.completions.create(
+        model="openai/gpt-5-nano",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+            },
+            {
+                "role": "user",
+                "content": "Hello, how are you today?",
+            },
+        ],
+    )
 except dedalus_labs.APIConnectionError as e:
     print("The server could not be reached")
     print(e.__cause__)  # an underlying Exception, likely raised within httpx.
@@ -262,7 +301,19 @@ client = Dedalus(
 )
 
 # Or, configure per-request:
-client.with_options(max_retries=5).health.check()
+client.with_options(max_retries=5).chat.completions.create(
+    model="openai/gpt-5-nano",
+    messages=[
+        {
+            "role": "system",
+            "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+        },
+        {
+            "role": "user",
+            "content": "Hello, how are you today?",
+        },
+    ],
+)
 ```
 
 ### Timeouts
@@ -285,7 +336,19 @@ client = Dedalus(
 )
 
 # Override per-request:
-client.with_options(timeout=5.0).health.check()
+client.with_options(timeout=5.0).chat.completions.create(
+    model="openai/gpt-5-nano",
+    messages=[
+        {
+            "role": "system",
+            "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+        },
+        {
+            "role": "user",
+            "content": "Hello, how are you today?",
+        },
+    ],
+)
 ```
 
 On timeout, an `APITimeoutError` is thrown.
@@ -345,11 +408,20 @@ The "raw" Response object can be accessed by prefixing `.with_raw_response.` to 
 from dedalus_labs import Dedalus
 
 client = Dedalus()
-response = client.health.with_raw_response.check()
+response = client.chat.completions.with_raw_response.create(
+    model="openai/gpt-5-nano",
+    messages=[{
+        "role": "system",
+        "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+    }, {
+        "role": "user",
+        "content": "Hello, how are you today?",
+    }],
+)
 print(response.headers.get('X-My-Header'))
 
-health = response.parse()  # get the object that `health.check()` would have returned
-print(health.status)
+completion = response.parse()  # get the object that `chat.completions.create()` would have returned
+print(completion.id)
 ```
 
 These methods return an [`APIResponse`](https://github.com/dedalus-labs/dedalus-sdk-python/tree/main/src/dedalus_labs/_response.py) object.
@@ -363,7 +435,19 @@ The above interface eagerly reads the full response body when you make the reque
 To stream the response body, use `.with_streaming_response` instead, which requires a context manager and only reads the response body once you call `.read()`, `.text()`, `.json()`, `.iter_bytes()`, `.iter_text()`, `.iter_lines()` or `.parse()`. In the async client, these are async methods.
 
 ```python
-with client.health.with_streaming_response.check() as response:
+with client.chat.completions.with_streaming_response.create(
+    model="openai/gpt-5-nano",
+    messages=[
+        {
+            "role": "system",
+            "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+        },
+        {
+            "role": "user",
+            "content": "Hello, how are you today?",
+        },
+    ],
+) as response:
     print(response.headers.get("X-My-Header"))
 
     for line in response.iter_lines():

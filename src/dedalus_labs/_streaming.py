@@ -54,30 +54,31 @@ class Stream(Generic[_T]):
         process_data = self._client._process_response_data
         iterator = self._iter_events()
 
-        for sse in iterator:
-            if sse.data.startswith("[DONE]"):
-                break
+        try:
+            for sse in iterator:
+                if sse.data.startswith("[DONE]"):
+                    break
 
-            if sse.event == "error":
-                body = sse.data
+                if sse.event == "error":
+                    body = sse.data
 
-                try:
-                    body = sse.json()
-                    err_msg = f"{body}"
-                except Exception:
-                    err_msg = sse.data or f"Error code: {response.status_code}"
+                    try:
+                        body = sse.json()
+                        err_msg = f"{body}"
+                    except Exception:
+                        err_msg = sse.data or f"Error code: {response.status_code}"
 
-                raise self._client._make_status_error(
-                    err_msg,
-                    body=body,
-                    response=self.response,
-                )
+                    raise self._client._make_status_error(
+                        err_msg,
+                        body=body,
+                        response=self.response,
+                    )
 
-            if sse.event is None:
-                yield process_data(data=sse.json(), cast_to=cast_to, response=response)
-
-        # As we might not fully consume the response stream, we need to close it explicitly
-        response.close()
+                if sse.event is None:
+                    yield process_data(data=sse.json(), cast_to=cast_to, response=response)
+        finally:
+            # Ensure the response is closed even if the consumer doesn't read all data
+            response.close()
 
     def __enter__(self) -> Self:
         return self
@@ -136,30 +137,31 @@ class AsyncStream(Generic[_T]):
         process_data = self._client._process_response_data
         iterator = self._iter_events()
 
-        async for sse in iterator:
-            if sse.data.startswith("[DONE]"):
-                break
+        try:
+            async for sse in iterator:
+                if sse.data.startswith("[DONE]"):
+                    break
 
-            if sse.event == "error":
-                body = sse.data
+                if sse.event == "error":
+                    body = sse.data
 
-                try:
-                    body = sse.json()
-                    err_msg = f"{body}"
-                except Exception:
-                    err_msg = sse.data or f"Error code: {response.status_code}"
+                    try:
+                        body = sse.json()
+                        err_msg = f"{body}"
+                    except Exception:
+                        err_msg = sse.data or f"Error code: {response.status_code}"
 
-                raise self._client._make_status_error(
-                    err_msg,
-                    body=body,
-                    response=self.response,
-                )
+                    raise self._client._make_status_error(
+                        err_msg,
+                        body=body,
+                        response=self.response,
+                    )
 
-            if sse.event is None:
-                yield process_data(data=sse.json(), cast_to=cast_to, response=response)
-
-        # As we might not fully consume the response stream, we need to close it explicitly
-        await response.aclose()
+                if sse.event is None:
+                    yield process_data(data=sse.json(), cast_to=cast_to, response=response)
+        finally:
+            # Ensure the response is closed even if the consumer doesn't read all data
+            await response.aclose()
 
     async def __aenter__(self) -> Self:
         return self
