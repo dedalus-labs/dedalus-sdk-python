@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 from typing import Dict, Union, Iterable, Optional
-from typing_extensions import Literal, Required, Annotated, TypeAlias, TypedDict
+from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
 from ..._types import SequenceNotStr
-from ..._utils import PropertyInfo
 from .tool_choice_any_param import ToolChoiceAnyParam
 from .tool_choice_auto_param import ToolChoiceAutoParam
 from .tool_choice_none_param import ToolChoiceNoneParam
@@ -71,7 +70,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     If false, returns raw tool calls for manual handling.
     """
 
-    cached_content: Annotated[Optional[str], PropertyInfo(alias="cachedContent")]
+    cached_content: Optional[str]
     """Optional.
 
     The name of the content [cached](https://ai.google.dev/gemini-api/d...
@@ -90,7 +89,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     """
 
     function_call: Optional[str]
-    """Deprecated in favor of `tool_choice`. Controls which (if any) function is ca..."""
+    """Wrapper for union variant: function call mode."""
 
     functions: Optional[Iterable[ChatCompletionFunctionsParam]]
     """Deprecated in favor of `tools`. A list of functions the model may generate J..."""
@@ -184,7 +183,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     Set to `24h` to enable extended pr...
     """
 
-    prompt_mode: Optional[Dict[str, object]]
+    prompt_mode: Optional[Literal["reasoning"]]
     """Allows toggling between the reasoning mode and no system prompt.
 
     When set to ...
