@@ -91,7 +91,7 @@ class CompletionsResource(SyncAPIResource):
         presence_penalty: Optional[float] | Omit = omit,
         prompt_cache_key: Optional[str] | Omit = omit,
         prompt_cache_retention: Optional[str] | Omit = omit,
-        prompt_mode: Optional[Dict[str, object]] | Omit = omit,
+        prompt_mode: Optional[Literal["reasoning"]] | Omit = omit,
         reasoning_effort: Optional[str] | Omit = omit,
         response_format: Optional[completion_create_params.ResponseFormat] | Omit = omit,
         safe_prompt: Optional[bool] | Omit = omit,
@@ -194,7 +194,7 @@ class CompletionsResource(SyncAPIResource):
 
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on the...
 
-          function_call: Deprecated in favor of `tool_choice`. Controls which (if any) function is ca...
+          function_call: Wrapper for union variant: function call mode.
 
           functions: Deprecated in favor of `tools`. A list of functions the model may generate J...
 
@@ -341,7 +341,7 @@ class CompletionsResource(SyncAPIResource):
         presence_penalty: Optional[float] | Omit = omit,
         prompt_cache_key: Optional[str] | Omit = omit,
         prompt_cache_retention: Optional[str] | Omit = omit,
-        prompt_mode: Optional[Dict[str, object]] | Omit = omit,
+        prompt_mode: Optional[Literal["reasoning"]] | Omit = omit,
         reasoning_effort: Optional[str] | Omit = omit,
         response_format: Optional[completion_create_params.ResponseFormat] | Omit = omit,
         safe_prompt: Optional[bool] | Omit = omit,
@@ -445,7 +445,7 @@ class CompletionsResource(SyncAPIResource):
 
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on the...
 
-          function_call: Deprecated in favor of `tool_choice`. Controls which (if any) function is ca...
+          function_call: Wrapper for union variant: function call mode.
 
           functions: Deprecated in favor of `tools`. A list of functions the model may generate J...
 
@@ -590,7 +590,7 @@ class CompletionsResource(SyncAPIResource):
         presence_penalty: Optional[float] | Omit = omit,
         prompt_cache_key: Optional[str] | Omit = omit,
         prompt_cache_retention: Optional[str] | Omit = omit,
-        prompt_mode: Optional[Dict[str, object]] | Omit = omit,
+        prompt_mode: Optional[Literal["reasoning"]] | Omit = omit,
         reasoning_effort: Optional[str] | Omit = omit,
         response_format: Optional[completion_create_params.ResponseFormat] | Omit = omit,
         safe_prompt: Optional[bool] | Omit = omit,
@@ -694,7 +694,7 @@ class CompletionsResource(SyncAPIResource):
 
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on the...
 
-          function_call: Deprecated in favor of `tool_choice`. Controls which (if any) function is ca...
+          function_call: Wrapper for union variant: function call mode.
 
           functions: Deprecated in favor of `tools`. A list of functions the model may generate J...
 
@@ -838,7 +838,7 @@ class CompletionsResource(SyncAPIResource):
         presence_penalty: Optional[float] | Omit = omit,
         prompt_cache_key: Optional[str] | Omit = omit,
         prompt_cache_retention: Optional[str] | Omit = omit,
-        prompt_mode: Optional[Dict[str, object]] | Omit = omit,
+        prompt_mode: Optional[Literal["reasoning"]] | Omit = omit,
         reasoning_effort: Optional[str] | Omit = omit,
         response_format: Optional[completion_create_params.ResponseFormat] | Omit = omit,
         safe_prompt: Optional[bool] | Omit = omit,
@@ -1313,7 +1313,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         presence_penalty: Optional[float] | Omit = omit,
         prompt_cache_key: Optional[str] | Omit = omit,
         prompt_cache_retention: Optional[str] | Omit = omit,
-        prompt_mode: Optional[Dict[str, object]] | Omit = omit,
+        prompt_mode: Optional[Literal["reasoning"]] | Omit = omit,
         reasoning_effort: Optional[str] | Omit = omit,
         response_format: Optional[completion_create_params.ResponseFormat] | Omit = omit,
         safe_prompt: Optional[bool] | Omit = omit,
@@ -1416,7 +1416,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on the...
 
-          function_call: Deprecated in favor of `tool_choice`. Controls which (if any) function is ca...
+          function_call: Wrapper for union variant: function call mode.
 
           functions: Deprecated in favor of `tools`. A list of functions the model may generate J...
 
@@ -1563,7 +1563,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         presence_penalty: Optional[float] | Omit = omit,
         prompt_cache_key: Optional[str] | Omit = omit,
         prompt_cache_retention: Optional[str] | Omit = omit,
-        prompt_mode: Optional[Dict[str, object]] | Omit = omit,
+        prompt_mode: Optional[Literal["reasoning"]] | Omit = omit,
         reasoning_effort: Optional[str] | Omit = omit,
         response_format: Optional[completion_create_params.ResponseFormat] | Omit = omit,
         safe_prompt: Optional[bool] | Omit = omit,
@@ -1667,7 +1667,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on the...
 
-          function_call: Deprecated in favor of `tool_choice`. Controls which (if any) function is ca...
+          function_call: Wrapper for union variant: function call mode.
 
           functions: Deprecated in favor of `tools`. A list of functions the model may generate J...
 
@@ -1812,7 +1812,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         presence_penalty: Optional[float] | Omit = omit,
         prompt_cache_key: Optional[str] | Omit = omit,
         prompt_cache_retention: Optional[str] | Omit = omit,
-        prompt_mode: Optional[Dict[str, object]] | Omit = omit,
+        prompt_mode: Optional[Literal["reasoning"]] | Omit = omit,
         reasoning_effort: Optional[str] | Omit = omit,
         response_format: Optional[completion_create_params.ResponseFormat] | Omit = omit,
         safe_prompt: Optional[bool] | Omit = omit,
@@ -1916,7 +1916,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on the...
 
-          function_call: Deprecated in favor of `tool_choice`. Controls which (if any) function is ca...
+          function_call: Wrapper for union variant: function call mode.
 
           functions: Deprecated in favor of `tools`. A list of functions the model may generate J...
 
@@ -2060,7 +2060,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         presence_penalty: Optional[float] | Omit = omit,
         prompt_cache_key: Optional[str] | Omit = omit,
         prompt_cache_retention: Optional[str] | Omit = omit,
-        prompt_mode: Optional[Dict[str, object]] | Omit = omit,
+        prompt_mode: Optional[Literal["reasoning"]] | Omit = omit,
         reasoning_effort: Optional[str] | Omit = omit,
         response_format: Optional[completion_create_params.ResponseFormat] | Omit = omit,
         safe_prompt: Optional[bool] | Omit = omit,

@@ -10,7 +10,6 @@ from .completion import Completion as Completion
 from .top_logprob import TopLogprob as TopLogprob
 from .choice_delta import ChoiceDelta as ChoiceDelta
 from .chunk_choice import ChunkChoice as ChunkChoice
-from .custom_param import CustomParam as CustomParam
 from .stream_chunk import StreamChunk as StreamChunk
 from .url_citation import URLCitation as URLCitation
 from .function_call import FunctionCall as FunctionCall
@@ -68,7 +67,4 @@ from .chat_completion_message_custom_tool_call import (
 )
 from .chat_completion_content_part_refusal_param import (
     ChatCompletionContentPartRefusalParam as ChatCompletionContentPartRefusalParam,
-)
-from .chat_completion_message_custom_tool_call_param import (
-    ChatCompletionMessageCustomToolCallParam as ChatCompletionMessageCustomToolCallParam,
 )

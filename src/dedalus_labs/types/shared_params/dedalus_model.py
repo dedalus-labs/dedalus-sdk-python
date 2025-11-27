@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Union, Iterable, Optional
+from typing import Dict, Union, Iterable, Optional
 from typing_extensions import Literal, Required, TypedDict
 
 from ..._types import SequenceNotStr
@@ -65,21 +65,6 @@ class Settings(TypedDict, total=False):
 
     response_format: Optional[Dict[str, object]]
 
-    response_include: Optional[
-        List[
-            Literal[
-                "file_search_call.results",
-                "web_search_call.results",
-                "web_search_call.action.sources",
-                "message.input_image.image_url",
-                "computer_call_output.output.image_url",
-                "code_interpreter_call.outputs",
-                "reasoning.encrypted_content",
-                "message.output_text.logprobs",
-            ]
-        ]
-    ]
-
     safety_identifier: Optional[str]
 
     safety_settings: Optional[Iterable[Dict[str, object]]]
@@ -121,8 +106,6 @@ class Settings(TypedDict, total=False):
     truncation: Optional[Literal["auto", "disabled"]]
 
     turn_detection: Optional[Dict[str, object]]
-
-    use_responses: bool
 
     user: Optional[str]
 

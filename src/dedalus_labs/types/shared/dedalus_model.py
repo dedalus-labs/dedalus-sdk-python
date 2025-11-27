@@ -63,21 +63,6 @@ class Settings(BaseModel):
 
     response_format: Optional[Dict[str, object]] = None
 
-    response_include: Optional[
-        List[
-            Literal[
-                "file_search_call.results",
-                "web_search_call.results",
-                "web_search_call.action.sources",
-                "message.input_image.image_url",
-                "computer_call_output.output.image_url",
-                "code_interpreter_call.outputs",
-                "reasoning.encrypted_content",
-                "message.output_text.logprobs",
-            ]
-        ]
-    ] = None
-
     safety_identifier: Optional[str] = None
 
     safety_settings: Optional[List[Dict[str, object]]] = None
@@ -119,8 +104,6 @@ class Settings(BaseModel):
     truncation: Optional[Literal["auto", "disabled"]] = None
 
     turn_detection: Optional[Dict[str, object]] = None
-
-    use_responses: Optional[bool] = None
 
     user: Optional[str] = None
 
