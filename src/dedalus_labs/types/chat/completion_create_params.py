@@ -6,6 +6,7 @@ from typing import Dict, Union, Iterable, Optional
 from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
 from ..._types import SequenceNotStr
+from ..shared_params import mcp_servers as _mcp_servers
 from .tool_choice_any_param import ToolChoiceAnyParam
 from .tool_choice_auto_param import ToolChoiceAutoParam
 from .tool_choice_none_param import ToolChoiceNoneParam
@@ -15,6 +16,7 @@ from .chat_completion_tool_param import ChatCompletionToolParam
 from ..shared_params.dedalus_model import DedalusModel
 from .thinking_config_enabled_param import ThinkingConfigEnabledParam
 from .thinking_config_disabled_param import ThinkingConfigDisabledParam
+from ..shared_params.mcp_server_param import MCPServerParam
 from .chat_completion_functions_param import ChatCompletionFunctionsParam
 from .chat_completion_tool_message_param import ChatCompletionToolMessageParam
 from .chat_completion_user_message_param import ChatCompletionUserMessageParam
@@ -30,6 +32,7 @@ from ..shared_params.response_format_json_schema import ResponseFormatJSONSchema
 __all__ = [
     "CompletionCreateParamsBase",
     "Model",
+    "MCPServers",
     "Message",
     "ResponseFormat",
     "SafetySetting",
@@ -121,8 +124,12 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     max_turns: Optional[int]
     """Maximum conversation turns."""
 
-    mcp_servers: Union[str, SequenceNotStr[str], None]
-    """MCP server identifiers. Accepts URLs, repository slugs, or server IDs."""
+    mcp_servers: Optional[MCPServers]
+    """MCP server identifiers.
+
+    Accepts marketplace slugs, URLs, or MCPServerParam objects. MCP tools are
+    executed server-side and billed separately.
+    """
 
     messages: Optional[Iterable[Message]]
     """Conversation history (OpenAI: messages, Google: contents, Responses: input)"""
@@ -163,7 +170,8 @@ class CompletionCreateParamsBase(TypedDict, total=False):
 
     - type (required): Literal["content"]
     - content (required): str |
-      Annotated[list[ChatCompletionRequestMessageContentPartText], MinLen(1)]
+      Annotated[list[ChatCompletionRequestMessageContentPartText], MinLen(1),
+      ArrayTitle("PredictionContentArray")]
     """
 
     presence_penalty: Optional[float]
@@ -286,6 +294,8 @@ class CompletionCreateParamsBase(TypedDict, total=False):
 
 
 Model: TypeAlias = Union[str, DedalusModel, SequenceNotStr[DedalusModelChoice]]
+
+MCPServers: TypeAlias = Union[str, MCPServerParam, _mcp_servers.MCPServers]
 
 Message: TypeAlias = Union[
     ChatCompletionDeveloperMessageParam,

@@ -5,7 +5,10 @@ from __future__ import annotations
 from .image import Image as Image
 from .model import Model as Model
 from .shared import (
+    MCPServers as MCPServers,
     DedalusModel as DedalusModel,
+    MCPServerInput as MCPServerInput,
+    MCPServerParam as MCPServerParam,
     DedalusModelChoice as DedalusModelChoice,
     FunctionDefinition as FunctionDefinition,
     FunctionParameters as FunctionParameters,

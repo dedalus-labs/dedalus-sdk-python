@@ -10,9 +10,9 @@ from .chat_completion_content_part_text_param import ChatCompletionContentPartTe
 from .chat_completion_content_part_audio_param import ChatCompletionContentPartAudioParam
 from .chat_completion_content_part_image_param import ChatCompletionContentPartImageParam
 
-__all__ = ["ChatCompletionUserMessageParam", "ContentUnionMember1"]
+__all__ = ["ChatCompletionUserMessageParam", "ContentChatCompletionRequestUserMessageContentArray"]
 
-ContentUnionMember1: TypeAlias = Union[
+ContentChatCompletionRequestUserMessageContentArray: TypeAlias = Union[
     ChatCompletionContentPartTextParam,
     ChatCompletionContentPartImageParam,
     ChatCompletionContentPartAudioParam,
@@ -21,7 +21,7 @@ ContentUnionMember1: TypeAlias = Union[
 
 
 class ChatCompletionUserMessageParam(TypedDict, total=False):
-    content: Required[Union[str, Iterable[ContentUnionMember1]]]
+    content: Required[Union[str, Iterable[ContentChatCompletionRequestUserMessageContentArray]]]
     """The contents of the user message."""
 
     role: Required[Literal["user"]]

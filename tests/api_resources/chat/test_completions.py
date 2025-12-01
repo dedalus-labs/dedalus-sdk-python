@@ -55,7 +55,7 @@ class TestCompletions:
             max_completion_tokens=0,
             max_tokens=1,
             max_turns=5,
-            mcp_servers=["dedalus-labs/brave-search"],
+            mcp_servers="dedalus-labs/example-server",
             messages=[
                 {
                     "content": "string",
@@ -196,7 +196,7 @@ class TestCompletions:
             max_completion_tokens=0,
             max_tokens=1,
             max_turns=5,
-            mcp_servers=["dedalus-labs/brave-search"],
+            mcp_servers="dedalus-labs/example-server",
             messages=[
                 {
                     "content": "string",
@@ -341,7 +341,7 @@ class TestAsyncCompletions:
             max_completion_tokens=0,
             max_tokens=1,
             max_turns=5,
-            mcp_servers=["dedalus-labs/brave-search"],
+            mcp_servers="dedalus-labs/example-server",
             messages=[
                 {
                     "content": "string",
@@ -482,7 +482,7 @@ class TestAsyncCompletions:
             max_completion_tokens=0,
             max_tokens=1,
             max_turns=5,
-            mcp_servers=["dedalus-labs/brave-search"],
+            mcp_servers="dedalus-labs/example-server",
             messages=[
                 {
                     "content": "string",
