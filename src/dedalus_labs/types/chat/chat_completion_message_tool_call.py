@@ -1,5 +1,6 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
+from typing import Optional
 from typing_extensions import Literal
 
 from .function import Function
@@ -17,3 +18,9 @@ class ChatCompletionMessageToolCall(BaseModel):
 
     type: Literal["function"]
     """The type of the tool. Currently, only `function` is supported."""
+
+    thought_signature: Optional[str] = None
+    """
+    Opaque signature for thought continuity in multi-turn tool use (Google-specific,
+    base64 encoded)
+    """
