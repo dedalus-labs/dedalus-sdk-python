@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.2.0 (2025-12-01)
+
+Full Changelog: [v0.1.1...v0.2.0](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.1...v0.2.0)
+
+### Features
+
+* **api:** config update for dedalus-ai/dev ([197d11b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/197d11bf57da500e05cde2861146da9e3ec278f3))
+* **api:** improve types ([62cf7e1](https://github.com/dedalus-labs/dedalus-sdk-python/commit/62cf7e1a643cda58ee5112a1a8fc35253fe50f07))
+* **api:** manual updates ([9bb6d0d](https://github.com/dedalus-labs/dedalus-sdk-python/commit/9bb6d0d0433111d177410f7ff21d3de254d899a0))
+* **api:** mcp server params ([bf78aad](https://github.com/dedalus-labs/dedalus-sdk-python/commit/bf78aad94d159622460b3a9ecddb9c5d1e1c82bb))
+* **api:** schema compiler landed ([9aeb7a7](https://github.com/dedalus-labs/dedalus-sdk-python/commit/9aeb7a78bfaa81c07e920268afcacbba4a4ff9c9))
+
+
+### Bug Fixes
+
+* ensure streams are always closed ([e0e6406](https://github.com/dedalus-labs/dedalus-sdk-python/commit/e0e6406dc5faeaae21286324d4d247e2706481e1))
+
+
+### Chores
+
+* **deps:** mypy 1.18.1 has a regression, pin to 1.17 ([cb4d323](https://github.com/dedalus-labs/dedalus-sdk-python/commit/cb4d3232c845b60eeccd23efa06057c8408085f5))
+* **internal:** codegen related update ([d288b0b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/d288b0b4f8098c0aab0d79d45f27fd7b7cd8d127))
+
 ## 0.1.1 (2025-11-12)
 
 Full Changelog: [v0.1.0...v0.1.1](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.1.0...v0.1.1)

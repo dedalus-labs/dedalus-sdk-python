@@ -37,10 +37,9 @@ from ..._parsing import (
     parse_function_tool_arguments,
 )
 from ...._streaming import Stream, AsyncStream
-from ....types.chat.stream_chunk import StreamChunk
+from ....types.chat.chat_completion_chunk import ChatCompletionChunk, Choice as ChoiceChunk
 from ....types.chat.parsed_chat_completion import ParsedChatCompletion
-from ....types.chat.completion import ChoiceLogprobs
-from ....types.chat.stream_chunk import Choice as ChoiceChunk
+from ....types.chat.choice_logprobs import ChoiceLogprobs
 
 
 InputTool = Dict[str, Any]
@@ -67,7 +66,7 @@ class ChatCompletionStream(Generic[ResponseFormatT]):
     def __init__(
         self,
         *,
-        raw_stream: Stream[StreamChunk],
+        raw_stream: Stream[ChatCompletionChunk],
         response_format: type[ResponseFormatT] | ResponseFormatParam | Omit,
         input_tools: Iterable[InputTool] | Omit,
     ) -> None:
@@ -147,7 +146,7 @@ class ChatCompletionStreamManager(Generic[ResponseFormatT]):
 
     def __init__(
         self,
-        api_request: Callable[[], Stream[StreamChunk]],
+        api_request: Callable[[], Stream[ChatCompletionChunk]],
         *,
         response_format: type[ResponseFormatT] | ResponseFormatParam | Omit,
         input_tools: Iterable[InputTool] | Omit,
@@ -190,7 +189,7 @@ class AsyncChatCompletionStream(Generic[ResponseFormatT]):
     def __init__(
         self,
         *,
-        raw_stream: AsyncStream[StreamChunk],
+        raw_stream: AsyncStream[ChatCompletionChunk],
         response_format: type[ResponseFormatT] | ResponseFormatParam | Omit,
         input_tools: Iterable[InputTool] | Omit,
     ) -> None:
@@ -270,7 +269,7 @@ class AsyncChatCompletionStreamManager(Generic[ResponseFormatT]):
 
     def __init__(
         self,
-        api_request: Awaitable[AsyncStream[StreamChunk]],
+        api_request: Awaitable[AsyncStream[ChatCompletionChunk]],
         *,
         response_format: type[ResponseFormatT] | ResponseFormatParam | Omit,
         input_tools: Iterable[InputTool] | Omit,
@@ -350,7 +349,7 @@ class ChatCompletionStreamState(Generic[ResponseFormatT]):
         assert self.__current_completion_snapshot is not None
         return self.__current_completion_snapshot
 
-    def handle_chunk(self, chunk: StreamChunk) -> Iterable[ChatCompletionStreamEvent[ResponseFormatT]]:
+    def handle_chunk(self, chunk: ChatCompletionChunk) -> Iterable[ChatCompletionStreamEvent[ResponseFormatT]]:
         """Accumulate a new chunk into the snapshot and returns an iterable of events to yield."""
         self.__current_completion_snapshot = self._accumulate_chunk(chunk)
 
@@ -367,7 +366,7 @@ class ChatCompletionStreamState(Generic[ResponseFormatT]):
             self.__choice_event_states.append(choice_state)
             return choice_state
 
-    def _accumulate_chunk(self, chunk: StreamChunk) -> ParsedChatCompletionSnapshot:
+    def _accumulate_chunk(self, chunk: ChatCompletionChunk) -> ParsedChatCompletionSnapshot:
         completion_snapshot = self.__current_completion_snapshot
 
         if completion_snapshot is None:
@@ -503,7 +502,7 @@ class ChatCompletionStreamState(Generic[ResponseFormatT]):
     def _build_events(
         self,
         *,
-        chunk: StreamChunk,
+        chunk: ChatCompletionChunk,
         completion_snapshot: ParsedChatCompletionSnapshot,
     ) -> list[ChatCompletionStreamEvent[ResponseFormatT]]:
         events_to_fire: list[ChatCompletionStreamEvent[ResponseFormatT]] = []
@@ -747,7 +746,7 @@ class ChoiceEventState:
             assert_never(tool_call_snapshot)
 
 
-def _convert_initial_chunk_into_snapshot(chunk: StreamChunk) -> ParsedChatCompletionSnapshot:
+def _convert_initial_chunk_into_snapshot(chunk: ChatCompletionChunk) -> ParsedChatCompletionSnapshot:
     data = chunk.to_dict()
     choices = cast("list[object]", data["choices"])
 
@@ -770,7 +769,7 @@ def _convert_initial_chunk_into_snapshot(chunk: StreamChunk) -> ParsedChatComple
     )
 
 
-def _is_valid_stream_chunk(sse_event: StreamChunk) -> bool:
+def _is_valid_stream_chunk(sse_event: ChatCompletionChunk) -> bool:
     # Some providers occasionally send control messages that do not conform to the
     # standard chunk schema. Filtering on the object type shields downstream logic.
     return sse_event.object == "chat.completion.chunk"  # type: ignore[attr-defined]
