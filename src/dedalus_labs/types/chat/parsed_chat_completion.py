@@ -2,8 +2,10 @@
 
 from typing import List, Generic, TypeVar, Optional
 
+from .choice import Choice
 from ..._models import GenericModel
-from .completion import Completion, Choice, ChoiceMessage
+from .completion import Completion
+from .chat_completion_message import ChatCompletionMessage
 from .parsed_function_tool_call import ParsedFunctionToolCall
 
 __all__ = ["ParsedChatCompletion", "ParsedChoice", "ParsedChatCompletionMessage"]
@@ -15,7 +17,7 @@ ContentType = TypeVar("ContentType")
 # pyright: reportIncompatibleVariableOverride=false
 
 
-class ParsedChatCompletionMessage(ChoiceMessage, GenericModel, Generic[ContentType]):
+class ParsedChatCompletionMessage(ChatCompletionMessage, GenericModel, Generic[ContentType]):
     parsed: Optional[ContentType] = None
     """The auto-parsed message contents"""
 

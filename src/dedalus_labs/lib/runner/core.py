@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import asyncio
 import inspect
-from typing import TYPE_CHECKING, Any, Dict, Literal, Callable, Iterator, Protocol, AsyncIterator
+from typing import TYPE_CHECKING, Any, Dict, Literal, Callable, Iterator, Protocol, AsyncIterator, Sequence, Union
 from dataclasses import field, asdict, dataclass
 
 from dedalus_labs import Dedalus, AsyncDedalus
@@ -17,8 +17,17 @@ from dedalus_labs import Dedalus, AsyncDedalus
 if TYPE_CHECKING:
     from ...types.dedalus_model import DedalusModel
 
-
 from .types import Message, ToolCall, JsonValue, ToolResult, PolicyInput, PolicyContext
+from .mcp_wire import serialize_mcp_servers
+from .protocols import MCPServerProtocol
+
+# Type alias for mcp_servers parameter - accepts strings, server objects, or mixed lists
+MCPServersInput = Union[
+    str,  # Single slug or URL
+    MCPServerProtocol,  # OpenMCP server object
+    Sequence[Union[str, MCPServerProtocol, Dict[str, Any]]],  # Mixed list
+    None,
+]
 from ..utils import to_schema
 
 
@@ -114,7 +123,7 @@ class _ModelConfig:
 class _ExecutionConfig:
     """Configuration for tool execution behavior and policies."""
 
-    mcp_servers: list[str] = field(default_factory=list)
+    mcp_servers: list[str | Dict[str, Any]] = field(default_factory=list)  # Wire format
     max_steps: int = 10
     stream: bool = False
     transport: Literal["http", "realtime"] = "http"
@@ -168,7 +177,7 @@ class DedalusRunner:
         instructions: str | None = None,
         model: str | list[str] | DedalusModel | list[DedalusModel] | None = None,
         max_steps: int = 10,
-        mcp_servers: str | list[str] | None = None,
+        mcp_servers: MCPServersInput = None,
         temperature: float | None = None,
         max_tokens: int | None = None,
         top_p: float | None = None,
@@ -207,7 +216,9 @@ class DedalusRunner:
                     if isinstance(tool, list):
                         msg = f"tools[{i}] is a list, not a callable function. Did you mean to pass tools={tool} instead of tools=[{tool}]?"
                         raise TypeError(msg)
-                    msg = f"tools[{i}] is not callable (got {type(tool).__name__}). All tools must be callable functions."
+                    msg = (
+                        f"tools[{i}] is not callable (got {type(tool).__name__}). All tools must be callable functions."
+                    )
                     raise TypeError(msg)
 
         # Parse model to extract name and config
@@ -366,11 +377,11 @@ class DedalusRunner:
             handoff_config=handoff_config,
         )
 
-        # Normalize mcp_servers to list
-        normalized_mcp_servers = [mcp_servers] if isinstance(mcp_servers, str) else (mcp_servers or [])
+        # Serialize mcp_servers to wire format (handles MCPServerProtocol objects)
+        serialized_mcp_servers = serialize_mcp_servers(mcp_servers)
 
         exec_config = _ExecutionConfig(
-            mcp_servers=normalized_mcp_servers,
+            mcp_servers=serialized_mcp_servers,
             max_steps=max_steps,
             stream=stream,
             transport=transport,
@@ -540,7 +551,11 @@ class DedalusRunner:
             )
 
         return _RunResult(
-            final_output=final_text, tool_results=tool_results, steps_used=steps, tools_called=tools_called, messages=messages
+            final_output=final_text,
+            tool_results=tool_results,
+            steps_used=steps,
+            tools_called=tools_called,
+            messages=messages,
         )
 
     async def _execute_streaming_async(
@@ -836,7 +851,11 @@ class DedalusRunner:
             self._execute_tool_calls_sync(tool_calls, tool_handler, messages, tool_results, tools_called, steps)
 
         return _RunResult(
-            final_output=final_text, tool_results=tool_results, steps_used=steps, tools_called=tools_called, messages=messages
+            final_output=final_text,
+            tool_results=tool_results,
+            steps_used=steps,
+            tools_called=tools_called,
+            messages=messages,
         )
 
     def _execute_streaming_sync(
@@ -930,7 +949,11 @@ class DedalusRunner:
                         if exec_config.verbose:
                             # Show tool calls in a more readable format
                             for tc_delta in delta.tool_calls:
-                                if hasattr(tc_delta, 'function') and hasattr(tc_delta.function, 'name') and tc_delta.function.name:
+                                if (
+                                    hasattr(tc_delta, "function")
+                                    and hasattr(tc_delta.function, "name")
+                                    and tc_delta.function.name
+                                ):
                                     print(f"-> Calling {tc_delta.function.name}")
 
                     # Check for content
@@ -1237,8 +1260,8 @@ class DedalusRunner:
     @staticmethod
     def _mk_kwargs(mc: _ModelConfig) -> Dict[str, Any]:
         """Convert model config to kwargs for client call."""
-        from ...lib._parsing import type_to_response_format_param
         from ..._utils import is_given
+        from ...lib._parsing import type_to_response_format_param
 
         d = asdict(mc)
         d.pop("id", None)  # Remove id since it's passed separately

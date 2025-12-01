@@ -4,24 +4,39 @@
 #           github.com/dedalus-labs/dedalus-sdk-python/LICENSE
 # ==============================================================================
 
+"""Dedalus runner module."""
+
 from __future__ import annotations
 
-from .core import DedalusRunner
+from ..utils import to_schema
+from .core import DedalusRunner, MCPServersInput
+from .mcp_wire import MCPServerWireSpec, serialize_mcp_servers
+from .protocols import MCPServerProtocol, MCPServerRef, MCPToolSpec, is_mcp_server, normalize_mcp_servers
 from .types import (
-    Tool,
-    Message,
-    ToolCall,
     JsonValue,
-    ToolResult,
-    PolicyInput,
-    ToolHandler,
+    Message,
     PolicyContext,
     PolicyFunction,
+    PolicyInput,
+    Tool,
+    ToolCall,
+    ToolHandler,
+    ToolResult,
 )
-from ..utils import to_schema
 
 __all__ = [
+    # Core
     "DedalusRunner",
+    "MCPServersInput",
+    # MCP protocols
+    "MCPServerProtocol",
+    "MCPServerRef",
+    "MCPToolSpec",
+    "is_mcp_server",
+    "normalize_mcp_servers",
+    # MCP wire format
+    "MCPServerWireSpec",
+    "serialize_mcp_servers",
     # Types
     "JsonValue",
     "Message",

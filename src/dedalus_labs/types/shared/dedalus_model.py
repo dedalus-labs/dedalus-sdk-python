@@ -4,8 +4,8 @@ from typing import Dict, List, Union, Optional
 from typing_extensions import Literal
 
 from ..._models import BaseModel
-from ..chat.reasoning import Reasoning
-from ..chat.tool_choice import ToolChoice
+from ..chat.reasoning_param import ReasoningParam
+from ..chat.tool_choice_param import ToolChoiceParam
 
 __all__ = ["DedalusModel", "Settings"]
 
@@ -57,7 +57,7 @@ class Settings(BaseModel):
 
     prompt_cache_key: Optional[str] = None
 
-    reasoning: Optional[Reasoning] = None
+    reasoning: Optional[ReasoningParam] = None
 
     reasoning_effort: Optional[str] = None
 
@@ -91,7 +91,7 @@ class Settings(BaseModel):
 
     timeout: Optional[float] = None
 
-    tool_choice: Optional[ToolChoice] = None
+    tool_choice: Optional[ToolChoiceParam] = None
 
     tool_config: Optional[Dict[str, object]] = None
 
