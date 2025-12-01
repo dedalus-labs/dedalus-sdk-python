@@ -69,7 +69,7 @@ class CompletionsResource(SyncAPIResource):
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
-        mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
+        mcp_servers: Optional[completion_create_params.MCPServers] | Omit = omit,
         messages: Optional[Iterable[completion_create_params.Message]] | Omit = omit,
         metadata: Optional[Dict[str, object]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
@@ -203,7 +203,8 @@ class CompletionsResource(SyncAPIResource):
 
           max_turns: Maximum conversation turns.
 
-          mcp_servers: MCP server identifiers. Accepts URLs, repository slugs, or server IDs.
+          mcp_servers: MCP server identifiers. Accepts marketplace slugs, URLs, or MCPServerParam
+              objects. MCP tools are executed server-side and billed separately.
 
           messages: Conversation history (OpenAI: messages, Google: contents, Responses: input)
 
@@ -225,7 +226,8 @@ class CompletionsResource(SyncAPIResource):
 
               - type (required): Literal["content"]
               - content (required): str |
-                Annotated[list[ChatCompletionRequestMessageContentPartText], MinLen(1)]
+                Annotated[list[ChatCompletionRequestMessageContentPartText], MinLen(1),
+                ArrayTitle("PredictionContentArray")]
 
           presence_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on whe...
 
@@ -319,7 +321,7 @@ class CompletionsResource(SyncAPIResource):
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
-        mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
+        mcp_servers: Optional[completion_create_params.MCPServers] | Omit = omit,
         messages: Optional[Iterable[completion_create_params.Message]] | Omit = omit,
         metadata: Optional[Dict[str, object]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
@@ -454,7 +456,8 @@ class CompletionsResource(SyncAPIResource):
 
           max_turns: Maximum conversation turns.
 
-          mcp_servers: MCP server identifiers. Accepts URLs, repository slugs, or server IDs.
+          mcp_servers: MCP server identifiers. Accepts marketplace slugs, URLs, or MCPServerParam
+              objects. MCP tools are executed server-side and billed separately.
 
           messages: Conversation history (OpenAI: messages, Google: contents, Responses: input)
 
@@ -476,7 +479,8 @@ class CompletionsResource(SyncAPIResource):
 
               - type (required): Literal["content"]
               - content (required): str |
-                Annotated[list[ChatCompletionRequestMessageContentPartText], MinLen(1)]
+                Annotated[list[ChatCompletionRequestMessageContentPartText], MinLen(1),
+                ArrayTitle("PredictionContentArray")]
 
           presence_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on whe...
 
@@ -568,7 +572,7 @@ class CompletionsResource(SyncAPIResource):
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
-        mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
+        mcp_servers: Optional[completion_create_params.MCPServers] | Omit = omit,
         messages: Optional[Iterable[completion_create_params.Message]] | Omit = omit,
         metadata: Optional[Dict[str, object]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
@@ -703,7 +707,8 @@ class CompletionsResource(SyncAPIResource):
 
           max_turns: Maximum conversation turns.
 
-          mcp_servers: MCP server identifiers. Accepts URLs, repository slugs, or server IDs.
+          mcp_servers: MCP server identifiers. Accepts marketplace slugs, URLs, or MCPServerParam
+              objects. MCP tools are executed server-side and billed separately.
 
           messages: Conversation history (OpenAI: messages, Google: contents, Responses: input)
 
@@ -725,7 +730,8 @@ class CompletionsResource(SyncAPIResource):
 
               - type (required): Literal["content"]
               - content (required): str |
-                Annotated[list[ChatCompletionRequestMessageContentPartText], MinLen(1)]
+                Annotated[list[ChatCompletionRequestMessageContentPartText], MinLen(1),
+                ArrayTitle("PredictionContentArray")]
 
           presence_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on whe...
 
@@ -816,7 +822,7 @@ class CompletionsResource(SyncAPIResource):
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
-        mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
+        mcp_servers: Optional[completion_create_params.MCPServers] | Omit = omit,
         messages: Optional[Iterable[completion_create_params.Message]] | Omit = omit,
         metadata: Optional[Dict[str, object]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
@@ -978,7 +984,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
-        mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
+        mcp_servers: Optional[completion_create_params.MCPServers] | Omit = omit,
         messages: Optional[Iterable[completion_create_params.Message]] | Omit = omit,
         metadata: Optional[Dict[str, object]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
@@ -1112,7 +1118,8 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           max_turns: Maximum conversation turns.
 
-          mcp_servers: MCP server identifiers. Accepts URLs, repository slugs, or server IDs.
+          mcp_servers: MCP server identifiers. Accepts marketplace slugs, URLs, or MCPServerParam
+              objects. MCP tools are executed server-side and billed separately.
 
           messages: Conversation history (OpenAI: messages, Google: contents, Responses: input)
 
@@ -1134,7 +1141,8 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
               - type (required): Literal["content"]
               - content (required): str |
-                Annotated[list[ChatCompletionRequestMessageContentPartText], MinLen(1)]
+                Annotated[list[ChatCompletionRequestMessageContentPartText], MinLen(1),
+                ArrayTitle("PredictionContentArray")]
 
           presence_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on whe...
 
@@ -1228,7 +1236,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
-        mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
+        mcp_servers: Optional[completion_create_params.MCPServers] | Omit = omit,
         messages: Optional[Iterable[completion_create_params.Message]] | Omit = omit,
         metadata: Optional[Dict[str, object]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
@@ -1363,7 +1371,8 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           max_turns: Maximum conversation turns.
 
-          mcp_servers: MCP server identifiers. Accepts URLs, repository slugs, or server IDs.
+          mcp_servers: MCP server identifiers. Accepts marketplace slugs, URLs, or MCPServerParam
+              objects. MCP tools are executed server-side and billed separately.
 
           messages: Conversation history (OpenAI: messages, Google: contents, Responses: input)
 
@@ -1385,7 +1394,8 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
               - type (required): Literal["content"]
               - content (required): str |
-                Annotated[list[ChatCompletionRequestMessageContentPartText], MinLen(1)]
+                Annotated[list[ChatCompletionRequestMessageContentPartText], MinLen(1),
+                ArrayTitle("PredictionContentArray")]
 
           presence_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on whe...
 
@@ -1477,7 +1487,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
-        mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
+        mcp_servers: Optional[completion_create_params.MCPServers] | Omit = omit,
         messages: Optional[Iterable[completion_create_params.Message]] | Omit = omit,
         metadata: Optional[Dict[str, object]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
@@ -1612,7 +1622,8 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           max_turns: Maximum conversation turns.
 
-          mcp_servers: MCP server identifiers. Accepts URLs, repository slugs, or server IDs.
+          mcp_servers: MCP server identifiers. Accepts marketplace slugs, URLs, or MCPServerParam
+              objects. MCP tools are executed server-side and billed separately.
 
           messages: Conversation history (OpenAI: messages, Google: contents, Responses: input)
 
@@ -1634,7 +1645,8 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
               - type (required): Literal["content"]
               - content (required): str |
-                Annotated[list[ChatCompletionRequestMessageContentPartText], MinLen(1)]
+                Annotated[list[ChatCompletionRequestMessageContentPartText], MinLen(1),
+                ArrayTitle("PredictionContentArray")]
 
           presence_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on whe...
 
@@ -1725,7 +1737,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         max_completion_tokens: Optional[int] | Omit = omit,
         max_tokens: Optional[int] | Omit = omit,
         max_turns: Optional[int] | Omit = omit,
-        mcp_servers: Union[str, SequenceNotStr[str], None] | Omit = omit,
+        mcp_servers: Optional[completion_create_params.MCPServers] | Omit = omit,
         messages: Optional[Iterable[completion_create_params.Message]] | Omit = omit,
         metadata: Optional[Dict[str, object]] | Omit = omit,
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,

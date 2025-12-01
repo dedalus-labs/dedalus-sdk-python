@@ -11,7 +11,7 @@ from .chat_completion_content_part_refusal_param import ChatCompletionContentPar
 
 __all__ = [
     "ChatCompletionAssistantMessageParam",
-    "ContentUnionMember1",
+    "ContentChatCompletionRequestAssistantMessageContentArray",
     "FunctionCall",
     "ToolCall",
     "ToolCallChatCompletionMessageToolCallInput",
@@ -20,7 +20,9 @@ __all__ = [
     "ToolCallChatCompletionMessageCustomToolCallInputCustom",
 ]
 
-ContentUnionMember1: TypeAlias = Union[ChatCompletionContentPartTextParam, ChatCompletionContentPartRefusalParam]
+ContentChatCompletionRequestAssistantMessageContentArray: TypeAlias = Union[
+    ChatCompletionContentPartTextParam, ChatCompletionContentPartRefusalParam
+]
 
 
 class FunctionCall(TypedDict, total=False):
@@ -98,7 +100,7 @@ class ChatCompletionAssistantMessageParam(TypedDict, total=False):
     - id (required): str
     """
 
-    content: Union[str, Iterable[ContentUnionMember1], None]
+    content: Union[str, Iterable[ContentChatCompletionRequestAssistantMessageContentArray], None]
     """The contents of the assistant message.
 
     Required unless `tool_calls` or `function_call` is specified.
