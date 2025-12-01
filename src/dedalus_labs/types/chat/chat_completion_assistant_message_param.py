@@ -48,6 +48,12 @@ class ToolCallChatCompletionMessageToolCallInput(TypedDict, total=False):
     type: Required[Literal["function"]]
     """The type of the tool. Currently, only `function` is supported."""
 
+    thought_signature: Optional[str]
+    """
+    Opaque signature for thought continuity in multi-turn tool use (Google-specific,
+    base64 encoded)
+    """
+
 
 class ToolCallChatCompletionMessageCustomToolCallInputCustom(TypedDict, total=False):
     input: Required[str]
