@@ -95,14 +95,17 @@ Types:
 ```python
 from dedalus_labs.types.chat import (
     Annotation,
+    ChatCompletion,
     ChatCompletionAssistantMessageParam,
     ChatCompletionAudio,
     ChatCompletionAudioParam,
+    ChatCompletionChunk,
     ChatCompletionContentPartAudioParam,
     ChatCompletionContentPartFileParam,
     ChatCompletionContentPartImageParam,
     ChatCompletionContentPartRefusalParam,
     ChatCompletionContentPartTextParam,
+    ChatCompletionCreateParams,
     ChatCompletionDeveloperMessageParam,
     ChatCompletionFunctionMessageParam,
     ChatCompletionFunctions,
@@ -116,13 +119,9 @@ from dedalus_labs.types.chat import (
     ChatCompletionUserMessageParam,
     Choice,
     ChoiceDelta,
-    ChoiceDeltaFunctionCall,
     ChoiceDeltaToolCall,
     ChoiceDeltaToolCallFunction,
     ChoiceLogprobs,
-    ChunkChoice,
-    Completion,
-    CompletionRequest,
     CompletionTokensDetails,
     CompletionUsage,
     Custom,
@@ -132,7 +131,6 @@ from dedalus_labs.types.chat import (
     PredictionContent,
     PromptTokensDetails,
     Reasoning,
-    StreamChunk,
     ThinkingConfigDisabled,
     ThinkingConfigEnabled,
     ToolChoice,
@@ -147,4 +145,4 @@ from dedalus_labs.types.chat import (
 
 Methods:
 
-- <code title="post /v1/chat/completions">client.chat.completions.<a href="./src/dedalus_labs/resources/chat/completions.py">create</a>(\*\*<a href="src/dedalus_labs/types/chat/completion_create_params.py">params</a>) -> <a href="./src/dedalus_labs/types/chat/completion.py">Completion</a></code>
+- <code title="post /v1/chat/completions">client.chat.completions.<a href="./src/dedalus_labs/resources/chat/completions.py">create</a>(\*\*<a href="src/dedalus_labs/types/chat/completion_create_params.py">params</a>) -> <a href="./src/dedalus_labs/types/chat/chat_completion.py">ChatCompletion</a></code>

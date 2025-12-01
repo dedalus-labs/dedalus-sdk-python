@@ -21,8 +21,8 @@ from ..._response import (
 from ..._streaming import Stream, AsyncStream
 from ...types.chat import completion_create_params
 from ..._base_client import make_request_options
-from ...types.chat.completion import Completion
-from ...types.chat.stream_chunk import StreamChunk
+from ...types.chat.chat_completion import ChatCompletion
+from ...types.chat.chat_completion_chunk import ChatCompletionChunk
 from ...lib._parsing import (
     ResponseFormatT,
     parse_chat_completion as _parse_chat_completion,
@@ -124,7 +124,7 @@ class CompletionsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
-    ) -> Completion:
+    ) -> ChatCompletion:
         """
         Create a chat completion.
 
@@ -375,7 +375,7 @@ class CompletionsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
-    ) -> Stream[StreamChunk]:
+    ) -> Stream[ChatCompletionChunk]:
         """
         Create a chat completion.
 
@@ -626,7 +626,7 @@ class CompletionsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
-    ) -> Completion | Stream[StreamChunk]:
+    ) -> ChatCompletion | Stream[ChatCompletionChunk]:
         """
         Create a chat completion.
 
@@ -877,7 +877,7 @@ class CompletionsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
-    ) -> Completion | Stream[StreamChunk]:
+    ) -> ChatCompletion | Stream[ChatCompletionChunk]:
         import inspect
         import pydantic
         from ..._utils import is_given
@@ -959,9 +959,9 @@ class CompletionsResource(SyncAPIResource):
                 timeout=timeout,
                 idempotency_key=idempotency_key,
             ),
-            cast_to=Completion,
+            cast_to=ChatCompletion,
             stream=stream or False,
-            stream_cls=Stream[StreamChunk],
+            stream_cls=Stream[ChatCompletionChunk],
         )
 
     def parse(
@@ -1352,7 +1352,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
-    ) -> Completion:
+    ) -> ChatCompletion:
         """
         Create a chat completion.
 
@@ -1603,7 +1603,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
-    ) -> AsyncStream[StreamChunk]:
+    ) -> AsyncStream[ChatCompletionChunk]:
         """
         Create a chat completion.
 
@@ -1854,7 +1854,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
-    ) -> Completion | AsyncStream[StreamChunk]:
+    ) -> ChatCompletion | AsyncStream[ChatCompletionChunk]:
         """
         Create a chat completion.
 
@@ -2105,7 +2105,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
-    ) -> Completion | AsyncStream[StreamChunk]:
+    ) -> ChatCompletion | AsyncStream[ChatCompletionChunk]:
         import inspect
         import pydantic
         from ..._utils import is_given
@@ -2187,9 +2187,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
                 timeout=timeout,
                 idempotency_key=idempotency_key,
             ),
-            cast_to=Completion,
+            cast_to=ChatCompletion,
             stream=stream or False,
-            stream_cls=AsyncStream[StreamChunk],
+            stream_cls=AsyncStream[ChatCompletionChunk],
         )
 
     async def parse(

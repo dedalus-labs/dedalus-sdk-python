@@ -8,10 +8,10 @@ from .choice import Choice
 from ..._models import BaseModel
 from .completion_usage import CompletionUsage
 
-__all__ = ["Completion"]
+__all__ = ["ChatCompletion"]
 
 
-class Completion(BaseModel):
+class ChatCompletion(BaseModel):
     id: str
     """A unique identifier for the chat completion."""
 

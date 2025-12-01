@@ -9,7 +9,7 @@ import pytest
 
 from tests.utils import assert_matches_type
 from dedalus_labs import Dedalus, AsyncDedalus
-from dedalus_labs.types.chat import Completion
+from dedalus_labs.types.chat import ChatCompletion
 
 base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 
@@ -23,7 +23,7 @@ class TestCompletions:
         completion = client.chat.completions.create(
             model="openai/gpt-5",
         )
-        assert_matches_type(Completion, completion, path=["response"])
+        assert_matches_type(ChatCompletion, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -128,7 +128,7 @@ class TestCompletions:
             verbosity="verbosity",
             web_search_options={"foo": "bar"},
         )
-        assert_matches_type(Completion, completion, path=["response"])
+        assert_matches_type(ChatCompletion, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -140,7 +140,7 @@ class TestCompletions:
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
         completion = response.parse()
-        assert_matches_type(Completion, completion, path=["response"])
+        assert_matches_type(ChatCompletion, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -152,7 +152,7 @@ class TestCompletions:
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
             completion = response.parse()
-            assert_matches_type(Completion, completion, path=["response"])
+            assert_matches_type(ChatCompletion, completion, path=["response"])
 
         assert cast(Any, response.is_closed) is True
 
@@ -309,7 +309,7 @@ class TestAsyncCompletions:
         completion = await async_client.chat.completions.create(
             model="openai/gpt-5",
         )
-        assert_matches_type(Completion, completion, path=["response"])
+        assert_matches_type(ChatCompletion, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -414,7 +414,7 @@ class TestAsyncCompletions:
             verbosity="verbosity",
             web_search_options={"foo": "bar"},
         )
-        assert_matches_type(Completion, completion, path=["response"])
+        assert_matches_type(ChatCompletion, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -426,7 +426,7 @@ class TestAsyncCompletions:
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
         completion = await response.parse()
-        assert_matches_type(Completion, completion, path=["response"])
+        assert_matches_type(ChatCompletion, completion, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -438,7 +438,7 @@ class TestAsyncCompletions:
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
             completion = await response.parse()
-            assert_matches_type(Completion, completion, path=["response"])
+            assert_matches_type(ChatCompletion, completion, path=["response"])
 
         assert cast(Any, response.is_closed) is True
 

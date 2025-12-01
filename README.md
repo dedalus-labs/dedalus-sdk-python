@@ -32,7 +32,7 @@ client = Dedalus(
     api_key=os.environ.get("DEDALUS_API_KEY"),  # This is the default and can be omitted
 )
 
-completion = client.chat.completions.create(
+chat_completion = client.chat.completions.create(
     model="openai/gpt-5-nano",
     messages=[
         {
@@ -45,7 +45,7 @@ completion = client.chat.completions.create(
         },
     ],
 )
-print(completion.id)
+print(chat_completion.id)
 ```
 
 While you can provide an `api_key` keyword argument,
@@ -68,7 +68,7 @@ client = AsyncDedalus(
 
 
 async def main() -> None:
-    completion = await client.chat.completions.create(
+    chat_completion = await client.chat.completions.create(
         model="openai/gpt-5-nano",
         messages=[
             {
@@ -81,7 +81,7 @@ async def main() -> None:
             },
         ],
     )
-    print(completion.id)
+    print(chat_completion.id)
 
 
 asyncio.run(main())
@@ -113,7 +113,7 @@ async def main() -> None:
         api_key="My API Key",
         http_client=DefaultAioHttpClient(),
     ) as client:
-        completion = await client.chat.completions.create(
+        chat_completion = await client.chat.completions.create(
             model="openai/gpt-5-nano",
             messages=[
                 {
@@ -126,7 +126,7 @@ async def main() -> None:
                 },
             ],
         )
-        print(completion.id)
+        print(chat_completion.id)
 
 
 asyncio.run(main())
@@ -155,8 +155,8 @@ stream = client.chat.completions.create(
         },
     ],
 )
-for completion in stream:
-    print(completion.id)
+for chat_completion in stream:
+    print(chat_completion.id)
 ```
 
 The async client uses the exact same interface.
@@ -180,8 +180,8 @@ stream = await client.chat.completions.create(
         },
     ],
 )
-async for completion in stream:
-    print(completion.id)
+async for chat_completion in stream:
+    print(chat_completion.id)
 ```
 
 ## Using types
@@ -202,14 +202,14 @@ from dedalus_labs import Dedalus
 
 client = Dedalus()
 
-completion = client.chat.completions.create(
+chat_completion = client.chat.completions.create(
     model="openai/gpt-5",
     prediction={
         "content": "string",
         "type": "content",
     },
 )
-print(completion.prediction)
+print(chat_completion.prediction)
 ```
 
 ## File uploads
