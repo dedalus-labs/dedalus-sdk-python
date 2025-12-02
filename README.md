@@ -103,6 +103,7 @@ pip install dedalus_labs[aiohttp]
 Then you can enable it by instantiating the client with `http_client=DefaultAioHttpClient()`:
 
 ```python
+import os
 import asyncio
 from dedalus_labs import DefaultAioHttpClient
 from dedalus_labs import AsyncDedalus
@@ -110,7 +111,7 @@ from dedalus_labs import AsyncDedalus
 
 async def main() -> None:
     async with AsyncDedalus(
-        api_key="My API Key",
+        api_key=os.environ.get("DEDALUS_API_KEY"),  # This is the default and can be omitted
         http_client=DefaultAioHttpClient(),
     ) as client:
         chat_completion = await client.chat.completions.create(
