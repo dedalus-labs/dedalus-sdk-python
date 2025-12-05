@@ -688,8 +688,9 @@ class DedalusRunner:
                 else:
                     # We have at least one local tool
                     # Filter to only include local tool calls in the assistant message
+                    # Preserve thought_signature for gemini
                     local_only_tool_calls = [
-                        tc for tc in tool_calls if tc["function"]["name"] in getattr(tool_handler, "_funcs", {})
+                        dict(tc) for tc in tool_calls if tc["function"]["name"] in getattr(tool_handler, "_funcs", {})
                     ]
                     messages.append({"role": "assistant", "tool_calls": local_only_tool_calls})
                     if exec_config.verbose:
@@ -994,8 +995,9 @@ class DedalusRunner:
                 else:
                     # We have at least one local tool
                     # Filter to only include local tool calls in the assistant message
+                    # Preserve thought_signature for gemini
                     local_only_tool_calls = [
-                        tc for tc in tool_calls if tc["function"]["name"] in getattr(tool_handler, "_funcs", {})
+                        dict(tc) for tc in tool_calls if tc["function"]["name"] in getattr(tool_handler, "_funcs", {})
                     ]
                     messages.append({"role": "assistant", "tool_calls": local_only_tool_calls})
                     if exec_config.verbose:
@@ -1130,13 +1132,20 @@ class DedalusRunner:
             fn = tc_dict.get("function", {})
             fn_dict = vars(fn) if hasattr(fn, "__dict__") else fn
 
-            calls.append(
-                {
-                    "id": tc_dict.get("id", ""),
-                    "type": tc_dict.get("type", "function"),
-                    "function": {"name": fn_dict.get("name", ""), "arguments": fn_dict.get("arguments", "{}")},
-                }
-            )
+            call_dict = {
+                "id": tc_dict.get("id", ""),
+                "type": tc_dict.get("type", "function"),
+                "function": {"name": fn_dict.get("name", ""), "arguments": fn_dict.get("arguments", "{}")},
+            }
+            # Preserve thought_signature for gemini - check multiple sources
+            thought_sig = tc_dict.get("thought_signature")
+            if not thought_sig and hasattr(tc, "model_extra") and tc.model_extra:
+                thought_sig = tc.model_extra.get("thought_signature")
+            if not thought_sig and hasattr(tc, "__pydantic_extra__") and tc.__pydantic_extra__:
+                thought_sig = tc.__pydantic_extra__.get("thought_signature")
+            if thought_sig:
+                call_dict["thought_signature"] = thought_sig
+            calls.append(call_dict)
         return calls
 
     async def _execute_tool_calls(
@@ -1233,6 +1242,16 @@ class DedalusRunner:
                     acc[index]["function"]["name"] = fn.name
                 if hasattr(fn, "arguments") and fn.arguments:
                     acc[index]["function"]["arguments"] += fn.arguments
+            # Preserve thought_signature for gemini
+            thought_sig = None
+            if hasattr(delta, "thought_signature") and delta.thought_signature:
+                thought_sig = delta.thought_signature
+            elif hasattr(delta, "model_extra") and isinstance(delta.model_extra, dict):
+                thought_sig = delta.model_extra.get("thought_signature")
+            elif hasattr(delta, "__pydantic_extra__") and isinstance(delta.__pydantic_extra__, dict):
+                thought_sig = delta.__pydantic_extra__.get("thought_signature")
+            if thought_sig:
+                acc[index]["thought_signature"] = thought_sig
 
     @staticmethod
     def _mk_kwargs(mc: _ModelConfig) -> Dict[str, Any]:
