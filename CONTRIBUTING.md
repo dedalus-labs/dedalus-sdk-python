@@ -85,16 +85,35 @@ $ pip install ./path-to-wheel-file.whl
 
 ## Running tests
 
-Most tests require you to [set up a mock server](https://github.com/stoplightio/prism) against the OpenAPI spec to run the tests.
-
 ```sh
-# you will need npm installed
-$ npx prism mock path/to/your/openapi.yml
-```
+# Run all tests (uses respx mocking, no server needed)
+$ uv run pytest
 
-```sh
+# Run with Pydantic v1 and v2 across Python versions
 $ ./scripts/test
 ```
+
+### Prism mock server (optional)
+
+Some API resource tests are marked as skipped by default. To run them, you need Prism:
+
+```sh
+# Start mock server (uses spec URL from .stats.yml)
+$ ./scripts/mock --daemon
+
+# Or manually with bun (recommended) or npm
+$ bunx @stainless-api/prism-cli@5.15.0 prism mock \
+    "$(grep openapi_spec_url .stats.yml | cut -d' ' -f2)"
+
+# Or with npx if you don't have bun
+$ npx @stainless-api/prism-cli@5.15.0 prism mock \
+    "$(grep openapi_spec_url .stats.yml | cut -d' ' -f2)"
+
+# Kill when done
+$ kill $(lsof -t -i tcp:4010)
+```
+
+Note: The Prism tests in `tests/api_resources/` are currently hardcoded with `@pytest.mark.skip`. These are Stainless-generated and validate wire format compliance. The core SDK logic is covered by the non-skipped tests.
 
 ## Linting and formatting
 
