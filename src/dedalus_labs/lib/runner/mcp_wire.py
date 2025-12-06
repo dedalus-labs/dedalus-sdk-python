@@ -8,7 +8,9 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Union, Optional, Sequence
+from typing import Any, Dict, List, Union, Optional, Sequence, cast
+
+from .protocols import MCPServerProtocol, is_mcp_server
 
 from pydantic import (
     Field,
@@ -24,16 +26,16 @@ from pydantic import (
 class MCPServerWireSpec(BaseModel):
     """MCP server spec for API transmission. Either slug or url, not both."""
 
-    model_config = ConfigDict(extra='forbid')
+    model_config = ConfigDict(extra="forbid")
 
     slug: Optional[str] = Field(
-        default=None, pattern=r'^[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+$'
+        default=None, pattern=r"^[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+$"
     )
     version: Optional[str] = Field(default=None)
     url: Optional[str] = Field(default=None)
 
-    @model_validator(mode='after')
-    def validate_slug_or_url(self) -> 'MCPServerWireSpec':
+    @model_validator(mode="after")
+    def validate_slug_or_url(self) -> "MCPServerWireSpec":
         has_slug = self.slug is not None
         has_url = self.url is not None
 
@@ -41,18 +43,18 @@ class MCPServerWireSpec(BaseModel):
             raise ValueError("requires either 'slug' or 'url'")
         if has_slug and has_url:
             raise ValueError("cannot have both 'slug' and 'url'")
-        if has_slug and self.version and '@' in self.slug:
+        if has_slug and self.version and self.slug and "@" in self.slug:
             raise ValueError("cannot specify both 'version' field and version in slug")
 
         return self
 
-    @field_validator('url')
+    @field_validator("url")
     @classmethod
     def validate_url_format(cls, v: Optional[str]) -> Optional[str]:
         if v is None:
             return None
-        if not v.startswith(('http://', 'https://')):
-            raise ValueError(f'URL must start with http:// or https://, got: {v}')
+        if not v.startswith(("http://", "https://")):
+            raise ValueError(f"URL must start with http:// or https://, got: {v}")
         return v
 
     def to_wire(self) -> Union[str, Dict[str, Any]]:
@@ -62,13 +64,13 @@ class MCPServerWireSpec(BaseModel):
         return self.model_dump(exclude_none=True)
 
     @classmethod
-    def from_slug(cls, slug: str, version: Optional[str] = None) -> 'MCPServerWireSpec':
-        if '@' in slug and version is None:
-            slug, version = slug.rsplit('@', 1)
+    def from_slug(cls, slug: str, version: Optional[str] = None) -> "MCPServerWireSpec":
+        if "@" in slug and version is None:
+            slug, version = slug.rsplit("@", 1)
         return cls(slug=slug, version=version)
 
     @classmethod
-    def from_url(cls, url: str) -> 'MCPServerWireSpec':
+    def from_url(cls, url: str) -> "MCPServerWireSpec":
         return cls(url=url)
 
 
@@ -76,35 +78,43 @@ class MCPServerWireSpec(BaseModel):
 
 
 def serialize_mcp_servers(
-    servers: Union[str, Sequence[Union[str, Any]], Any, None],
+    servers: Union[
+        str,
+        Dict[str, Any],
+        MCPServerProtocol,
+        Sequence[Union[str, Dict[str, Any], MCPServerProtocol]],
+        None,
+    ],
 ) -> List[Union[str, Dict[str, Any]]]:
     """Convert mcp_servers to API wire format. Handles strings, objects, or sequences."""
-    from .protocols import is_mcp_server
-
     if servers is None:
         return []
     if isinstance(servers, str):
         return [_serialize_single(servers)]
+    if isinstance(servers, dict):
+        return [_serialize_single(cast(Dict[str, Any], servers))]
     if is_mcp_server(servers):
-        return [_serialize_single(servers)]
-    return [_serialize_single(item) for item in servers]
+        return [_serialize_single(cast(MCPServerProtocol, servers))]
+    # At this point, servers is Sequence[str | Dict | MCPServerProtocol]
+    seq = cast(Sequence[Union[str, Dict[str, Any], MCPServerProtocol]], servers)
+    return [_serialize_single(item) for item in seq]
 
 
-def _serialize_single(item: Union[str, Any]) -> Union[str, Dict[str, Any]]:
-    from .protocols import is_mcp_server
-
+def _serialize_single(
+    item: Union[str, Dict[str, Any], MCPServerProtocol],
+) -> Union[str, Dict[str, Any]]:
     if isinstance(item, str):
-        if item.startswith(('http://', 'https://')):
+        if item.startswith(("http://", "https://")):
             return item
-        if '@' in item:
-            slug, version = item.rsplit('@', 1)
+        if "@" in item:
+            slug, version = item.rsplit("@", 1)
             return MCPServerWireSpec.from_slug(slug, version).to_wire()
         return item
 
     if is_mcp_server(item):
-        url = getattr(item, 'url', None)
+        url = getattr(item, "url", None)
         if url is None:
-            name = getattr(item, 'name', 'unknown')
+            name = getattr(item, "name", "unknown")
             raise ValueError(
                 f"MCP server '{name}' has no URL. Call serve() first or use a slug instead."
             )
@@ -131,7 +141,7 @@ def serialize_credentials(creds: Any) -> Optional[Dict[str, Any]]:
     """
     if creds is None:
         return None
-    if hasattr(creds, 'to_dict'):
+    if hasattr(creds, "to_dict"):
         return creds.to_dict()
     return None
 
@@ -146,21 +156,21 @@ def serialize_tool_specs(tools_service: Any) -> Dict[str, Any]:
         Dict mapping tool names to their schemas
 
     """
-    specs = getattr(tools_service, '_tool_specs', {})
+    specs = getattr(tools_service, "_tool_specs", {})
     if not specs:
         return {}
 
     manifest: Dict[str, Any] = {}
     for name, spec in specs.items():
-        if hasattr(spec, 'description'):
+        if hasattr(spec, "description"):
             manifest[name] = {
-                'description': spec.description,
-                'schema': getattr(spec, 'input_schema', {}),
+                "description": spec.description,
+                "schema": getattr(spec, "input_schema", {}),
             }
         elif isinstance(spec, dict):
             manifest[name] = {
-                'description': spec.get('description', ''),
-                'schema': spec.get('input_schema', {}),
+                "description": spec.get("description", ""),
+                "schema": spec.get("input_schema", {}),
             }
     return manifest
 
@@ -175,17 +185,17 @@ def serialize_mcp_server_with_creds(server: Any) -> Dict[str, Any]:
         Dict with server config for API (credential values added separately)
 
     """
-    result: Dict[str, Any] = {'name': getattr(server, 'name', 'unknown')}
+    result: Dict[str, Any] = {"name": getattr(server, "name", "unknown")}
 
-    creds = getattr(server, 'credentials', None)
+    creds = getattr(server, "credentials", None)
     if creds is not None:
         creds_dict = serialize_credentials(creds)
         if creds_dict:
-            result['credentials'] = creds_dict
+            result["credentials"] = creds_dict
 
-    connection = getattr(server, 'connection', None)
+    connection = getattr(server, "connection", None)
     if connection:
-        result['connection'] = connection
+        result["connection"] = connection
 
     return result
 
@@ -207,7 +217,7 @@ def match_credentials_to_server(
         KeyError: If server.connection not found in credentials
 
     """
-    connection = getattr(server, 'connection', None)
+    connection = getattr(server, "connection", None)
     if not connection:
         return None
     if connection not in credentials:
@@ -234,10 +244,10 @@ def build_connection_record(
     matched_creds = match_credentials_to_server(server, credentials)
 
     return {
-        'org_id': org_id,
-        'connection': getattr(server, 'connection', None),
-        'credentials': serialize_credentials(getattr(server, 'credentials', None)),
-        'credential_values': matched_creds,
+        "org_id": org_id,
+        "connection": getattr(server, "connection", None),
+        "credentials": serialize_credentials(getattr(server, "credentials", None)),
+        "credential_values": matched_creds,
     }
 
 
@@ -255,15 +265,15 @@ def serialize_connection(connection: Any) -> Dict[str, Any]:
         Dict with name, base_url, timeout_ms fields
 
     """
-    if hasattr(connection, 'to_dict'):
+    if hasattr(connection, "to_dict"):
         return connection.to_dict()
     if isinstance(connection, dict):
         return connection
     # Duck-type extraction for protocol compatibility
     return {
-        'name': getattr(connection, 'name', 'unknown'),
-        'base_url': getattr(connection, 'base_url', None),
-        'timeout_ms': getattr(connection, 'timeout_ms', 30000),
+        "name": getattr(connection, "name", "unknown"),
+        "base_url": getattr(connection, "base_url", None),
+        "timeout_ms": getattr(connection, "timeout_ms", 30000),
     }
 
 
@@ -281,15 +291,15 @@ def serialize_credential(credential: Any) -> Dict[str, Any]:
         Dict with connection_name and values fields
 
     """
-    if hasattr(credential, 'to_dict'):
+    if hasattr(credential, "to_dict"):
         return credential.to_dict()
     if isinstance(credential, dict):
         return credential
     # Duck-type extraction
-    conn = getattr(credential, 'connection', None)
-    conn_name = getattr(conn, 'name', 'unknown') if conn else 'unknown'
-    values = getattr(credential, 'values', {})
-    return {'connection_name': conn_name, 'values': values}
+    conn = getattr(credential, "connection", None)
+    conn_name = getattr(conn, "name", "unknown") if conn else "unknown"
+    values = getattr(credential, "values", {})
+    return {"connection_name": conn_name, "values": values}
 
 
 def get_credential_values_for_encryption(credential: Any) -> Dict[str, Any]:
@@ -305,17 +315,17 @@ def get_credential_values_for_encryption(credential: Any) -> Dict[str, Any]:
         Dict of credential values to encrypt
 
     """
-    if hasattr(credential, 'values_for_encryption'):
+    if hasattr(credential, "values_for_encryption"):
         return credential.values_for_encryption()
     # Check for dict first to avoid treating dict.values method as property
-    if isinstance(credential, dict) and 'values' in credential:
-        return credential['values']
-    if hasattr(credential, 'values'):
+    if isinstance(credential, dict) and "values" in credential:
+        return credential["values"]
+    if hasattr(credential, "values"):
         values = credential.values
         # Handle both property (returns dict) and dict-like (has items method)
         if callable(values):
             return {}  # dict.values() method, not what we want
-        return dict(values) if hasattr(values, 'items') else values
+        return dict(values) if hasattr(values, "items") else values
     return {}
 
 
@@ -337,7 +347,7 @@ def collect_unique_connections(servers: Sequence[Any]) -> List[Any]:
     unique: List[Any] = []
 
     for server in servers:
-        connections = getattr(server, 'connections', {})
+        connections = getattr(server, "connections", {})
         # Handle both dict (MCPServer.connections) and list formats
         if isinstance(connections, dict):
             conn_list = list(connections.values())
@@ -346,9 +356,9 @@ def collect_unique_connections(servers: Sequence[Any]) -> List[Any]:
 
         for conn in conn_list:
             name = (
-                getattr(conn, 'name', None)
-                if hasattr(conn, 'name')
-                else conn.get('name')
+                getattr(conn, "name", None)
+                if hasattr(conn, "name")
+                else conn.get("name")
                 if isinstance(conn, dict)
                 else None
             )
@@ -379,10 +389,10 @@ def match_credentials_to_connections(
     # Build lookup by connection name
     creds_by_name: Dict[str, Any] = {}
     for cred in credentials:
-        if hasattr(cred, 'connection'):
-            name = getattr(cred.connection, 'name', None)
+        if hasattr(cred, "connection"):
+            name = getattr(cred.connection, "name", None)
         elif isinstance(cred, dict):
-            name = cred.get('connection_name')
+            name = cred.get("connection_name")
         else:
             continue
         if name:
@@ -394,7 +404,7 @@ def match_credentials_to_connections(
 
     for conn in connections:
         name = (
-            getattr(conn, 'name', None) if hasattr(conn, 'name') else conn.get('name')
+            getattr(conn, "name", None) if hasattr(conn, "name") else conn.get("name")
         )
         if name and name in creds_by_name:
             pairs.append((conn, creds_by_name[name]))
@@ -403,8 +413,8 @@ def match_credentials_to_connections(
 
     if missing:
         raise ValueError(
-            f'Missing credentials for connections: {sorted(missing)}. '
-            f'Each Connection declared in mcp_servers must have a corresponding Credential.'
+            f"Missing credentials for connections: {sorted(missing)}. "
+            f"Each Connection declared in mcp_servers must have a corresponding Credential."
         )
 
     return pairs
@@ -436,17 +446,17 @@ def validate_credentials_for_servers(
 
 
 __all__ = [
-    'MCPServerWireSpec',
-    'serialize_mcp_servers',
-    'serialize_credentials',
-    'serialize_mcp_server_with_creds',
-    'match_credentials_to_server',
-    'build_connection_record',
+    "MCPServerWireSpec",
+    "serialize_mcp_servers",
+    "serialize_credentials",
+    "serialize_mcp_server_with_creds",
+    "match_credentials_to_server",
+    "build_connection_record",
     # Connection/Credential protocol
-    'serialize_connection',
-    'serialize_credential',
-    'get_credential_values_for_encryption',
-    'collect_unique_connections',
-    'match_credentials_to_connections',
-    'validate_credentials_for_servers',
+    "serialize_connection",
+    "serialize_credential",
+    "get_credential_values_for_encryption",
+    "collect_unique_connections",
+    "match_credentials_to_connections",
+    "validate_credentials_for_servers",
 ]
