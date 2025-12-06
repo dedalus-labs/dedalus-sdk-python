@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, Any, Mapping
-from typing_extensions import Self, override
+from typing import TYPE_CHECKING, Any, Dict, Mapping, cast
+from typing_extensions import Self, Literal, override
 
 import httpx
 
@@ -40,15 +40,21 @@ if TYPE_CHECKING:
     from .resources.audio.audio import AudioResource, AsyncAudioResource
 
 __all__ = [
-    'Timeout',
-    'Transport',
-    'ProxiesTypes',
-    'RequestOptions',
-    'Dedalus',
-    'AsyncDedalus',
-    'Client',
-    'AsyncClient',
+    "ENVIRONMENTS",
+    "Timeout",
+    "Transport",
+    "ProxiesTypes",
+    "RequestOptions",
+    "Dedalus",
+    "AsyncDedalus",
+    "Client",
+    "AsyncClient",
 ]
+
+ENVIRONMENTS: Dict[str, str] = {
+    "production": "https://api.dedaluslabs.ai",
+    "development": "http://localhost:4010",
+}
 
 
 class Dedalus(SyncAPIClient):
@@ -61,6 +67,8 @@ class Dedalus(SyncAPIClient):
     provider_model: str | None
     _custom_auth: httpx.Auth | None
 
+    _environment: Literal["production", "development"] | NotGiven
+
     def __init__(
         self,
         *,
@@ -70,7 +78,8 @@ class Dedalus(SyncAPIClient):
         provider: str | None = None,
         provider_key: str | None = None,
         provider_model: str | None = None,
-        base_url: str | httpx.URL | None = None,
+        environment: Literal["production", "development"] | NotGiven = not_given,
+        base_url: str | httpx.URL | None | NotGiven = not_given,
         timeout: float | Timeout | None | NotGiven = not_given,
         max_retries: int = DEFAULT_MAX_RETRIES,
         default_headers: Mapping[str, str] | None = None,
@@ -125,10 +134,31 @@ class Dedalus(SyncAPIClient):
             provider_model = os.environ.get('DEDALUS_PROVIDER_MODEL')
         self.provider_model = provider_model
 
-        if base_url is None:
-            base_url = os.environ.get('DEDALUS_BASE_URL')
-        if base_url is None:
-            base_url = f'https://api.dedaluslabs.ai'
+        self._environment = environment
+
+        base_url_env = os.environ.get("DEDALUS_BASE_URL")
+        if is_given(base_url) and base_url is not None:
+            # cast required because mypy doesn't understand the type narrowing
+            base_url = cast("str | httpx.URL", base_url)  # pyright: ignore[reportUnnecessaryCast]
+        elif is_given(environment):
+            if base_url_env and base_url is not None:
+                raise ValueError(
+                    "Ambiguous URL; The `DEDALUS_BASE_URL` env var and the `environment` argument are given. If you want to use the environment, you must pass base_url=None",
+                )
+
+            try:
+                base_url = ENVIRONMENTS[environment]
+            except KeyError as exc:
+                raise ValueError(f"Unknown environment: {environment}") from exc
+        elif base_url_env is not None:
+            base_url = base_url_env
+        else:
+            self._environment = environment = "production"
+
+            try:
+                base_url = ENVIRONMENTS[environment]
+            except KeyError as exc:
+                raise ValueError(f"Unknown environment: {environment}") from exc
 
         super().__init__(
             version=__version__,
@@ -253,6 +283,7 @@ class Dedalus(SyncAPIClient):
         provider: str | None = None,
         provider_key: str | None = None,
         provider_model: str | None = None,
+        environment: Literal["production", "development"] | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: float | Timeout | None | NotGiven = not_given,
         http_client: httpx.Client | None = None,
@@ -298,6 +329,7 @@ class Dedalus(SyncAPIClient):
             provider_key=provider_key or self.provider_key,
             provider_model=provider_model or self.provider_model,
             base_url=base_url or self.base_url,
+            environment=environment or self._environment,
             timeout=self.timeout if isinstance(timeout, NotGiven) else timeout,
             http_client=http_client,
             max_retries=max_retries if is_given(max_retries) else self.max_retries,
@@ -365,6 +397,8 @@ class AsyncDedalus(AsyncAPIClient):
     provider_model: str | None
     _custom_auth: httpx.Auth | None
 
+    _environment: Literal["production", "development"] | NotGiven
+
     def __init__(
         self,
         *,
@@ -374,7 +408,8 @@ class AsyncDedalus(AsyncAPIClient):
         provider: str | None = None,
         provider_key: str | None = None,
         provider_model: str | None = None,
-        base_url: str | httpx.URL | None = None,
+        environment: Literal["production", "development"] | NotGiven = not_given,
+        base_url: str | httpx.URL | None | NotGiven = not_given,
         timeout: float | Timeout | None | NotGiven = not_given,
         max_retries: int = DEFAULT_MAX_RETRIES,
         default_headers: Mapping[str, str] | None = None,
@@ -429,10 +464,31 @@ class AsyncDedalus(AsyncAPIClient):
             provider_model = os.environ.get('DEDALUS_PROVIDER_MODEL')
         self.provider_model = provider_model
 
-        if base_url is None:
-            base_url = os.environ.get('DEDALUS_BASE_URL')
-        if base_url is None:
-            base_url = f'https://api.dedaluslabs.ai'
+        self._environment = environment
+
+        base_url_env = os.environ.get("DEDALUS_BASE_URL")
+        if is_given(base_url) and base_url is not None:
+            # cast required because mypy doesn't understand the type narrowing
+            base_url = cast("str | httpx.URL", base_url)  # pyright: ignore[reportUnnecessaryCast]
+        elif is_given(environment):
+            if base_url_env and base_url is not None:
+                raise ValueError(
+                    "Ambiguous URL; The `DEDALUS_BASE_URL` env var and the `environment` argument are given. If you want to use the environment, you must pass base_url=None",
+                )
+
+            try:
+                base_url = ENVIRONMENTS[environment]
+            except KeyError as exc:
+                raise ValueError(f"Unknown environment: {environment}") from exc
+        elif base_url_env is not None:
+            base_url = base_url_env
+        else:
+            self._environment = environment = "production"
+
+            try:
+                base_url = ENVIRONMENTS[environment]
+            except KeyError as exc:
+                raise ValueError(f"Unknown environment: {environment}") from exc
 
         super().__init__(
             version=__version__,
@@ -557,6 +613,7 @@ class AsyncDedalus(AsyncAPIClient):
         provider: str | None = None,
         provider_key: str | None = None,
         provider_model: str | None = None,
+        environment: Literal["production", "development"] | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: float | Timeout | None | NotGiven = not_given,
         http_client: httpx.AsyncClient | None = None,
@@ -602,6 +659,7 @@ class AsyncDedalus(AsyncAPIClient):
             provider_key=provider_key or self.provider_key,
             provider_model=provider_model or self.provider_model,
             base_url=base_url or self.base_url,
+            environment=environment or self._environment,
             timeout=self.timeout if isinstance(timeout, NotGiven) else timeout,
             http_client=http_client,
             max_retries=max_retries if is_given(max_retries) else self.max_retries,
