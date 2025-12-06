@@ -46,14 +46,14 @@ def _check_cryptography() -> bool:
 
 def _base64url_encode(data: bytes) -> str:
     """Base64url encode without padding."""
-    return base64.urlsafe_b64encode(data).rstrip(b'=').decode('ascii')
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
 
 
 def _base64url_decode(s: str) -> bytes:
     """Base64url decode with padding restoration."""
     padding_needed = 4 - len(s) % 4
     if padding_needed != 4:
-        s += '=' * padding_needed
+        s += "=" * padding_needed
     return base64.urlsafe_b64decode(s)
 
 
@@ -74,29 +74,29 @@ def jwk_to_public_key(jwk: Dict[str, Any], min_key_size: int = 2048) -> Any:
     """
     if not _check_cryptography():
         raise ImportError(
-            'cryptography is required for credential encryption. '
+            "cryptography is required for credential encryption. "
             "Install with: pip install 'dedalus_labs[auth]'"
         )
 
     from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
     from cryptography.hazmat.backends import default_backend
 
-    if jwk.get('kty') != 'RSA':
-        raise ValueError(f'Expected RSA key, got kty={jwk.get("kty")}')
+    if jwk.get("kty") != "RSA":
+        raise ValueError(f"Expected RSA key, got kty={jwk.get('kty')}")
 
-    n_bytes = _base64url_decode(jwk['n'])
-    e_bytes = _base64url_decode(jwk['e'])
+    n_bytes = _base64url_decode(jwk["n"])
+    e_bytes = _base64url_decode(jwk["e"])
 
-    n = int.from_bytes(n_bytes, 'big')
-    e = int.from_bytes(e_bytes, 'big')
+    n = int.from_bytes(n_bytes, "big")
+    e = int.from_bytes(e_bytes, "big")
 
     # Validate key size before constructing key object
     # n.bit_length() gives actual key size
     key_bits = n.bit_length()
     if key_bits < min_key_size:
         raise ValueError(
-            f'RSA key too weak: {key_bits} bits (minimum: {min_key_size}). '
-            'This could indicate a malformed or malicious JWKS response.'
+            f"RSA key too weak: {key_bits} bits (minimum: {min_key_size}). "
+            "This could indicate a malformed or malicious JWKS response."
         )
 
     public_numbers = RSAPublicNumbers(e, n)
@@ -119,14 +119,14 @@ def encrypt_credentials(public_key: Any, credentials: Dict[str, Any]) -> str:
     """
     if not _check_cryptography():
         raise ImportError(
-            'cryptography is required for credential encryption. '
+            "cryptography is required for credential encryption. "
             "Install with: pip install 'dedalus_labs[auth]'"
         )
 
     from cryptography.hazmat.primitives.asymmetric import padding
     from cryptography.hazmat.primitives import hashes
 
-    plaintext = json.dumps(credentials, separators=(',', ':')).encode('utf-8')
+    plaintext = json.dumps(credentials, separators=(",", ":")).encode("utf-8")
 
     ciphertext = public_key.encrypt(
         plaintext,
@@ -162,29 +162,29 @@ async def fetch_encryption_public_key(
         httpx.HTTPError: On network errors
 
     """
-    url = f'{as_url.rstrip("/")}/.well-known/jwks.json'
+    url = f"{as_url.rstrip('/')}/.well-known/jwks.json"
     response = await http_client.get(url)
     response.raise_for_status()
 
     jwks = response.json()
-    keys = jwks.get('keys', [])
+    keys = jwks.get("keys", [])
 
     if not keys:
-        raise ValueError(f'No keys found at {url}')
+        raise ValueError(f"No keys found at {url}")
 
     # Find RSA key with use="enc"
     for key in keys:
-        if key.get('kty') != 'RSA':
+        if key.get("kty") != "RSA":
             continue
-        if key.get('use') != 'enc':
+        if key.get("use") != "enc":
             continue
-        if key_id and key.get('kid') != key_id:
+        if key_id and key.get("kid") != key_id:
             continue
         return jwk_to_public_key(key)
 
     raise ValueError(
-        f'No RSA encryption key (use="enc") found at {url}. '
-        'Ensure AS_ENCRYPTION_KEY is configured on the Authorization Server.'
+        f"No RSA encryption key (use=\"enc\") found at {url}. "
+        "Ensure AS_ENCRYPTION_KEY is configured on the Authorization Server."
     )
 
 
@@ -194,28 +194,28 @@ def fetch_encryption_public_key_sync(
     key_id: Optional[str] = None,
 ) -> Any:
     """Synchronous version of fetch_encryption_public_key."""
-    url = f'{as_url.rstrip("/")}/.well-known/jwks.json'
+    url = f"{as_url.rstrip('/')}/.well-known/jwks.json"
     response = http_client.get(url)
     response.raise_for_status()
 
     jwks = response.json()
-    keys = jwks.get('keys', [])
+    keys = jwks.get("keys", [])
 
     if not keys:
-        raise ValueError(f'No keys found at {url}')
+        raise ValueError(f"No keys found at {url}")
 
     for key in keys:
-        if key.get('kty') != 'RSA':
+        if key.get("kty") != "RSA":
             continue
-        if key.get('use') != 'enc':
+        if key.get("use") != "enc":
             continue
-        if key_id and key.get('kid') != key_id:
+        if key_id and key.get("kid") != key_id:
             continue
         return jwk_to_public_key(key)
 
     raise ValueError(
-        f'No RSA encryption key (use="enc") found at {url}. '
-        'Ensure AS_ENCRYPTION_KEY is configured on the Authorization Server.'
+        f"No RSA encryption key (use=\"enc\") found at {url}. "
+        "Ensure AS_ENCRYPTION_KEY is configured on the Authorization Server."
     )
 
 
@@ -248,21 +248,28 @@ def prepare_connection_payload(
     # Encrypt
     encrypted = encrypt_credentials(public_key, cred_values)
 
-    # Build payload
+    # Build payload - handle both objects and dicts
+    if isinstance(connection, dict):
+        name = connection.get("name", "unknown")
+        base_url = connection.get("base_url")
+        timeout_ms = connection.get("timeout_ms", 30000)
+    else:
+        name = getattr(connection, "name", "unknown")
+        base_url = getattr(connection, "base_url", None)
+        timeout_ms = getattr(connection, "timeout_ms", 30000)
+
     return {
-        'name': getattr(connection, 'name', connection.get('name', 'unknown')),
-        'base_url': getattr(connection, 'base_url', connection.get('base_url')),
-        'timeout_ms': getattr(
-            connection, 'timeout_ms', connection.get('timeout_ms', 30000)
-        ),
-        'encrypted_credentials': encrypted,
+        "name": name,
+        "base_url": base_url,
+        "timeout_ms": timeout_ms,
+        "encrypted_credentials": encrypted,
     }
 
 
 __all__ = [
-    'jwk_to_public_key',
-    'encrypt_credentials',
-    'fetch_encryption_public_key',
-    'fetch_encryption_public_key_sync',
-    'prepare_connection_payload',
+    "jwk_to_public_key",
+    "encrypt_credentials",
+    "fetch_encryption_public_key",
+    "fetch_encryption_public_key_sync",
+    "prepare_connection_payload",
 ]

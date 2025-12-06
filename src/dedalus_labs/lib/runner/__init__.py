@@ -73,12 +73,6 @@ __all__ = [
     "collect_unique_connections",
     "match_credentials_to_connections",
     "validate_credentials_for_servers",
-    # Encryption (requires cryptography extra)
-    "jwk_to_public_key",
-    "encrypt_credentials",
-    "fetch_encryption_public_key",
-    "fetch_encryption_public_key_sync",
-    "prepare_connection_payload",
     # Types
     "JsonValue",
     "Message",
@@ -91,3 +85,13 @@ __all__ = [
     "ToolResult",
     "to_schema",
 ]
+
+# Conditionally export encryption functions when cryptography is available
+if _HAS_CRYPTO:
+    __all__ += [
+        "jwk_to_public_key",
+        "encrypt_credentials",
+        "fetch_encryption_public_key",
+        "fetch_encryption_public_key_sync",
+        "prepare_connection_payload",
+    ]
