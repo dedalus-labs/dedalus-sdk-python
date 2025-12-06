@@ -15,7 +15,7 @@ from dataclasses import field, asdict, dataclass
 from dedalus_labs import Dedalus, AsyncDedalus
 
 if TYPE_CHECKING:
-    from ...types.dedalus_model import DedalusModel
+    from ...types.shared.dedalus_model import DedalusModel
 
 from .types import Message, ToolCall, JsonValue, ToolResult, PolicyInput, PolicyContext
 from .mcp_wire import serialize_mcp_servers
@@ -28,7 +28,7 @@ MCPServersInput = Union[
     Sequence[Union[str, MCPServerProtocol, Dict[str, Any]]],  # Mixed list
     None,
 ]
-from ..utils import to_schema
+from ..utils._schemas import to_schema
 
 
 def _process_policy(policy: PolicyInput, context: PolicyContext) -> Dict[str, JsonValue]:
