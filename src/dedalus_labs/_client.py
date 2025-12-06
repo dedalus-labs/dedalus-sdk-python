@@ -39,7 +39,16 @@ if TYPE_CHECKING:
     from .resources.embeddings import EmbeddingsResource, AsyncEmbeddingsResource
     from .resources.audio.audio import AudioResource, AsyncAudioResource
 
-__all__ = ["Timeout", "Transport", "ProxiesTypes", "RequestOptions", "Dedalus", "AsyncDedalus", "Client", "AsyncClient"]
+__all__ = [
+    'Timeout',
+    'Transport',
+    'ProxiesTypes',
+    'RequestOptions',
+    'Dedalus',
+    'AsyncDedalus',
+    'Client',
+    'AsyncClient',
+]
 
 
 class Dedalus(SyncAPIClient):
@@ -93,33 +102,33 @@ class Dedalus(SyncAPIClient):
         - `provider_model` from `DEDALUS_PROVIDER_MODEL`
         """
         if api_key is None:
-            api_key = os.environ.get("DEDALUS_API_KEY")
+            api_key = os.environ.get('DEDALUS_API_KEY')
         self.api_key = api_key
 
         if x_api_key is None:
-            x_api_key = os.environ.get("DEDALUS_X_API_KEY")
+            x_api_key = os.environ.get('DEDALUS_X_API_KEY')
         self.x_api_key = x_api_key
 
         if organization is None:
-            organization = os.environ.get("DEDALUS_ORG_ID")
+            organization = os.environ.get('DEDALUS_ORG_ID')
         self.organization = organization
 
         if provider is None:
-            provider = os.environ.get("DEDALUS_PROVIDER")
+            provider = os.environ.get('DEDALUS_PROVIDER')
         self.provider = provider
 
         if provider_key is None:
-            provider_key = os.environ.get("DEDALUS_PROVIDER_KEY")
+            provider_key = os.environ.get('DEDALUS_PROVIDER_KEY')
         self.provider_key = provider_key
 
         if provider_model is None:
-            provider_model = os.environ.get("DEDALUS_PROVIDER_MODEL")
+            provider_model = os.environ.get('DEDALUS_PROVIDER_MODEL')
         self.provider_model = provider_model
 
         if base_url is None:
-            base_url = os.environ.get("DEDALUS_BASE_URL")
+            base_url = os.environ.get('DEDALUS_BASE_URL')
         if base_url is None:
-            base_url = f"https://api.dedaluslabs.ai"
+            base_url = f'https://api.dedaluslabs.ai'
 
         super().__init__(
             version=__version__,
@@ -133,7 +142,7 @@ class Dedalus(SyncAPIClient):
         )
 
         self._custom_auth = custom_auth
-        self._idempotency_header = "Idempotency-Key"
+        self._idempotency_header = 'Idempotency-Key'
 
         self._default_stream_cls = Stream
 
@@ -183,7 +192,7 @@ class Dedalus(SyncAPIClient):
     @property
     @override
     def qs(self) -> Querystring:
-        return Querystring(array_format="comma")
+        return Querystring(array_format='comma')
 
     @property
     @override
@@ -195,38 +204,40 @@ class Dedalus(SyncAPIClient):
         api_key = self.api_key
         if api_key is None:
             return {}
-        return {"Authorization": f"Bearer {api_key}"}
+        return {'Authorization': f'Bearer {api_key}'}
 
     @property
     def _api_key_auth(self) -> dict[str, str]:
         x_api_key = self.x_api_key
         if x_api_key is None:
             return {}
-        return {"x-api-key": x_api_key}
+        return {'x-api-key': x_api_key}
 
     @property
     @override
     def default_headers(self) -> dict[str, str | Omit]:
         return {
             **super().default_headers,
-            "X-Stainless-Async": "false",
-            "User-Agent": "Dedalus-SDK",
-            "X-SDK-Version": "1.0.0",
-            "X-Provider": self.provider if self.provider is not None else Omit(),
-            "X-Provider-Key": self.provider_key if self.provider_key is not None else Omit(),
+            'X-Stainless-Async': 'false',
+            'User-Agent': 'Dedalus-SDK',
+            'X-SDK-Version': '1.0.0',
+            'X-Provider': self.provider if self.provider is not None else Omit(),
+            'X-Provider-Key': self.provider_key
+            if self.provider_key is not None
+            else Omit(),
             **self._custom_headers,
         }
 
     @override
     def _validate_headers(self, headers: Headers, custom_headers: Headers) -> None:
-        if self.api_key and headers.get("Authorization"):
+        if self.api_key and headers.get('Authorization'):
             return
-        if isinstance(custom_headers.get("Authorization"), Omit):
+        if isinstance(custom_headers.get('Authorization'), Omit):
             return
 
-        if self.x_api_key and headers.get("x-api-key"):
+        if self.x_api_key and headers.get('x-api-key'):
             return
-        if isinstance(custom_headers.get("x-api-key"), Omit):
+        if isinstance(custom_headers.get('x-api-key'), Omit):
             return
 
         raise TypeError(
@@ -250,16 +261,21 @@ class Dedalus(SyncAPIClient):
         set_default_headers: Mapping[str, str] | None = None,
         default_query: Mapping[str, object] | None = None,
         set_default_query: Mapping[str, object] | None = None,
+        custom_auth: httpx.Auth | None | NotGiven = not_given,
         _extra_kwargs: Mapping[str, Any] = {},
     ) -> Self:
         """
         Create a new client instance re-using the same options given to the current client with optional overriding.
         """
         if default_headers is not None and set_default_headers is not None:
-            raise ValueError("The `default_headers` and `set_default_headers` arguments are mutually exclusive")
+            raise ValueError(
+                'The `default_headers` and `set_default_headers` arguments are mutually exclusive'
+            )
 
         if default_query is not None and set_default_query is not None:
-            raise ValueError("The `default_query` and `set_default_query` arguments are mutually exclusive")
+            raise ValueError(
+                'The `default_query` and `set_default_query` arguments are mutually exclusive'
+            )
 
         headers = self._custom_headers
         if default_headers is not None:
@@ -287,6 +303,9 @@ class Dedalus(SyncAPIClient):
             max_retries=max_retries if is_given(max_retries) else self.max_retries,
             default_headers=headers,
             default_query=params,
+            custom_auth=self._custom_auth
+            if isinstance(custom_auth, NotGiven)
+            else custom_auth,
             **_extra_kwargs,
         )
 
@@ -306,10 +325,14 @@ class Dedalus(SyncAPIClient):
             return _exceptions.BadRequestError(err_msg, response=response, body=body)
 
         if response.status_code == 401:
-            return _exceptions.AuthenticationError(err_msg, response=response, body=body)
+            return _exceptions.AuthenticationError(
+                err_msg, response=response, body=body
+            )
 
         if response.status_code == 403:
-            return _exceptions.PermissionDeniedError(err_msg, response=response, body=body)
+            return _exceptions.PermissionDeniedError(
+                err_msg, response=response, body=body
+            )
 
         if response.status_code == 404:
             return _exceptions.NotFoundError(err_msg, response=response, body=body)
@@ -318,13 +341,17 @@ class Dedalus(SyncAPIClient):
             return _exceptions.ConflictError(err_msg, response=response, body=body)
 
         if response.status_code == 422:
-            return _exceptions.UnprocessableEntityError(err_msg, response=response, body=body)
+            return _exceptions.UnprocessableEntityError(
+                err_msg, response=response, body=body
+            )
 
         if response.status_code == 429:
             return _exceptions.RateLimitError(err_msg, response=response, body=body)
 
         if response.status_code >= 500:
-            return _exceptions.InternalServerError(err_msg, response=response, body=body)
+            return _exceptions.InternalServerError(
+                err_msg, response=response, body=body
+            )
         return APIStatusError(err_msg, response=response, body=body)
 
 
@@ -379,33 +406,33 @@ class AsyncDedalus(AsyncAPIClient):
         - `provider_model` from `DEDALUS_PROVIDER_MODEL`
         """
         if api_key is None:
-            api_key = os.environ.get("DEDALUS_API_KEY")
+            api_key = os.environ.get('DEDALUS_API_KEY')
         self.api_key = api_key
 
         if x_api_key is None:
-            x_api_key = os.environ.get("DEDALUS_X_API_KEY")
+            x_api_key = os.environ.get('DEDALUS_X_API_KEY')
         self.x_api_key = x_api_key
 
         if organization is None:
-            organization = os.environ.get("DEDALUS_ORG_ID")
+            organization = os.environ.get('DEDALUS_ORG_ID')
         self.organization = organization
 
         if provider is None:
-            provider = os.environ.get("DEDALUS_PROVIDER")
+            provider = os.environ.get('DEDALUS_PROVIDER')
         self.provider = provider
 
         if provider_key is None:
-            provider_key = os.environ.get("DEDALUS_PROVIDER_KEY")
+            provider_key = os.environ.get('DEDALUS_PROVIDER_KEY')
         self.provider_key = provider_key
 
         if provider_model is None:
-            provider_model = os.environ.get("DEDALUS_PROVIDER_MODEL")
+            provider_model = os.environ.get('DEDALUS_PROVIDER_MODEL')
         self.provider_model = provider_model
 
         if base_url is None:
-            base_url = os.environ.get("DEDALUS_BASE_URL")
+            base_url = os.environ.get('DEDALUS_BASE_URL')
         if base_url is None:
-            base_url = f"https://api.dedaluslabs.ai"
+            base_url = f'https://api.dedaluslabs.ai'
 
         super().__init__(
             version=__version__,
@@ -419,7 +446,7 @@ class AsyncDedalus(AsyncAPIClient):
         )
 
         self._custom_auth = custom_auth
-        self._idempotency_header = "Idempotency-Key"
+        self._idempotency_header = 'Idempotency-Key'
 
         self._default_stream_cls = AsyncStream
 
@@ -469,7 +496,7 @@ class AsyncDedalus(AsyncAPIClient):
     @property
     @override
     def qs(self) -> Querystring:
-        return Querystring(array_format="comma")
+        return Querystring(array_format='comma')
 
     @property
     @override
@@ -481,38 +508,40 @@ class AsyncDedalus(AsyncAPIClient):
         api_key = self.api_key
         if api_key is None:
             return {}
-        return {"Authorization": f"Bearer {api_key}"}
+        return {'Authorization': f'Bearer {api_key}'}
 
     @property
     def _api_key_auth(self) -> dict[str, str]:
         x_api_key = self.x_api_key
         if x_api_key is None:
             return {}
-        return {"x-api-key": x_api_key}
+        return {'x-api-key': x_api_key}
 
     @property
     @override
     def default_headers(self) -> dict[str, str | Omit]:
         return {
             **super().default_headers,
-            "X-Stainless-Async": f"async:{get_async_library()}",
-            "User-Agent": "Dedalus-SDK",
-            "X-SDK-Version": "1.0.0",
-            "X-Provider": self.provider if self.provider is not None else Omit(),
-            "X-Provider-Key": self.provider_key if self.provider_key is not None else Omit(),
+            'X-Stainless-Async': f'async:{get_async_library()}',
+            'User-Agent': 'Dedalus-SDK',
+            'X-SDK-Version': '1.0.0',
+            'X-Provider': self.provider if self.provider is not None else Omit(),
+            'X-Provider-Key': self.provider_key
+            if self.provider_key is not None
+            else Omit(),
             **self._custom_headers,
         }
 
     @override
     def _validate_headers(self, headers: Headers, custom_headers: Headers) -> None:
-        if self.api_key and headers.get("Authorization"):
+        if self.api_key and headers.get('Authorization'):
             return
-        if isinstance(custom_headers.get("Authorization"), Omit):
+        if isinstance(custom_headers.get('Authorization'), Omit):
             return
 
-        if self.x_api_key and headers.get("x-api-key"):
+        if self.x_api_key and headers.get('x-api-key'):
             return
-        if isinstance(custom_headers.get("x-api-key"), Omit):
+        if isinstance(custom_headers.get('x-api-key'), Omit):
             return
 
         raise TypeError(
@@ -536,16 +565,21 @@ class AsyncDedalus(AsyncAPIClient):
         set_default_headers: Mapping[str, str] | None = None,
         default_query: Mapping[str, object] | None = None,
         set_default_query: Mapping[str, object] | None = None,
+        custom_auth: httpx.Auth | None | NotGiven = not_given,
         _extra_kwargs: Mapping[str, Any] = {},
     ) -> Self:
         """
         Create a new client instance re-using the same options given to the current client with optional overriding.
         """
         if default_headers is not None and set_default_headers is not None:
-            raise ValueError("The `default_headers` and `set_default_headers` arguments are mutually exclusive")
+            raise ValueError(
+                'The `default_headers` and `set_default_headers` arguments are mutually exclusive'
+            )
 
         if default_query is not None and set_default_query is not None:
-            raise ValueError("The `default_query` and `set_default_query` arguments are mutually exclusive")
+            raise ValueError(
+                'The `default_query` and `set_default_query` arguments are mutually exclusive'
+            )
 
         headers = self._custom_headers
         if default_headers is not None:
@@ -573,6 +607,9 @@ class AsyncDedalus(AsyncAPIClient):
             max_retries=max_retries if is_given(max_retries) else self.max_retries,
             default_headers=headers,
             default_query=params,
+            custom_auth=self._custom_auth
+            if isinstance(custom_auth, NotGiven)
+            else custom_auth,
             **_extra_kwargs,
         )
 
@@ -592,10 +629,14 @@ class AsyncDedalus(AsyncAPIClient):
             return _exceptions.BadRequestError(err_msg, response=response, body=body)
 
         if response.status_code == 401:
-            return _exceptions.AuthenticationError(err_msg, response=response, body=body)
+            return _exceptions.AuthenticationError(
+                err_msg, response=response, body=body
+            )
 
         if response.status_code == 403:
-            return _exceptions.PermissionDeniedError(err_msg, response=response, body=body)
+            return _exceptions.PermissionDeniedError(
+                err_msg, response=response, body=body
+            )
 
         if response.status_code == 404:
             return _exceptions.NotFoundError(err_msg, response=response, body=body)
@@ -604,13 +645,17 @@ class AsyncDedalus(AsyncAPIClient):
             return _exceptions.ConflictError(err_msg, response=response, body=body)
 
         if response.status_code == 422:
-            return _exceptions.UnprocessableEntityError(err_msg, response=response, body=body)
+            return _exceptions.UnprocessableEntityError(
+                err_msg, response=response, body=body
+            )
 
         if response.status_code == 429:
             return _exceptions.RateLimitError(err_msg, response=response, body=body)
 
         if response.status_code >= 500:
-            return _exceptions.InternalServerError(err_msg, response=response, body=body)
+            return _exceptions.InternalServerError(
+                err_msg, response=response, body=body
+            )
         return APIStatusError(err_msg, response=response, body=body)
 
 
