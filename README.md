@@ -30,6 +30,8 @@ from dedalus_labs import Dedalus
 
 client = Dedalus(
     api_key=os.environ.get("DEDALUS_API_KEY"),  # This is the default and can be omitted
+    # defaults to "production".
+    environment="development",
 )
 
 chat_completion = client.chat.completions.create(
@@ -64,6 +66,8 @@ from dedalus_labs import AsyncDedalus
 
 client = AsyncDedalus(
     api_key=os.environ.get("DEDALUS_API_KEY"),  # This is the default and can be omitted
+    # defaults to "production".
+    environment="development",
 )
 
 
