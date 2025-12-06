@@ -613,6 +613,16 @@ class TestDedalus:
             client = Dedalus(api_key=api_key, _strict_response_validation=True)
             assert client.base_url == "http://localhost:5000/from/env/"
 
+        # explicit environment arg requires explicitness
+        with update_env(DEDALUS_BASE_URL="http://localhost:5000/from/env"):
+            with pytest.raises(ValueError, match=r"you must pass base_url=None"):
+                Dedalus(api_key=api_key, _strict_response_validation=True, environment="production")
+
+            client = Dedalus(base_url=None, api_key=api_key, _strict_response_validation=True, environment="production")
+            assert str(client.base_url).startswith("https://api.dedaluslabs.ai")
+
+            client.close()
+
     @pytest.mark.parametrize(
         "client",
         [
@@ -1490,6 +1500,18 @@ class TestAsyncDedalus:
         with update_env(DEDALUS_BASE_URL="http://localhost:5000/from/env"):
             client = AsyncDedalus(api_key=api_key, _strict_response_validation=True)
             assert client.base_url == "http://localhost:5000/from/env/"
+
+        # explicit environment arg requires explicitness
+        with update_env(DEDALUS_BASE_URL="http://localhost:5000/from/env"):
+            with pytest.raises(ValueError, match=r"you must pass base_url=None"):
+                AsyncDedalus(api_key=api_key, _strict_response_validation=True, environment="production")
+
+            client = AsyncDedalus(
+                base_url=None, api_key=api_key, _strict_response_validation=True, environment="production"
+            )
+            assert str(client.base_url).startswith("https://api.dedaluslabs.ai")
+
+            await client.close()
 
     @pytest.mark.parametrize(
         "client",
