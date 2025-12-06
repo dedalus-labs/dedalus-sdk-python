@@ -11,7 +11,20 @@ Enables the Dedalus SDK to accept OpenMCP servers as a parameter.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Tuple, Union, Optional, Protocol, Sequence, runtime_checkable
+from typing import (
+    Any,
+    Dict,
+    List,
+    Tuple,
+    Union,
+    Optional,
+    Protocol,
+    Sequence,
+    runtime_checkable,
+    cast,
+)
+
+from typing_extensions import TypeGuard
 
 
 # --- Type Aliases ------------------------------------------------------------
@@ -90,7 +103,7 @@ class MCPToolSpec(Protocol):
 # --- Helpers -----------------------------------------------------------------
 
 
-def is_mcp_server(obj: Any) -> bool:
+def is_mcp_server(obj: Any) -> TypeGuard[MCPServerProtocol]:
     """Check if obj satisfies MCPServerProtocol."""
     return isinstance(obj, MCPServerProtocol)
 
