@@ -10,15 +10,13 @@ Provides `DPoPAuth` for sender-constrained tokens (RFC 9449) and `BearerAuth`
 for standard OAuth 2.0 bearer tokens.
 
 Usage:
-    from dedalus_labs import Dedalus
-    from dedalus_labs.lib.auth import DPoPAuth
-    from cryptography.hazmat.primitives.asymmetric import ec
+    from dedalus_labs.auth import DPoPAuth, create_dpop_auth
 
-    # Generate ephemeral DPoP keypair
-    dpop_key = ec.generate_private_key(ec.SECP256R1())
-
-    # Create auth handler with DPoP-bound token
-    auth = DPoPAuth(access_token="eyJ...", dpop_key=dpop_key)
+    # Async: fetch token and create auth handler
+    auth = await create_dpop_auth(
+        token_url="https://auth.dedaluslabs.ai/token",
+        client_id="my-client",
+    )
 
     # Pass to client
     client = Dedalus(custom_auth=auth)
@@ -31,6 +29,8 @@ import hashlib
 import time
 import uuid
 from typing import TYPE_CHECKING, Any, Generator
+
+from typing_extensions import override
 
 if TYPE_CHECKING:
     from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePrivateKey
@@ -133,7 +133,7 @@ class DPoPAuth(httpx.Auth):
 
     Example:
         from cryptography.hazmat.primitives.asymmetric import ec
-        from dedalus_labs.lib.auth import DPoPAuth
+        from dedalus_labs.auth import DPoPAuth
 
         dpop_key = ec.generate_private_key(ec.SECP256R1())
         auth = DPoPAuth(access_token="eyJ...", dpop_key=dpop_key)
@@ -173,6 +173,7 @@ class DPoPAuth(httpx.Auth):
         """Update the access token after refresh."""
         self._access_token = token
 
+    @override
     def auth_flow(
         self, request: httpx.Request
     ) -> Generator[httpx.Request, httpx.Response, None]:
@@ -210,6 +211,7 @@ class BearerAuth(httpx.Auth):
         """Update the access token after refresh."""
         self._access_token = token
 
+    @override
     def auth_flow(
         self, request: httpx.Request
     ) -> Generator[httpx.Request, httpx.Response, None]:
