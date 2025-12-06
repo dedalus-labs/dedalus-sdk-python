@@ -13,11 +13,27 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Tuple, Union, Optional, Protocol, Sequence, runtime_checkable
 
+
 # --- Type Aliases ------------------------------------------------------------
 
 MCPServerRef = str  # Slug ("org/server") or URL
 
 # --- Protocols ---------------------------------------------------------------
+
+
+@runtime_checkable
+class CredentialsProtocol(Protocol):
+    """Protocol for Credentials."""
+
+    def to_dict(self) -> Dict[str, Any]: ...
+
+
+@runtime_checkable
+class ToolsServiceProtocol(Protocol):
+    """Protocol for tools service from MCPServer."""
+
+    @property
+    def _tool_specs(self) -> Dict[str, Any]: ...
 
 
 @runtime_checkable
@@ -35,6 +51,26 @@ class MCPServerProtocol(Protocol):
     def url(self) -> Optional[str]: ...
 
     def serve(self, *args: Any, **kwargs: Any) -> Any: ...
+
+
+@runtime_checkable
+class MCPServerWithCredsProtocol(Protocol):
+    """Extended protocol for MCPServer with credential bindings.
+
+    Used for connection provisioning flow where servers need credentials.
+    """
+
+    @property
+    def name(self) -> str: ...
+
+    @property
+    def credentials(self) -> Optional[CredentialsProtocol]: ...
+
+    @property
+    def connection(self) -> Optional[str]: ...
+
+    @property
+    def tools(self) -> ToolsServiceProtocol: ...
 
 
 @runtime_checkable
@@ -60,7 +96,12 @@ def is_mcp_server(obj: Any) -> bool:
 
 
 def normalize_mcp_servers(
-    servers: Union[MCPServerRef, Sequence[Union[MCPServerRef, MCPServerProtocol]], MCPServerProtocol, None],
+    servers: Union[
+        MCPServerRef,
+        Sequence[Union[MCPServerRef, MCPServerProtocol]],
+        MCPServerProtocol,
+        None,
+    ],
 ) -> Tuple[List[MCPServerRef], List[MCPServerProtocol]]:
     """Split into (string refs, server objects). Caller checks .url to know if serve() is needed."""
     if servers is None:

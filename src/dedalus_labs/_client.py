@@ -50,6 +50,7 @@ class Dedalus(SyncAPIClient):
     provider: str | None
     provider_key: str | None
     provider_model: str | None
+    _custom_auth: httpx.Auth | None
 
     def __init__(
         self,
@@ -69,6 +70,8 @@ class Dedalus(SyncAPIClient):
         # We provide a `DefaultHttpxClient` class that you can pass to retain the default values we use for `limits`, `timeout` & `follow_redirects`.
         # See the [httpx documentation](https://www.python-httpx.org/api/#client) for more details.
         http_client: httpx.Client | None = None,
+        # Custom httpx.Auth handler for DPoP or other auth schemes.
+        custom_auth: httpx.Auth | None = None,
         # Enable or disable schema validation for data returned by the API.
         # When enabled an error APIResponseValidationError is raised
         # if the API responds with invalid data for the expected schema.
@@ -129,9 +132,15 @@ class Dedalus(SyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
+        self._custom_auth = custom_auth
         self._idempotency_header = "Idempotency-Key"
 
         self._default_stream_cls = Stream
+
+    @property
+    @override
+    def custom_auth(self) -> httpx.Auth | None:
+        return self._custom_auth
 
     @cached_property
     def models(self) -> ModelsResource:
@@ -327,6 +336,7 @@ class AsyncDedalus(AsyncAPIClient):
     provider: str | None
     provider_key: str | None
     provider_model: str | None
+    _custom_auth: httpx.Auth | None
 
     def __init__(
         self,
@@ -346,6 +356,8 @@ class AsyncDedalus(AsyncAPIClient):
         # We provide a `DefaultAsyncHttpxClient` class that you can pass to retain the default values we use for `limits`, `timeout` & `follow_redirects`.
         # See the [httpx documentation](https://www.python-httpx.org/api/#asyncclient) for more details.
         http_client: httpx.AsyncClient | None = None,
+        # Custom httpx.Auth handler for DPoP or other auth schemes.
+        custom_auth: httpx.Auth | None = None,
         # Enable or disable schema validation for data returned by the API.
         # When enabled an error APIResponseValidationError is raised
         # if the API responds with invalid data for the expected schema.
@@ -406,9 +418,15 @@ class AsyncDedalus(AsyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
+        self._custom_auth = custom_auth
         self._idempotency_header = "Idempotency-Key"
 
         self._default_stream_cls = AsyncStream
+
+    @property
+    @override
+    def custom_auth(self) -> httpx.Auth | None:
+        return self._custom_auth
 
     @cached_property
     def models(self) -> AsyncModelsResource:
