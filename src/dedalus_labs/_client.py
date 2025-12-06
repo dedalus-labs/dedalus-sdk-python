@@ -260,6 +260,10 @@ class Dedalus(SyncAPIClient):
 
     @override
     def _validate_headers(self, headers: Headers, custom_headers: Headers) -> None:
+        # custom_auth handles its own auth headers via httpx.Auth flow
+        if self._custom_auth is not None:
+            return
+
         if self.api_key and headers.get('Authorization'):
             return
         if isinstance(custom_headers.get('Authorization'), Omit):
@@ -271,7 +275,7 @@ class Dedalus(SyncAPIClient):
             return
 
         raise TypeError(
-            '"Could not resolve authentication method. Expected either api_key or x_api_key to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted"'
+            '"Could not resolve authentication method. Expected either api_key, x_api_key, or custom_auth to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted"'
         )
 
     def copy(
@@ -590,6 +594,10 @@ class AsyncDedalus(AsyncAPIClient):
 
     @override
     def _validate_headers(self, headers: Headers, custom_headers: Headers) -> None:
+        # custom_auth handles its own auth headers via httpx.Auth flow
+        if self._custom_auth is not None:
+            return
+
         if self.api_key and headers.get('Authorization'):
             return
         if isinstance(custom_headers.get('Authorization'), Omit):
@@ -601,7 +609,7 @@ class AsyncDedalus(AsyncAPIClient):
             return
 
         raise TypeError(
-            '"Could not resolve authentication method. Expected either api_key or x_api_key to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted"'
+            '"Could not resolve authentication method. Expected either api_key, x_api_key, or custom_auth to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted"'
         )
 
     def copy(
