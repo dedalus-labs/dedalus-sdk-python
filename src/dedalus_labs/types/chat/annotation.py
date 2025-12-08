@@ -9,6 +9,13 @@ __all__ = ["Annotation"]
 
 
 class Annotation(BaseModel):
+    """A URL citation when using web search.
+
+    Fields:
+    - type (required): Literal["url_citation"]
+    - url_citation (required): UrlCitation
+    """
+
     type: Literal["url_citation"]
     """The type of the URL citation. Always `url_citation`."""
 

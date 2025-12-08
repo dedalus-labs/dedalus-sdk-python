@@ -8,6 +8,8 @@ __all__ = ["Image"]
 
 
 class Image(BaseModel):
+    """Single image object."""
+
     b64_json: Optional[str] = None
     """Base64-encoded image data (if response_format=b64_json)"""
 

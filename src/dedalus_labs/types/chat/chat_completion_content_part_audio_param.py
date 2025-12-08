@@ -8,6 +8,13 @@ __all__ = ["ChatCompletionContentPartAudioParam", "InputAudio"]
 
 
 class InputAudio(TypedDict, total=False):
+    """Schema for ChatCompletionRequestMessageContentPartAudioInputAudio.
+
+    Fields:
+    - data (required): str
+    - format (required): Literal["wav", "mp3"]
+    """
+
     data: Required[str]
     """Base64 encoded audio data."""
 
@@ -16,6 +23,13 @@ class InputAudio(TypedDict, total=False):
 
 
 class ChatCompletionContentPartAudioParam(TypedDict, total=False):
+    """Learn about [audio inputs](https://platform.openai.com/docs/guides/audio).
+
+    Fields:
+    - type (required): Literal["input_audio"]
+    - input_audio (required): ChatCompletionRequestMessageContentPartAudioInputAudio
+    """
+
     input_audio: Required[InputAudio]
     """Schema for ChatCompletionRequestMessageContentPartAudioInputAudio.
 

@@ -310,6 +310,16 @@ ResponseFormat: TypeAlias = Union[ResponseFormatText, ResponseFormatJSONSchema, 
 
 
 class SafetySetting(TypedDict, total=False):
+    """Safety setting, affecting the safety-blocking behavior.
+
+    Passing a safety setting for a category changes the allowed probability that
+    content is blocked.
+
+    Fields:
+    - category (required): HarmCategory
+    - threshold (required): Literal["HARM_BLOCK_THRESHOLD_UNSPECIFIED", "BLOCK_LOW_AND_ABOVE", "BLOCK_MEDIUM_AND_ABOVE", "BLOCK_ONLY_HIGH", "BLOCK_NONE", "OFF"]
+    """
+
     category: Required[
         Literal[
             "HARM_CATEGORY_UNSPECIFIED",
@@ -347,11 +357,19 @@ ToolChoice: TypeAlias = Union[ToolChoiceAutoParam, ToolChoiceAnyParam, ToolChoic
 
 
 class ToolCustomToolChatCompletionsCustomFormatTextFormat(TypedDict, total=False):
+    """Unconstrained free-form text.
+
+    Fields:
+    - type (required): Literal["text"]
+    """
+
     type: Required[Literal["text"]]
     """Unconstrained text format. Always `text`."""
 
 
 class ToolCustomToolChatCompletionsCustomFormatGrammarFormatGrammar(TypedDict, total=False):
+    """Your chosen grammar."""
+
     definition: Required[str]
     """The grammar definition."""
 
@@ -360,6 +378,13 @@ class ToolCustomToolChatCompletionsCustomFormatGrammarFormatGrammar(TypedDict, t
 
 
 class ToolCustomToolChatCompletionsCustomFormatGrammarFormat(TypedDict, total=False):
+    """A grammar defined by the user.
+
+    Fields:
+    - type (required): Literal["grammar"]
+    - grammar (required): GrammarFormatGrammarFormat
+    """
+
     grammar: Required[ToolCustomToolChatCompletionsCustomFormatGrammarFormatGrammar]
     """Your chosen grammar."""
 
@@ -373,6 +398,8 @@ ToolCustomToolChatCompletionsCustomFormat: TypeAlias = Union[
 
 
 class ToolCustomToolChatCompletionsCustom(TypedDict, total=False):
+    """Properties of the custom tool."""
+
     name: Required[str]
     """The name of the custom tool, used to identify it in tool calls."""
 
@@ -384,6 +411,13 @@ class ToolCustomToolChatCompletionsCustom(TypedDict, total=False):
 
 
 class ToolCustomToolChatCompletions(TypedDict, total=False):
+    """A custom tool that processes input using a specified format.
+
+    Fields:
+    - type (required): Literal["custom"]
+    - custom (required): CustomToolProperties
+    """
+
     custom: Required[ToolCustomToolChatCompletionsCustom]
     """Properties of the custom tool."""
 

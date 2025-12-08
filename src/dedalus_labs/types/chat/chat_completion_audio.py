@@ -6,6 +6,17 @@ __all__ = ["ChatCompletionAudio"]
 
 
 class ChatCompletionAudio(BaseModel):
+    """
+    If the audio output modality is requested, this object contains data
+    about the audio response from the model. [Learn more](https://platform.openai.com/docs/guides/audio).
+
+    Fields:
+    - id (required): str
+    - expires_at (required): int
+    - data (required): str
+    - transcript (required): str
+    """
+
     id: str
     """Unique identifier for this audio response."""
 

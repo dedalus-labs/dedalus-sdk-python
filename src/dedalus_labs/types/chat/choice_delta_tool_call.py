@@ -10,6 +10,15 @@ __all__ = ["ChoiceDeltaToolCall"]
 
 
 class ChoiceDeltaToolCall(BaseModel):
+    """Schema for ChatCompletionMessageToolCallChunk.
+
+    Fields:
+    - index (required): int
+    - id (optional): str
+    - type (optional): Literal["function"]
+    - function (optional): Function
+    """
+
     index: int
 
     id: Optional[str] = None

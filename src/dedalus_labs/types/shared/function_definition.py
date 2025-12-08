@@ -9,6 +9,15 @@ __all__ = ["FunctionDefinition"]
 
 
 class FunctionDefinition(BaseModel):
+    """Schema for FunctionObject.
+
+    Fields:
+    - description (optional): str
+    - name (required): str
+    - parameters (optional): FunctionParameters
+    - strict (optional): bool | None
+    """
+
     name: str
     """The name of the function to be called.
 

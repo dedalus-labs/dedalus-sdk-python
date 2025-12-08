@@ -10,6 +10,13 @@ __all__ = ["ChatCompletionToolParam"]
 
 
 class ChatCompletionToolParam(TypedDict, total=False):
+    """A function tool that can be used to generate a response.
+
+    Fields:
+    - type (required): Literal["function"]
+    - function (required): FunctionObject
+    """
+
     function: Required[FunctionDefinition]
     """Schema for FunctionObject.
 

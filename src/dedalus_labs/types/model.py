@@ -10,6 +10,8 @@ __all__ = ["Model", "Capabilities", "Defaults"]
 
 
 class Capabilities(BaseModel):
+    """Normalized model capabilities across all providers."""
+
     audio: Optional[bool] = None
     """Supports audio processing"""
 
@@ -42,6 +44,8 @@ class Capabilities(BaseModel):
 
 
 class Defaults(BaseModel):
+    """Provider-declared default parameters for model generation."""
+
     max_output_tokens: Optional[int] = None
     """Default maximum output tokens"""
 
@@ -56,6 +60,12 @@ class Defaults(BaseModel):
 
 
 class Model(BaseModel):
+    """Unified model metadata across all providers.
+
+    Combines provider-specific schemas into a single, consistent format.
+    Fields that aren't available from a provider are set to None.
+    """
+
     id: str
     """Unique model identifier with provider prefix (e.g., 'openai/gpt-4')"""
 

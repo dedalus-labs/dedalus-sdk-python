@@ -11,6 +11,17 @@ __all__ = ["ChatCompletionDeveloperMessageParam"]
 
 
 class ChatCompletionDeveloperMessageParam(TypedDict, total=False):
+    """
+    Developer-provided instructions that the model should follow, regardless of
+    messages sent by the user. With o1 models and newer, `developer` messages
+    replace the previous `system` messages.
+
+    Fields:
+    - content (required): str | Annotated[list[ChatCompletionRequestMessageContentPartText], MinLen(1), ArrayTitle("ChatCompletionRequestDeveloperMessageContentArray")]
+    - role (required): Literal["developer"]
+    - name (optional): str
+    """
+
     content: Required[Union[str, Iterable[ChatCompletionContentPartTextParam]]]
     """The contents of the developer message."""
 

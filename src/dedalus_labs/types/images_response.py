@@ -9,6 +9,8 @@ __all__ = ["ImagesResponse"]
 
 
 class ImagesResponse(BaseModel):
+    """Response from image generation."""
+
     created: int
     """Unix timestamp when images were created"""
 

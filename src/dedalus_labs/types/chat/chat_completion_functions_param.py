@@ -10,6 +10,14 @@ __all__ = ["ChatCompletionFunctionsParam"]
 
 
 class ChatCompletionFunctionsParam(TypedDict, total=False):
+    """Schema for ChatCompletionFunctions.
+
+    Fields:
+    - description (optional): str
+    - name (required): str
+    - parameters (optional): FunctionParameters
+    """
+
     name: Required[str]
     """The name of the function to be called.
 

@@ -9,6 +9,11 @@ __all__ = ["MCPServerParam", "Credentials", "CredentialsBindingSpec"]
 
 
 class CredentialsBindingSpec(BaseModel):
+    """Detailed credential binding with options.
+
+    Used when a binding needs default values, optional flags, or type casting.
+    """
+
     name: str
     """Environment variable name or source identifier."""
 
@@ -26,6 +31,12 @@ Credentials: TypeAlias = Union[str, CredentialsBindingSpec]
 
 
 class MCPServerParam(BaseModel):
+    """Structured MCP server parameter.
+
+    Slug-based: {"slug": "dedalus-labs/brave-search", "version": "v1.0.0"}
+    URL-based:  {"url": "https://mcp.dedaluslabs.ai/acme/my-server/mcp"}
+    """
+
     connection: Optional[str] = None
     """Connection name for credential matching.
 

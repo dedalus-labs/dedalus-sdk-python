@@ -9,6 +9,8 @@ __all__ = ["CreateEmbeddingResponse", "Data"]
 
 
 class Data(BaseModel):
+    """Single embedding object."""
+
     embedding: Union[List[float], str]
     """The embedding vector (float array or base64 string)"""
 
@@ -20,6 +22,8 @@ class Data(BaseModel):
 
 
 class CreateEmbeddingResponse(BaseModel):
+    """Response from embeddings endpoint."""
+
     data: List[Data]
     """List of embedding objects"""
 
