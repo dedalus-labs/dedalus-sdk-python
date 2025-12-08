@@ -8,6 +8,13 @@ __all__ = ["InputTokenDetails"]
 
 
 class InputTokenDetails(BaseModel):
+    """Details about the input tokens billed for this request.
+
+    Fields:
+      - text_tokens (optional): int
+      - audio_tokens (optional): int
+    """
+
     audio_tokens: Optional[int] = None
     """Number of audio tokens billed for this request."""
 

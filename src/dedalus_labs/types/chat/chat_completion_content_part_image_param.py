@@ -8,6 +8,13 @@ __all__ = ["ChatCompletionContentPartImageParam", "ImageURL"]
 
 
 class ImageURL(TypedDict, total=False):
+    """Schema for ChatCompletionRequestMessageContentPartImageImageUrl.
+
+    Fields:
+    - url (required): AnyUrl
+    - detail (optional): Literal["auto", "low", "high"]
+    """
+
     url: Required[str]
     """Either a URL of the image or the base64 encoded image data."""
 
@@ -20,6 +27,13 @@ class ImageURL(TypedDict, total=False):
 
 
 class ChatCompletionContentPartImageParam(TypedDict, total=False):
+    """Learn about [image inputs](https://platform.openai.com/docs/guides/vision).
+
+    Fields:
+    - type (required): Literal["image_url"]
+    - image_url (required): ChatCompletionRequestMessageContentPartImageImageUrl
+    """
+
     image_url: Required[ImageURL]
     """Schema for ChatCompletionRequestMessageContentPartImageImageUrl.
 

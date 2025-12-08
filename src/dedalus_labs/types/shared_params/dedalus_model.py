@@ -13,6 +13,10 @@ __all__ = ["DedalusModel", "Settings"]
 
 
 class Settings(TypedDict, total=False):
+    """
+    Optional default generation settings (e.g., temperature, max_tokens) applied when this model is selected.
+    """
+
     attributes: Dict[str, object]
 
     audio: Optional[Dict[str, object]]
@@ -117,6 +121,12 @@ class Settings(TypedDict, total=False):
 
 
 class DedalusModel(TypedDict, total=False):
+    """Structured model selection entry used in request payloads.
+
+    Supports OpenAI-style semantics (string model id) while enabling
+    optional per-model default settings for Dedalus multi-model routing.
+    """
+
     model: Required[str]
     """
     Model identifier with provider prefix (e.g., 'openai/gpt-5',

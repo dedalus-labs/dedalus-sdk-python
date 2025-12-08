@@ -9,6 +9,8 @@ __all__ = ["ChatCompletionTokenLogprob"]
 
 
 class ChatCompletionTokenLogprob(BaseModel):
+    """Token log probability information."""
+
     token: str
     """The token."""
 

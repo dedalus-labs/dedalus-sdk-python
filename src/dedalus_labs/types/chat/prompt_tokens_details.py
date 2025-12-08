@@ -8,6 +8,13 @@ __all__ = ["PromptTokensDetails"]
 
 
 class PromptTokensDetails(BaseModel):
+    """Breakdown of tokens used in the prompt.
+
+    Fields:
+    - audio_tokens (optional): int
+    - cached_tokens (optional): int
+    """
+
     audio_tokens: Optional[int] = None
     """Audio input tokens present in the prompt."""
 

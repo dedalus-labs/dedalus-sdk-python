@@ -8,6 +8,14 @@ __all__ = ["ChatCompletionContentPartFileParam", "File"]
 
 
 class File(TypedDict, total=False):
+    """Schema for ChatCompletionRequestMessageContentPartFileFile.
+
+    Fields:
+    - filename (optional): str
+    - file_data (optional): str
+    - file_id (optional): str
+    """
+
     file_data: str
     """
     The base64 encoded file data, used when passing the file to the model as a
@@ -22,6 +30,14 @@ class File(TypedDict, total=False):
 
 
 class ChatCompletionContentPartFileParam(TypedDict, total=False):
+    """
+    Learn about [file inputs](https://platform.openai.com/docs/guides/text) for text generation.
+
+    Fields:
+    - type (required): Literal["file"]
+    - file (required): ChatCompletionRequestMessageContentPartFileFile
+    """
+
     file: Required[File]
     """Schema for ChatCompletionRequestMessageContentPartFileFile.
 

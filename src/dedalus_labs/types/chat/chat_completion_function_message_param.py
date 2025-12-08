@@ -9,6 +9,14 @@ __all__ = ["ChatCompletionFunctionMessageParam"]
 
 
 class ChatCompletionFunctionMessageParam(TypedDict, total=False):
+    """Schema for ChatCompletionRequestFunctionMessage.
+
+    Fields:
+    - role (required): Literal["function"]
+    - content (required): str | None
+    - name (required): str
+    """
+
     content: Required[Optional[str]]
     """The contents of the function message."""
 

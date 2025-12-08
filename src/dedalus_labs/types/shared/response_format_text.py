@@ -8,5 +8,11 @@ __all__ = ["ResponseFormatText"]
 
 
 class ResponseFormatText(BaseModel):
+    """Default response format. Used to generate text responses.
+
+    Fields:
+    - type (required): Literal["text"]
+    """
+
     type: Literal["text"]
     """The type of response format being defined. Always `text`."""

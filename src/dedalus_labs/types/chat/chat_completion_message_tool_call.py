@@ -10,6 +10,15 @@ __all__ = ["ChatCompletionMessageToolCall"]
 
 
 class ChatCompletionMessageToolCall(BaseModel):
+    """A call to a function tool created by the model.
+
+    Fields:
+    - id (required): str
+    - type (required): Literal["function"]
+    - function (required): Function
+    - thought_signature (optional): str
+    """
+
     id: str
     """The ID of the tool call."""
 

@@ -8,4 +8,10 @@ __all__ = ["ThinkingConfigDisabledParam"]
 
 
 class ThinkingConfigDisabledParam(TypedDict, total=False):
+    """Schema for ThinkingConfigDisabled.
+
+    Fields:
+    - type (required): Literal["disabled"]
+    """
+
     type: Required[Literal["disabled"]]

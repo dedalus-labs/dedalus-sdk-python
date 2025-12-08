@@ -8,6 +8,8 @@ __all__ = ["TopLogprob"]
 
 
 class TopLogprob(BaseModel):
+    """Token and its log probability."""
+
     token: str
     """The token."""
 

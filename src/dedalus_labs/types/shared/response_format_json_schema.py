@@ -11,6 +11,8 @@ __all__ = ["ResponseFormatJSONSchema", "JSONSchema"]
 
 
 class JSONSchema(BaseModel):
+    """Structured Outputs configuration options, including a JSON Schema."""
+
     name: str
     """The name of the response format.
 
@@ -41,6 +43,16 @@ class JSONSchema(BaseModel):
 
 
 class ResponseFormatJSONSchema(BaseModel):
+    """JSON Schema response format.
+
+    Used to generate structured JSON responses.
+    Learn more about [Structured Outputs](https://platform.openai.com/docs/guides/structured-outputs).
+
+    Fields:
+    - type (required): Literal["json_schema"]
+    - json_schema (required): JSONSchema
+    """
+
     json_schema: JSONSchema
     """Structured Outputs configuration options, including a JSON Schema."""
 

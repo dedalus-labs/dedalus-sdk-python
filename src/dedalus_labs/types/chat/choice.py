@@ -11,6 +11,12 @@ __all__ = ["Choice"]
 
 
 class Choice(BaseModel):
+    """A chat completion choice.
+
+    OpenAI-compatible choice object for non-streaming responses.
+    Part of the ChatCompletion response.
+    """
+
     index: int
     """The index of the choice in the list of choices."""
 

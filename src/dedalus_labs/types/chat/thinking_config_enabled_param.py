@@ -8,6 +8,13 @@ __all__ = ["ThinkingConfigEnabledParam"]
 
 
 class ThinkingConfigEnabledParam(TypedDict, total=False):
+    """Schema for ThinkingConfigEnabled.
+
+    Fields:
+    - budget_tokens (required): int
+    - type (required): Literal["enabled"]
+    """
+
     budget_tokens: Required[int]
     """Determines how many tokens Claude can use for its internal reasoning process.
 

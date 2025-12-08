@@ -14,6 +14,20 @@ __all__ = [
 
 
 class CreateTranslationResponseVerboseJSONSegment(BaseModel):
+    """
+    Fields:
+    - id (required): int
+    - seek (required): int
+    - start (required): float
+    - end (required): float
+    - text (required): str
+    - tokens (required): list[int]
+    - temperature (required): float
+    - avg_logprob (required): float
+    - compression_ratio (required): float
+    - no_speech_prob (required): float
+    """
+
     id: int
     """Unique identifier of the segment."""
 
@@ -56,6 +70,14 @@ class CreateTranslationResponseVerboseJSONSegment(BaseModel):
 
 
 class CreateTranslationResponseVerboseJSON(BaseModel):
+    """
+    Fields:
+    - language (required): str
+    - duration (required): float
+    - text (required): str
+    - segments (optional): list[TranscriptionSegment]
+    """
+
     duration: float
     """The duration of the input audio."""
 
@@ -70,6 +92,11 @@ class CreateTranslationResponseVerboseJSON(BaseModel):
 
 
 class CreateTranslationResponseJSON(BaseModel):
+    """
+    Fields:
+    - text (required): str
+    """
+
     text: str
 
 

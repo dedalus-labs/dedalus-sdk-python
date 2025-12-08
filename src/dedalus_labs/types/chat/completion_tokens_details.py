@@ -8,6 +8,15 @@ __all__ = ["CompletionTokensDetails"]
 
 
 class CompletionTokensDetails(BaseModel):
+    """Breakdown of tokens used in a completion.
+
+    Fields:
+    - accepted_prediction_tokens (optional): int
+    - audio_tokens (optional): int
+    - reasoning_tokens (optional): int
+    - rejected_prediction_tokens (optional): int
+    """
+
     accepted_prediction_tokens: Optional[int] = None
     """
     When using Predicted Outputs, the number of tokens in the prediction that

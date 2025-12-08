@@ -11,6 +11,15 @@ __all__ = ["FunctionDefinition"]
 
 
 class FunctionDefinition(TypedDict, total=False):
+    """Schema for FunctionObject.
+
+    Fields:
+    - description (optional): str
+    - name (required): str
+    - parameters (optional): FunctionParameters
+    - strict (optional): bool | None
+    """
+
     name: Required[str]
     """The name of the function to be called.
 

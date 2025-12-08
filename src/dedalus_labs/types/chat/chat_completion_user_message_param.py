@@ -21,6 +21,16 @@ ContentChatCompletionRequestUserMessageContentArray: TypeAlias = Union[
 
 
 class ChatCompletionUserMessageParam(TypedDict, total=False):
+    """
+    Messages sent by an end user, containing prompts or additional context
+    information.
+
+    Fields:
+    - content (required): str | Annotated[list[ChatCompletionRequestUserMessageContentPart], MinLen(1), ArrayTitle("ChatCompletionRequestUserMessageContentArray")]
+    - role (required): Literal["user"]
+    - name (optional): str
+    """
+
     content: Required[Union[str, Iterable[ContentChatCompletionRequestUserMessageContentArray]]]
     """The contents of the user message."""
 

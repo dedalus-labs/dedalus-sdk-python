@@ -8,6 +8,13 @@ __all__ = ["ToolChoiceAnyParam"]
 
 
 class ToolChoiceAnyParam(TypedDict, total=False):
+    """The model will use any available tools.
+
+    Fields:
+    - disable_parallel_tool_use (optional): bool
+    - type (required): Literal["any"]
+    """
+
     type: Required[Literal["any"]]
 
     disable_parallel_tool_use: bool

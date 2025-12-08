@@ -8,6 +8,13 @@ __all__ = ["ToolChoiceAutoParam"]
 
 
 class ToolChoiceAutoParam(TypedDict, total=False):
+    """The model will automatically decide whether to use tools.
+
+    Fields:
+    - disable_parallel_tool_use (optional): bool
+    - type (required): Literal["auto"]
+    """
+
     type: Required[Literal["auto"]]
 
     disable_parallel_tool_use: bool

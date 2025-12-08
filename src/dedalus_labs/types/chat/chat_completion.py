@@ -12,6 +12,13 @@ __all__ = ["ChatCompletion"]
 
 
 class ChatCompletion(BaseModel):
+    """Chat completion response for Dedalus API.
+
+    OpenAI-compatible chat completion response with Dedalus extensions.
+    Maintains full compatibility with OpenAI API while providing additional
+    features like server-side tool execution tracking and MCP error reporting.
+    """
+
     id: str
     """A unique identifier for the chat completion."""
 

@@ -8,5 +8,13 @@ __all__ = ["ChatCompletionAudioParam"]
 
 
 class ChatCompletionAudioParam(TypedDict, total=False):
+    """
+    Data about a previous audio response from the model.
+    [Learn more](https://platform.openai.com/docs/guides/audio).
+
+    Fields:
+    - id (required): str
+    """
+
     id: Required[str]
     """Unique identifier for a previous audio response from the model."""

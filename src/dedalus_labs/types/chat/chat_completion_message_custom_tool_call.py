@@ -9,6 +9,14 @@ __all__ = ["ChatCompletionMessageCustomToolCall"]
 
 
 class ChatCompletionMessageCustomToolCall(BaseModel):
+    """A call to a custom tool created by the model.
+
+    Fields:
+    - id (required): str
+    - type (required): Literal["custom"]
+    - custom (required): Custom
+    """
+
     id: str
     """The ID of the tool call."""
 

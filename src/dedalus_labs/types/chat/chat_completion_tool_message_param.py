@@ -11,6 +11,14 @@ __all__ = ["ChatCompletionToolMessageParam"]
 
 
 class ChatCompletionToolMessageParam(TypedDict, total=False):
+    """Schema for ChatCompletionRequestToolMessage.
+
+    Fields:
+    - role (required): Literal["tool"]
+    - content (required): str | Annotated[list[ChatCompletionRequestToolMessageContentPart], MinLen(1), ArrayTitle("ChatCompletionRequestToolMessageContentArray")]
+    - tool_call_id (required): str
+    """
+
     content: Required[Union[str, Iterable[ChatCompletionContentPartTextParam]]]
     """The contents of the tool message."""
 

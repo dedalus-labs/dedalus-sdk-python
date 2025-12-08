@@ -10,6 +10,16 @@ __all__ = ["CompletionUsage"]
 
 
 class CompletionUsage(BaseModel):
+    """Usage statistics for the completion request.
+
+    Fields:
+    - completion_tokens (required): int
+    - prompt_tokens (required): int
+    - total_tokens (required): int
+    - completion_tokens_details (optional): CompletionTokensDetails
+    - prompt_tokens_details (optional): PromptTokensDetails
+    """
+
     completion_tokens: int
     """Number of tokens in the generated completion."""
 

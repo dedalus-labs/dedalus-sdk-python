@@ -11,6 +11,15 @@ __all__ = ["PredictionContentParam"]
 
 
 class PredictionContentParam(TypedDict, total=False):
+    """
+    Static predicted output content, such as the content of a text file that is
+    being regenerated.
+
+    Fields:
+    - type (required): Literal["content"]
+    - content (required): str | Annotated[list[ChatCompletionRequestMessageContentPartText], MinLen(1), ArrayTitle("PredictionContentArray")]
+    """
+
     content: Required[Union[str, Iterable[ChatCompletionContentPartTextParam]]]
     """
     The content that should be matched when generating a model response. If
