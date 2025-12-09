@@ -7,8 +7,8 @@ from .model import Model as Model
 from .shared import (
     MCPServers as MCPServers,
     DedalusModel as DedalusModel,
+    MCPServerSpec as MCPServerSpec,
     MCPServerInput as MCPServerInput,
-    MCPServerParam as MCPServerParam,
     DedalusModelChoice as DedalusModelChoice,
     FunctionDefinition as FunctionDefinition,
     FunctionParameters as FunctionParameters,

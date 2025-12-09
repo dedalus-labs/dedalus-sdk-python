@@ -90,7 +90,6 @@ class CompletionsResource(SyncAPIResource):
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[str] | Omit = omit,
         stop: Union[SequenceNotStr[str], str, None] | Omit = omit,
-        stop_sequences: Optional[SequenceNotStr[str]] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream: Optional[Literal[False]] | Omit = omit,
         stream_options: Optional[Dict[str, object]] | Omit = omit,
@@ -203,7 +202,7 @@ class CompletionsResource(SyncAPIResource):
 
           max_turns: Maximum conversation turns.
 
-          mcp_servers: MCP server identifiers. Accepts marketplace slugs, URLs, or MCPServerParam
+          mcp_servers: MCP server identifiers. Accepts marketplace slugs, URLs, or MCPServerSpec
               objects. MCP tools are executed server-side and billed separately.
 
           messages: Conversation history (OpenAI: messages, Google: contents, Responses: input)
@@ -253,9 +252,7 @@ class CompletionsResource(SyncAPIResource):
 
           service_tier: Service tier for request processing
 
-          stop: Not supported with latest reasoning models `o3` and `o4-mini`. Up to 4 seque...
-
-          stop_sequences: Custom text sequences that will cause the model to stop generating. Our mode...
+          stop: Sequences that stop generation
 
           store: Whether or not to store the output of this chat completion request for use in...
 
@@ -342,7 +339,6 @@ class CompletionsResource(SyncAPIResource):
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[str] | Omit = omit,
         stop: Union[SequenceNotStr[str], str, None] | Omit = omit,
-        stop_sequences: Optional[SequenceNotStr[str]] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream_options: Optional[Dict[str, object]] | Omit = omit,
         system_instruction: Union[Dict[str, object], str, None] | Omit = omit,
@@ -456,7 +452,7 @@ class CompletionsResource(SyncAPIResource):
 
           max_turns: Maximum conversation turns.
 
-          mcp_servers: MCP server identifiers. Accepts marketplace slugs, URLs, or MCPServerParam
+          mcp_servers: MCP server identifiers. Accepts marketplace slugs, URLs, or MCPServerSpec
               objects. MCP tools are executed server-side and billed separately.
 
           messages: Conversation history (OpenAI: messages, Google: contents, Responses: input)
@@ -506,9 +502,7 @@ class CompletionsResource(SyncAPIResource):
 
           service_tier: Service tier for request processing
 
-          stop: Not supported with latest reasoning models `o3` and `o4-mini`. Up to 4 seque...
-
-          stop_sequences: Custom text sequences that will cause the model to stop generating. Our mode...
+          stop: Sequences that stop generation
 
           store: Whether or not to store the output of this chat completion request for use in...
 
@@ -593,7 +587,6 @@ class CompletionsResource(SyncAPIResource):
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[str] | Omit = omit,
         stop: Union[SequenceNotStr[str], str, None] | Omit = omit,
-        stop_sequences: Optional[SequenceNotStr[str]] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream_options: Optional[Dict[str, object]] | Omit = omit,
         system_instruction: Union[Dict[str, object], str, None] | Omit = omit,
@@ -707,7 +700,7 @@ class CompletionsResource(SyncAPIResource):
 
           max_turns: Maximum conversation turns.
 
-          mcp_servers: MCP server identifiers. Accepts marketplace slugs, URLs, or MCPServerParam
+          mcp_servers: MCP server identifiers. Accepts marketplace slugs, URLs, or MCPServerSpec
               objects. MCP tools are executed server-side and billed separately.
 
           messages: Conversation history (OpenAI: messages, Google: contents, Responses: input)
@@ -757,9 +750,7 @@ class CompletionsResource(SyncAPIResource):
 
           service_tier: Service tier for request processing
 
-          stop: Not supported with latest reasoning models `o3` and `o4-mini`. Up to 4 seque...
-
-          stop_sequences: Custom text sequences that will cause the model to stop generating. Our mode...
+          stop: Sequences that stop generation
 
           store: Whether or not to store the output of this chat completion request for use in...
 
@@ -843,7 +834,6 @@ class CompletionsResource(SyncAPIResource):
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[str] | Omit = omit,
         stop: Union[SequenceNotStr[str], str, None] | Omit = omit,
-        stop_sequences: Optional[SequenceNotStr[str]] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream: Optional[Literal[False]] | Literal[True] | Omit = omit,
         stream_options: Optional[Dict[str, object]] | Omit = omit,
@@ -909,7 +899,6 @@ class CompletionsResource(SyncAPIResource):
                     "seed": seed,
                     "service_tier": service_tier,
                     "stop": stop,
-                    "stop_sequences": stop_sequences,
                     "store": store,
                     "stream": stream,
                     "stream_options": stream_options,
@@ -1005,7 +994,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[str] | Omit = omit,
         stop: Union[SequenceNotStr[str], str, None] | Omit = omit,
-        stop_sequences: Optional[SequenceNotStr[str]] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream: Optional[Literal[False]] | Omit = omit,
         stream_options: Optional[Dict[str, object]] | Omit = omit,
@@ -1118,7 +1106,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           max_turns: Maximum conversation turns.
 
-          mcp_servers: MCP server identifiers. Accepts marketplace slugs, URLs, or MCPServerParam
+          mcp_servers: MCP server identifiers. Accepts marketplace slugs, URLs, or MCPServerSpec
               objects. MCP tools are executed server-side and billed separately.
 
           messages: Conversation history (OpenAI: messages, Google: contents, Responses: input)
@@ -1168,9 +1156,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           service_tier: Service tier for request processing
 
-          stop: Not supported with latest reasoning models `o3` and `o4-mini`. Up to 4 seque...
-
-          stop_sequences: Custom text sequences that will cause the model to stop generating. Our mode...
+          stop: Sequences that stop generation
 
           store: Whether or not to store the output of this chat completion request for use in...
 
@@ -1257,7 +1243,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[str] | Omit = omit,
         stop: Union[SequenceNotStr[str], str, None] | Omit = omit,
-        stop_sequences: Optional[SequenceNotStr[str]] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream_options: Optional[Dict[str, object]] | Omit = omit,
         system_instruction: Union[Dict[str, object], str, None] | Omit = omit,
@@ -1371,7 +1356,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           max_turns: Maximum conversation turns.
 
-          mcp_servers: MCP server identifiers. Accepts marketplace slugs, URLs, or MCPServerParam
+          mcp_servers: MCP server identifiers. Accepts marketplace slugs, URLs, or MCPServerSpec
               objects. MCP tools are executed server-side and billed separately.
 
           messages: Conversation history (OpenAI: messages, Google: contents, Responses: input)
@@ -1421,9 +1406,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           service_tier: Service tier for request processing
 
-          stop: Not supported with latest reasoning models `o3` and `o4-mini`. Up to 4 seque...
-
-          stop_sequences: Custom text sequences that will cause the model to stop generating. Our mode...
+          stop: Sequences that stop generation
 
           store: Whether or not to store the output of this chat completion request for use in...
 
@@ -1508,7 +1491,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[str] | Omit = omit,
         stop: Union[SequenceNotStr[str], str, None] | Omit = omit,
-        stop_sequences: Optional[SequenceNotStr[str]] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream_options: Optional[Dict[str, object]] | Omit = omit,
         system_instruction: Union[Dict[str, object], str, None] | Omit = omit,
@@ -1622,7 +1604,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           max_turns: Maximum conversation turns.
 
-          mcp_servers: MCP server identifiers. Accepts marketplace slugs, URLs, or MCPServerParam
+          mcp_servers: MCP server identifiers. Accepts marketplace slugs, URLs, or MCPServerSpec
               objects. MCP tools are executed server-side and billed separately.
 
           messages: Conversation history (OpenAI: messages, Google: contents, Responses: input)
@@ -1672,9 +1654,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           service_tier: Service tier for request processing
 
-          stop: Not supported with latest reasoning models `o3` and `o4-mini`. Up to 4 seque...
-
-          stop_sequences: Custom text sequences that will cause the model to stop generating. Our mode...
+          stop: Sequences that stop generation
 
           store: Whether or not to store the output of this chat completion request for use in...
 
@@ -1758,7 +1738,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[str] | Omit = omit,
         stop: Union[SequenceNotStr[str], str, None] | Omit = omit,
-        stop_sequences: Optional[SequenceNotStr[str]] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream: Optional[Literal[False]] | Literal[True] | Omit = omit,
         stream_options: Optional[Dict[str, object]] | Omit = omit,
@@ -1824,7 +1803,6 @@ class AsyncCompletionsResource(AsyncAPIResource):
                     "seed": seed,
                     "service_tier": service_tier,
                     "stop": stop,
-                    "stop_sequences": stop_sequences,
                     "store": store,
                     "stream": stream,
                     "stream_options": stream_options,

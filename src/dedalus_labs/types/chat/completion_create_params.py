@@ -15,8 +15,8 @@ from .prediction_content_param import PredictionContentParam
 from .chat_completion_tool_param import ChatCompletionToolParam
 from ..shared_params.dedalus_model import DedalusModel
 from .thinking_config_enabled_param import ThinkingConfigEnabledParam
+from ..shared_params.mcp_server_spec import MCPServerSpec
 from .thinking_config_disabled_param import ThinkingConfigDisabledParam
-from ..shared_params.mcp_server_param import MCPServerParam
 from .chat_completion_functions_param import ChatCompletionFunctionsParam
 from .chat_completion_tool_message_param import ChatCompletionToolMessageParam
 from .chat_completion_user_message_param import ChatCompletionUserMessageParam
@@ -127,7 +127,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     mcp_servers: Optional[MCPServers]
     """MCP server identifiers.
 
-    Accepts marketplace slugs, URLs, or MCPServerParam objects. MCP tools are
+    Accepts marketplace slugs, URLs, or MCPServerSpec objects. MCP tools are
     executed server-side and billed separately.
     """
 
@@ -229,10 +229,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     """Service tier for request processing"""
 
     stop: Union[SequenceNotStr[str], str, None]
-    """Not supported with latest reasoning models `o3` and `o4-mini`. Up to 4 seque..."""
-
-    stop_sequences: Optional[SequenceNotStr[str]]
-    """Custom text sequences that will cause the model to stop generating. Our mode..."""
+    """Sequences that stop generation"""
 
     store: Optional[bool]
     """
@@ -295,7 +292,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
 
 Model: TypeAlias = Union[str, DedalusModel, SequenceNotStr[DedalusModelChoice]]
 
-MCPServers: TypeAlias = Union[str, MCPServerParam, _mcp_servers.MCPServers]
+MCPServers: TypeAlias = Union[str, MCPServerSpec, _mcp_servers.MCPServers]
 
 Message: TypeAlias = Union[
     ChatCompletionDeveloperMessageParam,

@@ -5,10 +5,10 @@ from __future__ import annotations
 from typing import List, Union
 from typing_extensions import TypeAlias
 
-from .mcp_server_param import MCPServerParam
+from .mcp_server_spec import MCPServerSpec
 
 __all__ = ["MCPServers", "MCPServerInput"]
 
-MCPServerInput: TypeAlias = Union[str, MCPServerParam]
+MCPServerInput: TypeAlias = Union[str, MCPServerSpec]
 
 MCPServers: TypeAlias = List[MCPServerInput]
