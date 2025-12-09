@@ -1,59 +1,67 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from __future__ import annotations
-
 from typing import Dict, Union, Optional
-from typing_extensions import Required, TypeAlias, TypedDict
+from typing_extensions import TypeAlias
 
-__all__ = ["MCPServerParam", "Credentials", "CredentialsBindingSpec"]
+from ..._models import BaseModel
+
+__all__ = ["MCPServerSpec", "Credentials", "CredentialsBindingSpec"]
 
 
-class CredentialsBindingSpec(TypedDict, total=False):
+class CredentialsBindingSpec(BaseModel):
     """Detailed credential binding with options.
 
     Used when a binding needs default values, optional flags, or type casting.
     """
 
-    name: Required[str]
+    name: str
     """Environment variable name or source identifier."""
 
-    cast: Optional[str]
+    cast: Optional[str] = None
     """Type to cast value to (e.g., 'int', 'bool')."""
 
-    default: object
+    default: Optional[object] = None
     """Default value if source not set."""
 
-    optional: bool
+    optional: Optional[bool] = None
     """If true, missing value is allowed."""
 
 
 Credentials: TypeAlias = Union[str, CredentialsBindingSpec]
 
 
-class MCPServerParam(TypedDict, total=False):
-    """Structured MCP server parameter.
+class MCPServerSpec(BaseModel):
+    """Structured MCP server specification.
 
     Slug-based: {"slug": "dedalus-labs/brave-search", "version": "v1.0.0"}
     URL-based:  {"url": "https://mcp.dedaluslabs.ai/acme/my-server/mcp"}
     """
 
-    connection: Optional[str]
+    connection: Optional[str] = None
     """Connection name for credential matching.
 
     Must match a key in the client's credentials list.
     """
 
-    credentials: Optional[Dict[str, Credentials]]
+    credentials: Optional[Dict[str, Credentials]] = None
     """Schema declaring what credentials are needed.
 
     Maps field names to their bindings (e.g., env var names).
     """
 
-    slug: Optional[str]
+    encrypted_credentials: Optional[Dict[str, str]] = None
+    """Client-encrypted credential values.
+
+    Maps connection names to encrypted envelopes (base64url JWE). SDK encrypts
+    credentials client-side using the enclave's public key from authorization
+    server.
+    """
+
+    slug: Optional[str] = None
     """Marketplace slug."""
 
-    url: Optional[str]
+    url: Optional[str] = None
     """Direct URL to MCP server endpoint."""
 
-    version: Optional[str]
+    version: Optional[str] = None
     """Version constraint for slug-based servers."""

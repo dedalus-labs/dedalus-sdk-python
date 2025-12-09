@@ -3,8 +3,8 @@
 from typing import Union
 from typing_extensions import TypeAlias
 
-from .mcp_server_param import MCPServerParam
+from .mcp_server_spec import MCPServerSpec
 
 __all__ = ["MCPServerInput"]
 
-MCPServerInput: TypeAlias = Union[str, MCPServerParam]
+MCPServerInput: TypeAlias = Union[str, MCPServerSpec]

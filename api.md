@@ -7,7 +7,7 @@ from dedalus_labs.types import (
     FunctionDefinition,
     FunctionParameters,
     MCPServerInput,
-    MCPServerParam,
+    MCPServerSpec,
     MCPServers,
     ResponseFormatJSONObject,
     ResponseFormatJSONSchema,

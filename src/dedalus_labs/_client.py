@@ -61,6 +61,7 @@ class Dedalus(SyncAPIClient):
     # client options
     api_key: str | None
     x_api_key: str | None
+    as_base_url: str | None
     organization: str | None
     provider: str | None
     provider_key: str | None
@@ -74,6 +75,7 @@ class Dedalus(SyncAPIClient):
         *,
         api_key: str | None = None,
         x_api_key: str | None = None,
+        as_base_url: str | None = None,
         organization: str | None = None,
         provider: str | None = None,
         provider_key: str | None = None,
@@ -105,6 +107,7 @@ class Dedalus(SyncAPIClient):
         This automatically infers the following arguments from their corresponding environment variables if they are not provided:
         - `api_key` from `DEDALUS_API_KEY`
         - `x_api_key` from `DEDALUS_X_API_KEY`
+        - `as_base_url` from `DEDALUS_AS_URL`
         - `organization` from `DEDALUS_ORG_ID`
         - `provider` from `DEDALUS_PROVIDER`
         - `provider_key` from `DEDALUS_PROVIDER_KEY`
@@ -117,6 +120,10 @@ class Dedalus(SyncAPIClient):
         if x_api_key is None:
             x_api_key = os.environ.get('DEDALUS_X_API_KEY')
         self.x_api_key = x_api_key
+
+        if as_base_url is None:
+            as_base_url = os.environ.get("DEDALUS_AS_URL")
+        self.as_base_url = as_base_url
 
         if organization is None:
             organization = os.environ.get('DEDALUS_ORG_ID')
@@ -283,6 +290,7 @@ class Dedalus(SyncAPIClient):
         *,
         api_key: str | None = None,
         x_api_key: str | None = None,
+        as_base_url: str | None = None,
         organization: str | None = None,
         provider: str | None = None,
         provider_key: str | None = None,
@@ -328,6 +336,7 @@ class Dedalus(SyncAPIClient):
         return self.__class__(
             api_key=api_key or self.api_key,
             x_api_key=x_api_key or self.x_api_key,
+            as_base_url=as_base_url or self.as_base_url,
             organization=organization or self.organization,
             provider=provider or self.provider,
             provider_key=provider_key or self.provider_key,
@@ -395,6 +404,7 @@ class AsyncDedalus(AsyncAPIClient):
     # client options
     api_key: str | None
     x_api_key: str | None
+    as_base_url: str | None
     organization: str | None
     provider: str | None
     provider_key: str | None
@@ -408,6 +418,7 @@ class AsyncDedalus(AsyncAPIClient):
         *,
         api_key: str | None = None,
         x_api_key: str | None = None,
+        as_base_url: str | None = None,
         organization: str | None = None,
         provider: str | None = None,
         provider_key: str | None = None,
@@ -439,6 +450,7 @@ class AsyncDedalus(AsyncAPIClient):
         This automatically infers the following arguments from their corresponding environment variables if they are not provided:
         - `api_key` from `DEDALUS_API_KEY`
         - `x_api_key` from `DEDALUS_X_API_KEY`
+        - `as_base_url` from `DEDALUS_AS_URL`
         - `organization` from `DEDALUS_ORG_ID`
         - `provider` from `DEDALUS_PROVIDER`
         - `provider_key` from `DEDALUS_PROVIDER_KEY`
@@ -451,6 +463,10 @@ class AsyncDedalus(AsyncAPIClient):
         if x_api_key is None:
             x_api_key = os.environ.get('DEDALUS_X_API_KEY')
         self.x_api_key = x_api_key
+
+        if as_base_url is None:
+            as_base_url = os.environ.get("DEDALUS_AS_URL")
+        self.as_base_url = as_base_url
 
         if organization is None:
             organization = os.environ.get('DEDALUS_ORG_ID')
@@ -617,6 +633,7 @@ class AsyncDedalus(AsyncAPIClient):
         *,
         api_key: str | None = None,
         x_api_key: str | None = None,
+        as_base_url: str | None = None,
         organization: str | None = None,
         provider: str | None = None,
         provider_key: str | None = None,
@@ -662,6 +679,7 @@ class AsyncDedalus(AsyncAPIClient):
         return self.__class__(
             api_key=api_key or self.api_key,
             x_api_key=x_api_key or self.x_api_key,
+            as_base_url=as_base_url or self.as_base_url,
             organization=organization or self.organization,
             provider=provider or self.provider,
             provider_key=provider_key or self.provider_key,
