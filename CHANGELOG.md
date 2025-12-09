@@ -1,5 +1,86 @@
 # Changelog
 
+## 0.2.0 (2025-12-09)
+
+Full Changelog: [v0.2.0...v0.2.0](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.2.0...v0.2.0)
+
+### Features
+
+* add image edits/variation and vision format support ([f8a8c84](https://github.com/dedalus-labs/dedalus-sdk-python/commit/f8a8c84f3379d92619de56929d6ad3048989b18c))
+* **api:** add endpoints ([c10d7b5](https://github.com/dedalus-labs/dedalus-sdk-python/commit/c10d7b55a8ec6bb82556b3efe4db20c91959131d))
+* **api:** add streaming ([745c331](https://github.com/dedalus-labs/dedalus-sdk-python/commit/745c33166a671b79a978961d576064618cc80bcb))
+* **api:** add streaming configuration ([0172ad5](https://github.com/dedalus-labs/dedalus-sdk-python/commit/0172ad5175dd15650252a084f213b16c56b8befc))
+* **api:** api update ([280a595](https://github.com/dedalus-labs/dedalus-sdk-python/commit/280a595b3d3900625cfdf26be12027a88eff9618))
+* **api:** auto exec tools ([780162b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/780162b01d27703bb873488702ebede232791ed2))
+* **api:** config update for dedalus-ai/dev ([34e7a71](https://github.com/dedalus-labs/dedalus-sdk-python/commit/34e7a7167f6db94bb7c8c10a7c11746656aec5a6))
+* **api:** config update for dedalus-ai/dev ([197d11b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/197d11bf57da500e05cde2861146da9e3ec278f3))
+* **api:** convenient bug reporting ux ([5aa032f](https://github.com/dedalus-labs/dedalus-sdk-python/commit/5aa032f24a9fe44d23cfbf83f12fc79104529c8d))
+* **api:** image support ([ca28133](https://github.com/dedalus-labs/dedalus-sdk-python/commit/ca281334db05ac2e939436050d1cf70ca5359ab4))
+* **api:** improve types ([62cf7e1](https://github.com/dedalus-labs/dedalus-sdk-python/commit/62cf7e1a643cda58ee5112a1a8fc35253fe50f07))
+* **api:** manual updates ([9bb6d0d](https://github.com/dedalus-labs/dedalus-sdk-python/commit/9bb6d0d0433111d177410f7ff21d3de254d899a0))
+* **api:** manual updates ([9b2851a](https://github.com/dedalus-labs/dedalus-sdk-python/commit/9b2851a6bdbf861c0db0b01aa3e7a8f5a45bfa77))
+* **api:** mcp server params ([bf78aad](https://github.com/dedalus-labs/dedalus-sdk-python/commit/bf78aad94d159622460b3a9ecddb9c5d1e1c82bb))
+* **api:** messages param nullable ([e905235](https://github.com/dedalus-labs/dedalus-sdk-python/commit/e9052357b7efa9d49b4f8b8d4c7dfc026d69414b))
+* **api:** response format ([660ac29](https://github.com/dedalus-labs/dedalus-sdk-python/commit/660ac2954efc08eaed5212da934203b5b80f522e))
+* **api:** revert streaming for now ([56d57d5](https://github.com/dedalus-labs/dedalus-sdk-python/commit/56d57d5a19034eec13d5a98a86d133d36ac2830a))
+* **api:** schema compiler landed ([9aeb7a7](https://github.com/dedalus-labs/dedalus-sdk-python/commit/9aeb7a78bfaa81c07e920268afcacbba4a4ff9c9))
+* **api:** standardize name casing with stainless initialism ([ba1e188](https://github.com/dedalus-labs/dedalus-sdk-python/commit/ba1e188beb62f6def79720d7d2ec8e22853fadaf))
+* **api:** stream helper for pydantic ([c4ab8b0](https://github.com/dedalus-labs/dedalus-sdk-python/commit/c4ab8b0d911b92afe76de99143567e6898e9e95c))
+* **api:** streaming support for structured output ([48ddd0a](https://github.com/dedalus-labs/dedalus-sdk-python/commit/48ddd0a996e99b65fb4635f276a5562ef567ed26))
+* **api:** update via SDK Studio ([9407b44](https://github.com/dedalus-labs/dedalus-sdk-python/commit/9407b44fa8dbd4df7c18c36eab95a5573399810a))
+* **client:** support file upload requests ([caadecd](https://github.com/dedalus-labs/dedalus-sdk-python/commit/caadecdf5c75297819cd41fe3adcc5f7af3de772))
+* encryption ([d72d130](https://github.com/dedalus-labs/dedalus-sdk-python/commit/d72d130279b78fb4f946199a003032001b9c162e))
+* flexible input params for .parse() ([b208fbe](https://github.com/dedalus-labs/dedalus-sdk-python/commit/b208fbed8300526b323ac7c935d6d50bb652f0d3))
+* structured outputs for tools ([b0434ca](https://github.com/dedalus-labs/dedalus-sdk-python/commit/b0434ca32e43dc5ef254e3fecb5493a2d3896384))
+
+
+### Bug Fixes
+
+* **api:** add shared DedalusModel type ([8855a07](https://github.com/dedalus-labs/dedalus-sdk-python/commit/8855a07e4ea638102e71a049e182891e76e3d34d))
+* **api:** add thought signature ([d2203b1](https://github.com/dedalus-labs/dedalus-sdk-python/commit/d2203b129e6b64bbae0b1966654723c2f1ca1159))
+* **api:** hardened _compat types ([312b628](https://github.com/dedalus-labs/dedalus-sdk-python/commit/312b628b48d15aaae5b4d2765a75d2b6b830e318))
+* **client:** close streams without requiring full consumption ([24c4190](https://github.com/dedalus-labs/dedalus-sdk-python/commit/24c4190ccb71d2c369b3d79f5764be31f2e8ead7))
+* compat with Python 3.14 ([aacb192](https://github.com/dedalus-labs/dedalus-sdk-python/commit/aacb192910f8bdd09625f098874cf54d3c0c0971))
+* **compat:** update signatures of `model_dump` and `model_dump_json` for Pydantic v1 ([bd1df12](https://github.com/dedalus-labs/dedalus-sdk-python/commit/bd1df12d6c26ad35101bd7b181f33ee8f7fe75ce))
+* ensure streams are always closed ([e0e6406](https://github.com/dedalus-labs/dedalus-sdk-python/commit/e0e6406dc5faeaae21286324d4d247e2706481e1))
+* import paths and tests ([70c967f](https://github.com/dedalus-labs/dedalus-sdk-python/commit/70c967f97d9479307128d6215731a8296bf3fa18))
+* runner tool calling mechanics ([a07f8eb](https://github.com/dedalus-labs/dedalus-sdk-python/commit/a07f8ebd7d65d9a054bba7838443da90f396762d))
+* **runner:** import and dict issues ([fd500d6](https://github.com/dedalus-labs/dedalus-sdk-python/commit/fd500d6c9ba7c503bfecbf7a3c53b8eaef149d59))
+* **runner:** narrow mcp types ([172b56b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/172b56b0ff518004f1bfb65fd0c28dca3215b026))
+* **runner:** use TypeAlias from typing_extensions for py3.9+ support ([0625b2c](https://github.com/dedalus-labs/dedalus-sdk-python/commit/0625b2c9cd7569140fb81848b9d77bbbfbe256b9))
+* **streaming:** correct stream type detection ([7b6576c](https://github.com/dedalus-labs/dedalus-sdk-python/commit/7b6576c23400bca2420e6782defa633b0f3dbff9))
+* **tests:** update bug reporting parameters/paths ([3838ebe](https://github.com/dedalus-labs/dedalus-sdk-python/commit/3838ebe4db440a852c233cd2a96c2b7a4f0c4082))
+* tool call format and custom_auth validation ([b822aa2](https://github.com/dedalus-labs/dedalus-sdk-python/commit/b822aa214cbf0f735c4480a156639888a80956b1))
+* **types:** allow pyright to infer TypedDict types within SequenceNotStr ([624e2b6](https://github.com/dedalus-labs/dedalus-sdk-python/commit/624e2b67c3b784d64548fb6a3ebde7283b593279))
+* **types:** remove manual DedalusModel ([e1ce236](https://github.com/dedalus-labs/dedalus-sdk-python/commit/e1ce236b931b0715b9fa280ef329bfa451eb05c1))
+
+
+### Chores
+
+* add missing docstrings ([52ded59](https://github.com/dedalus-labs/dedalus-sdk-python/commit/52ded5987a0cd141499157a3bf9804fe342e5494))
+* **api:** point local dev to 4010 port for prism ([ad0ec37](https://github.com/dedalus-labs/dedalus-sdk-python/commit/ad0ec3766423c5e6374a96afe55bf415a9c2792c))
+* **auth:** add minor auth params ([c39bcfc](https://github.com/dedalus-labs/dedalus-sdk-python/commit/c39bcfc6366411658cc12e81b5f473176a26fad3))
+* bump `httpx-aiohttp` version to 0.1.9 ([6b5f606](https://github.com/dedalus-labs/dedalus-sdk-python/commit/6b5f60653d76bfe6b4a85d841f115d59c5eba976))
+* bump required `uv` version ([cb3f674](https://github.com/dedalus-labs/dedalus-sdk-python/commit/cb3f674dbc9f6392493de7984bcd5fee385adfa0))
+* **deps:** mypy 1.18.1 has a regression, pin to 1.17 ([cb4d323](https://github.com/dedalus-labs/dedalus-sdk-python/commit/cb4d3232c845b60eeccd23efa06057c8408085f5))
+* **docs:** use environment variables for authentication in code snippets ([e4330c0](https://github.com/dedalus-labs/dedalus-sdk-python/commit/e4330c0db0f371c49f320ffb6f8238da0229f890))
+* **internal/tests:** avoid race condition with implicit client cleanup ([0854f1d](https://github.com/dedalus-labs/dedalus-sdk-python/commit/0854f1d8f52ad5d75c2da1781358f96543793c02))
+* **internal:** avoid using unstable Python versions in tests ([5905b55](https://github.com/dedalus-labs/dedalus-sdk-python/commit/5905b553aaacf8ef4512d851d68b0e0eb7bc647c))
+* **internal:** codegen related update ([d288b0b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/d288b0b4f8098c0aab0d79d45f27fd7b7cd8d127))
+* **internal:** detect missing future annotations with ruff ([6909c09](https://github.com/dedalus-labs/dedalus-sdk-python/commit/6909c09996be7fe019ec6737a18b7e330b325c4a))
+* **internal:** grammar fix (it's -&gt; its) ([f0c5880](https://github.com/dedalus-labs/dedalus-sdk-python/commit/f0c58800e495c0cd5c1f13a9799e8e2025154a1c))
+* **package:** drop Python 3.8 support ([ef5e794](https://github.com/dedalus-labs/dedalus-sdk-python/commit/ef5e794d49c800706eeb693170ea4a3ac0245290))
+* remove custom code ([81f922b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/81f922b8eabc571abf4cfd1b87e08517b4564128))
+* **repo:** update contributing doc and mock test script ([fd52f5a](https://github.com/dedalus-labs/dedalus-sdk-python/commit/fd52f5acd095279bd26d647ee3f93c2daf7977df))
+* tidying ([354f95b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/354f95b1efde6b3df27275b3b8a36510f28d1858))
+* update lockfile ([46f1379](https://github.com/dedalus-labs/dedalus-sdk-python/commit/46f13790651a2c284d50c414556fee925c7ff089))
+
+
+### Refactors
+
+* **api:** types for mcp server serialization ([2f614ca](https://github.com/dedalus-labs/dedalus-sdk-python/commit/2f614ca5493c9d57807aea9105e77a66c4703130))
+* **api:** update types ([584fe2a](https://github.com/dedalus-labs/dedalus-sdk-python/commit/584fe2aa544ce99955d1d0a712cb51267e06357d))
+
 ## 0.2.0 (2025-12-06)
 
 Full Changelog: [v0.2.0...v0.2.0](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.2.0...v0.2.0)
