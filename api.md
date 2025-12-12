@@ -2,11 +2,13 @@
 
 ```python
 from dedalus_labs.types import (
+    Credential,
     CredentialsBindingSpec,
     DedalusModel,
     DedalusModelChoice,
     FunctionDefinition,
     FunctionParameters,
+    MCPCredentials,
     MCPServerInput,
     MCPServerSpec,
     MCPServers,
