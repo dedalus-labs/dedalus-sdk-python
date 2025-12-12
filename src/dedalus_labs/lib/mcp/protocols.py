@@ -6,7 +6,7 @@
 
 """Structural protocols for MCP server integration.
 
-Enables the Dedalus SDK to accept OpenMCP servers as a parameter.
+Enables the Dedalus SDK to accept Dedalus MCP servers as a parameter.
 """
 
 from __future__ import annotations
@@ -21,7 +21,6 @@ from typing import (
     Protocol,
     Sequence,
     runtime_checkable,
-    cast,
 )
 
 from typing_extensions import TypeGuard
@@ -51,11 +50,7 @@ class ToolsServiceProtocol(Protocol):
 
 @runtime_checkable
 class MCPServerProtocol(Protocol):
-    """Structural protocol for MCP servers.
-
-    OpenMCP's MCPServer naturally conforms. The @runtime_checkable decorator
-    enables isinstance() checks at runtime.
-    """
+    """Structural protocol for MCP servers."""
 
     @property
     def name(self) -> str: ...

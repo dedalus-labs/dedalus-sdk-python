@@ -4,20 +4,18 @@
 #           github.com/dedalus-labs/dedalus-sdk-python/LICENSE
 # ==============================================================================
 
-"""Dedalus authentication."""
+"""Cryptographic utilities for credential encryption."""
 
-from ..lib.auth import (
-    BearerAuth,
-    DPoPAuth,
-    create_dpop_auth,
-    create_dpop_auth_sync,
-    create_dpop_keypair,
+from .encryption import (
+    encrypt_credentials,
+    fetch_encryption_key,
+    fetch_encryption_key_sync,
+    jwk_to_public_key,
 )
 
 __all__ = [
-    "BearerAuth",
-    "DPoPAuth",
-    "create_dpop_auth",
-    "create_dpop_auth_sync",
-    "create_dpop_keypair",
+    "encrypt_credentials",
+    "fetch_encryption_key",
+    "fetch_encryption_key_sync",
+    "jwk_to_public_key",
 ]
