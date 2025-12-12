@@ -4,28 +4,9 @@ from typing import Dict, Union, Optional
 from typing_extensions import TypeAlias
 
 from ..._models import BaseModel
+from .credentials_binding_spec import CredentialsBindingSpec
 
-__all__ = ["MCPServerSpec", "Credentials", "CredentialsBindingSpec"]
-
-
-class CredentialsBindingSpec(BaseModel):
-    """Detailed credential binding with options.
-
-    Used when a binding needs default values, optional flags, or type casting.
-    """
-
-    name: str
-    """Environment variable name or source identifier."""
-
-    cast: Optional[str] = None
-    """Type to cast value to (e.g., 'int', 'bool')."""
-
-    default: Optional[object] = None
-    """Default value if source not set."""
-
-    optional: Optional[bool] = None
-    """If true, missing value is allowed."""
-
+__all__ = ["MCPServerSpec", "Credentials"]
 
 Credentials: TypeAlias = Union[str, CredentialsBindingSpec]
 
@@ -52,9 +33,7 @@ class MCPServerSpec(BaseModel):
     encrypted_credentials: Optional[Dict[str, str]] = None
     """Client-encrypted credential values.
 
-    Maps connection names to encrypted envelopes (base64url JWE). SDK encrypts
-    credentials client-side using the enclave's public key from authorization
-    server.
+    Maps connection names to encrypted envelopes.
     """
 
     slug: Optional[str] = None
