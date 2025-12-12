@@ -37,6 +37,10 @@ class TestCompletions:
             audio={"foo": "bar"},
             automatic_tool_execution=True,
             cached_content="cached_content",
+            credentials={
+                "connection_name": "brave-api",
+                "values": {"api_key": "sk-..."},
+            },
             deferred=True,
             frequency_penalty=-2,
             function_call="function_call",
@@ -177,6 +181,10 @@ class TestCompletions:
             audio={"foo": "bar"},
             automatic_tool_execution=True,
             cached_content="cached_content",
+            credentials={
+                "connection_name": "brave-api",
+                "values": {"api_key": "sk-..."},
+            },
             deferred=True,
             frequency_penalty=-2,
             function_call="function_call",
@@ -321,6 +329,10 @@ class TestAsyncCompletions:
             audio={"foo": "bar"},
             automatic_tool_execution=True,
             cached_content="cached_content",
+            credentials={
+                "connection_name": "brave-api",
+                "values": {"api_key": "sk-..."},
+            },
             deferred=True,
             frequency_penalty=-2,
             function_call="function_call",
@@ -461,6 +473,10 @@ class TestAsyncCompletions:
             audio={"foo": "bar"},
             automatic_tool_execution=True,
             cached_content="cached_content",
+            credentials={
+                "connection_name": "brave-api",
+                "values": {"api_key": "sk-..."},
+            },
             deferred=True,
             frequency_penalty=-2,
             function_call="function_call",

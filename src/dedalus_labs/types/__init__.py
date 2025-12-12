@@ -5,9 +5,11 @@ from __future__ import annotations
 from .image import Image as Image
 from .model import Model as Model
 from .shared import (
+    Credential as Credential,
     MCPServers as MCPServers,
     DedalusModel as DedalusModel,
     MCPServerSpec as MCPServerSpec,
+    MCPCredentials as MCPCredentials,
     MCPServerInput as MCPServerInput,
     DedalusModelChoice as DedalusModelChoice,
     FunctionDefinition as FunctionDefinition,

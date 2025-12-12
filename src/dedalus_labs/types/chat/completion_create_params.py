@@ -12,9 +12,11 @@ from .tool_choice_auto_param import ToolChoiceAutoParam
 from .tool_choice_none_param import ToolChoiceNoneParam
 from .tool_choice_tool_param import ToolChoiceToolParam
 from .prediction_content_param import PredictionContentParam
+from ..shared_params.credential import Credential
 from .chat_completion_tool_param import ChatCompletionToolParam
 from ..shared_params.dedalus_model import DedalusModel
 from .thinking_config_enabled_param import ThinkingConfigEnabledParam
+from ..shared_params.mcp_credentials import MCPCredentials
 from ..shared_params.mcp_server_spec import MCPServerSpec
 from .thinking_config_disabled_param import ThinkingConfigDisabledParam
 from .chat_completion_functions_param import ChatCompletionFunctionsParam
@@ -32,6 +34,7 @@ from ..shared_params.response_format_json_schema import ResponseFormatJSONSchema
 __all__ = [
     "CompletionCreateParamsBase",
     "Model",
+    "Credentials",
     "MCPServers",
     "Message",
     "ResponseFormat",
@@ -77,6 +80,12 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     """Optional.
 
     The name of the content [cached](https://ai.google.dev/gemini-api/d...
+    """
+
+    credentials: Optional[Credentials]
+    """Credentials for MCP server authentication.
+
+    Each credential is matched to servers by connection name.
     """
 
     deferred: Optional[bool]
@@ -291,6 +300,8 @@ class CompletionCreateParamsBase(TypedDict, total=False):
 
 
 Model: TypeAlias = Union[str, DedalusModel, SequenceNotStr[DedalusModelChoice]]
+
+Credentials: TypeAlias = Union[Credential, MCPCredentials]
 
 MCPServers: TypeAlias = Union[str, MCPServerSpec, _mcp_servers.MCPServers]
 

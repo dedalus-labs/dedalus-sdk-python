@@ -57,6 +57,7 @@ class CompletionsResource(SyncAPIResource):
         audio: Optional[Dict[str, object]] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
+        credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
@@ -177,6 +178,9 @@ class CompletionsResource(SyncAPIResource):
           automatic_tool_execution: Execute tools server-side. If false, returns raw tool calls for manual handling.
 
           cached_content: Optional. The name of the content [cached](https://ai.google.dev/gemini-api/d...
+
+          credentials: Credentials for MCP server authentication. Each credential is matched to servers
+              by connection name.
 
           deferred: If set to `true`, the request returns a `request_id`. You can then get the de...
 
@@ -306,6 +310,7 @@ class CompletionsResource(SyncAPIResource):
         audio: Optional[Dict[str, object]] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
+        credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
@@ -428,6 +433,9 @@ class CompletionsResource(SyncAPIResource):
 
           cached_content: Optional. The name of the content [cached](https://ai.google.dev/gemini-api/d...
 
+          credentials: Credentials for MCP server authentication. Each credential is matched to servers
+              by connection name.
+
           deferred: If set to `true`, the request returns a `request_id`. You can then get the de...
 
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on the...
@@ -554,6 +562,7 @@ class CompletionsResource(SyncAPIResource):
         audio: Optional[Dict[str, object]] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
+        credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
@@ -675,6 +684,9 @@ class CompletionsResource(SyncAPIResource):
           automatic_tool_execution: Execute tools server-side. If false, returns raw tool calls for manual handling.
 
           cached_content: Optional. The name of the content [cached](https://ai.google.dev/gemini-api/d...
+
+          credentials: Credentials for MCP server authentication. Each credential is matched to servers
+              by connection name.
 
           deferred: If set to `true`, the request returns a `request_id`. You can then get the de...
 
@@ -801,6 +813,7 @@ class CompletionsResource(SyncAPIResource):
         audio: Optional[Dict[str, object]] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
+        credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
@@ -866,6 +879,7 @@ class CompletionsResource(SyncAPIResource):
                     "audio": audio,
                     "automatic_tool_execution": automatic_tool_execution,
                     "cached_content": cached_content,
+                    "credentials": credentials,
                     "deferred": deferred,
                     "frequency_penalty": frequency_penalty,
                     "function_call": function_call,
@@ -961,6 +975,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         audio: Optional[Dict[str, object]] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
+        credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
@@ -1081,6 +1096,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
           automatic_tool_execution: Execute tools server-side. If false, returns raw tool calls for manual handling.
 
           cached_content: Optional. The name of the content [cached](https://ai.google.dev/gemini-api/d...
+
+          credentials: Credentials for MCP server authentication. Each credential is matched to servers
+              by connection name.
 
           deferred: If set to `true`, the request returns a `request_id`. You can then get the de...
 
@@ -1210,6 +1228,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         audio: Optional[Dict[str, object]] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
+        credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
@@ -1331,6 +1350,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
           automatic_tool_execution: Execute tools server-side. If false, returns raw tool calls for manual handling.
 
           cached_content: Optional. The name of the content [cached](https://ai.google.dev/gemini-api/d...
+
+          credentials: Credentials for MCP server authentication. Each credential is matched to servers
+              by connection name.
 
           deferred: If set to `true`, the request returns a `request_id`. You can then get the de...
 
@@ -1458,6 +1480,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         audio: Optional[Dict[str, object]] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
+        credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
@@ -1579,6 +1602,9 @@ class AsyncCompletionsResource(AsyncAPIResource):
           automatic_tool_execution: Execute tools server-side. If false, returns raw tool calls for manual handling.
 
           cached_content: Optional. The name of the content [cached](https://ai.google.dev/gemini-api/d...
+
+          credentials: Credentials for MCP server authentication. Each credential is matched to servers
+              by connection name.
 
           deferred: If set to `true`, the request returns a `request_id`. You can then get the de...
 
@@ -1705,6 +1731,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         audio: Optional[Dict[str, object]] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
+        credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
@@ -1770,6 +1797,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
                     "audio": audio,
                     "automatic_tool_execution": automatic_tool_execution,
                     "cached_content": cached_content,
+                    "credentials": credentials,
                     "deferred": deferred,
                     "frequency_penalty": frequency_penalty,
                     "function_call": function_call,
