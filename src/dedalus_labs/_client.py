@@ -62,7 +62,7 @@ class Dedalus(SyncAPIClient):
     api_key: str | None
     x_api_key: str | None
     as_base_url: str | None
-    organization: str | None
+    dedalus_org_id: str | None
     provider: str | None
     provider_key: str | None
     provider_model: str | None
@@ -75,7 +75,7 @@ class Dedalus(SyncAPIClient):
         api_key: str | None = None,
         x_api_key: str | None = None,
         as_base_url: str | None = None,
-        organization: str | None = None,
+        dedalus_org_id: str | None = None,
         provider: str | None = None,
         provider_key: str | None = None,
         provider_model: str | None = None,
@@ -105,7 +105,7 @@ class Dedalus(SyncAPIClient):
         - `api_key` from `DEDALUS_API_KEY`
         - `x_api_key` from `DEDALUS_X_API_KEY`
         - `as_base_url` from `DEDALUS_AS_URL`
-        - `organization` from `DEDALUS_ORG_ID`
+        - `dedalus_org_id` from `DEDALUS_ORG_ID`
         - `provider` from `DEDALUS_PROVIDER`
         - `provider_key` from `DEDALUS_PROVIDER_KEY`
         - `provider_model` from `DEDALUS_PROVIDER_MODEL`
@@ -122,9 +122,9 @@ class Dedalus(SyncAPIClient):
             as_base_url = os.environ.get("DEDALUS_AS_URL")
         self.as_base_url = as_base_url
 
-        if organization is None:
-            organization = os.environ.get("DEDALUS_ORG_ID")
-        self.organization = organization
+        if dedalus_org_id is None:
+            dedalus_org_id = os.environ.get("DEDALUS_ORG_ID")
+        self.dedalus_org_id = dedalus_org_id
 
         if provider is None:
             provider = os.environ.get("DEDALUS_PROVIDER")
@@ -276,7 +276,7 @@ class Dedalus(SyncAPIClient):
         api_key: str | None = None,
         x_api_key: str | None = None,
         as_base_url: str | None = None,
-        organization: str | None = None,
+        dedalus_org_id: str | None = None,
         provider: str | None = None,
         provider_key: str | None = None,
         provider_model: str | None = None,
@@ -317,7 +317,7 @@ class Dedalus(SyncAPIClient):
             api_key=api_key or self.api_key,
             x_api_key=x_api_key or self.x_api_key,
             as_base_url=as_base_url or self.as_base_url,
-            organization=organization or self.organization,
+            dedalus_org_id=dedalus_org_id or self.dedalus_org_id,
             provider=provider or self.provider,
             provider_key=provider_key or self.provider_key,
             provider_model=provider_model or self.provider_model,
@@ -374,7 +374,7 @@ class AsyncDedalus(AsyncAPIClient):
     api_key: str | None
     x_api_key: str | None
     as_base_url: str | None
-    organization: str | None
+    dedalus_org_id: str | None
     provider: str | None
     provider_key: str | None
     provider_model: str | None
@@ -387,7 +387,7 @@ class AsyncDedalus(AsyncAPIClient):
         api_key: str | None = None,
         x_api_key: str | None = None,
         as_base_url: str | None = None,
-        organization: str | None = None,
+        dedalus_org_id: str | None = None,
         provider: str | None = None,
         provider_key: str | None = None,
         provider_model: str | None = None,
@@ -417,7 +417,7 @@ class AsyncDedalus(AsyncAPIClient):
         - `api_key` from `DEDALUS_API_KEY`
         - `x_api_key` from `DEDALUS_X_API_KEY`
         - `as_base_url` from `DEDALUS_AS_URL`
-        - `organization` from `DEDALUS_ORG_ID`
+        - `dedalus_org_id` from `DEDALUS_ORG_ID`
         - `provider` from `DEDALUS_PROVIDER`
         - `provider_key` from `DEDALUS_PROVIDER_KEY`
         - `provider_model` from `DEDALUS_PROVIDER_MODEL`
@@ -434,9 +434,9 @@ class AsyncDedalus(AsyncAPIClient):
             as_base_url = os.environ.get("DEDALUS_AS_URL")
         self.as_base_url = as_base_url
 
-        if organization is None:
-            organization = os.environ.get("DEDALUS_ORG_ID")
-        self.organization = organization
+        if dedalus_org_id is None:
+            dedalus_org_id = os.environ.get("DEDALUS_ORG_ID")
+        self.dedalus_org_id = dedalus_org_id
 
         if provider is None:
             provider = os.environ.get("DEDALUS_PROVIDER")
@@ -588,7 +588,7 @@ class AsyncDedalus(AsyncAPIClient):
         api_key: str | None = None,
         x_api_key: str | None = None,
         as_base_url: str | None = None,
-        organization: str | None = None,
+        dedalus_org_id: str | None = None,
         provider: str | None = None,
         provider_key: str | None = None,
         provider_model: str | None = None,
@@ -629,7 +629,7 @@ class AsyncDedalus(AsyncAPIClient):
             api_key=api_key or self.api_key,
             x_api_key=x_api_key or self.x_api_key,
             as_base_url=as_base_url or self.as_base_url,
-            organization=organization or self.organization,
+            dedalus_org_id=dedalus_org_id or self.dedalus_org_id,
             provider=provider or self.provider,
             provider_key=provider_key or self.provider_key,
             provider_model=provider_model or self.provider_model,

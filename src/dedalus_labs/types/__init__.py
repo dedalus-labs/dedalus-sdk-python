@@ -13,6 +13,7 @@ from .shared import (
     FunctionDefinition as FunctionDefinition,
     FunctionParameters as FunctionParameters,
     ResponseFormatText as ResponseFormatText,
+    CredentialsBindingSpec as CredentialsBindingSpec,
     ResponseFormatJSONObject as ResponseFormatJSONObject,
     ResponseFormatJSONSchema as ResponseFormatJSONSchema,
 )
