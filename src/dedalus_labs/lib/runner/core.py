@@ -23,19 +23,18 @@ from typing import (
 )
 from dataclasses import field, asdict, dataclass
 
-from dedalus_labs import Dedalus, AsyncDedalus
-
 if TYPE_CHECKING:
     from ...types.shared.dedalus_model import DedalusModel
 
+from ..._client import Dedalus, AsyncDedalus
+
 from .types import Message, ToolCall, JsonValue, ToolResult, PolicyInput, PolicyContext
-from .mcp_wire import serialize_mcp_servers
-from .protocols import MCPServerProtocol
+from ..mcp import serialize_mcp_servers, MCPServerProtocol
 
 # Type alias for mcp_servers parameter - accepts strings, server objects, or mixed lists
 MCPServersInput = Union[
     str,  # Single slug or URL
-    MCPServerProtocol,  # OpenMCP server object
+    MCPServerProtocol,  # MCP server object
     Sequence[Union[str, MCPServerProtocol, Dict[str, Any]]],  # Mixed list
     None,
 ]
@@ -191,6 +190,7 @@ class DedalusRunner:
         model: str | list[str] | DedalusModel | list[DedalusModel] | None = None,
         max_steps: int = 10,
         mcp_servers: MCPServersInput = None,
+        credentials: Sequence[Any] | None = None,  # TODO: Loosely typed as `Any` for now
         temperature: float | None = None,
         max_tokens: int | None = None,
         top_p: float | None = None,
@@ -455,7 +455,7 @@ class DedalusRunner:
             handoff_config=handoff_config,
         )
 
-        # Serialize mcp_servers to wire format (handles MCPServerProtocol objects)
+        # Serialize mcp_servers to wire format
         serialized_mcp_servers = serialize_mcp_servers(mcp_servers)
 
         exec_config = _ExecutionConfig(

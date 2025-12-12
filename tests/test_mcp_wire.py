@@ -14,11 +14,12 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from dedalus_labs.lib.runner.mcp_wire import (
+from dedalus_labs.lib.mcp import (
     MCPServerWireSpec,
     serialize_mcp_servers,
+    MCPServerProtocol,
+    is_mcp_server,
 )
-from dedalus_labs.lib.runner.protocols import MCPServerProtocol, is_mcp_server
 
 
 # --- Fixtures ----------------------------------------------------------------
@@ -247,12 +248,11 @@ class TestSerializeMCPServers:
         assert result[1] == "dedalus-labs/example-server"
         assert result[2] == {"slug": "dedalus-labs/weather", "version": "v2"}
 
-    def test_server_without_url_raises(self) -> None:
-        """Server object without URL raises ValueError."""
-        server = FakeMCPServer(name="unstarted", url=None)
-        with pytest.raises(ValueError) as exc_info:
-            serialize_mcp_servers(server)
-        assert "has no URL" in str(exc_info.value)
+    def test_server_without_url_uses_name_as_slug(self) -> None:
+        """Server object without URL returns name as slug."""
+        server = FakeMCPServer(name="org/my-server", url=None)
+        result = serialize_mcp_servers(server)
+        assert result == ["org/my-server"]
 
     def test_dict_input_validated(self) -> None:
         """Dict inputs pass through MCPServerWireSpec validation."""

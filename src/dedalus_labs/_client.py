@@ -22,6 +22,7 @@ from ._types import (
 )
 from ._utils import is_given, get_async_library
 from ._compat import cached_property
+from ._models import FinalRequestOptions
 from ._version import __version__
 from ._streaming import Stream as Stream, AsyncStream as AsyncStream
 from ._exceptions import APIStatusError
@@ -66,7 +67,6 @@ class Dedalus(SyncAPIClient):
     provider: str | None
     provider_key: str | None
     provider_model: str | None
-    _custom_auth: httpx.Auth | None
 
     _environment: Literal["production", "development"] | NotGiven
 
@@ -90,8 +90,6 @@ class Dedalus(SyncAPIClient):
         # We provide a `DefaultHttpxClient` class that you can pass to retain the default values we use for `limits`, `timeout` & `follow_redirects`.
         # See the [httpx documentation](https://www.python-httpx.org/api/#client) for more details.
         http_client: httpx.Client | None = None,
-        # Custom httpx.Auth handler for DPoP or other auth schemes.
-        custom_auth: httpx.Auth | None = None,
         # Enable or disable schema validation for data returned by the API.
         # When enabled an error APIResponseValidationError is raised
         # if the API responds with invalid data for the expected schema.
@@ -178,15 +176,20 @@ class Dedalus(SyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
-        self._custom_auth = custom_auth
         self._idempotency_header = 'Idempotency-Key'
 
         self._default_stream_cls = Stream
 
-    @property
     @override
-    def custom_auth(self) -> httpx.Auth | None:
-        return self._custom_auth
+    def _prepare_options(self, options: FinalRequestOptions) -> FinalRequestOptions:
+        # Serialize MCP servers if present
+        if options.json_data and isinstance(options.json_data, dict):
+            mcp_servers = options.json_data.get("mcp_servers")
+            if mcp_servers is not None:
+                from .lib.mcp import serialize_mcp_servers
+                options.json_data["mcp_servers"] = serialize_mcp_servers(mcp_servers)
+
+        return super()._prepare_options(options)
 
     @cached_property
     def models(self) -> ModelsResource:
@@ -267,10 +270,6 @@ class Dedalus(SyncAPIClient):
 
     @override
     def _validate_headers(self, headers: Headers, custom_headers: Headers) -> None:
-        # custom_auth handles its own auth headers via httpx.Auth flow
-        if self._custom_auth is not None:
-            return
-
         if self.api_key and headers.get('Authorization'):
             return
         if isinstance(custom_headers.get('Authorization'), Omit):
@@ -282,7 +281,7 @@ class Dedalus(SyncAPIClient):
             return
 
         raise TypeError(
-            '"Could not resolve authentication method. Expected either api_key, x_api_key, or custom_auth to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted"'
+            '"Could not resolve authentication method. Expected either api_key or x_api_key to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted"'
         )
 
     def copy(
@@ -304,7 +303,6 @@ class Dedalus(SyncAPIClient):
         set_default_headers: Mapping[str, str] | None = None,
         default_query: Mapping[str, object] | None = None,
         set_default_query: Mapping[str, object] | None = None,
-        custom_auth: httpx.Auth | None | NotGiven = not_given,
         _extra_kwargs: Mapping[str, Any] = {},
     ) -> Self:
         """
@@ -348,9 +346,6 @@ class Dedalus(SyncAPIClient):
             max_retries=max_retries if is_given(max_retries) else self.max_retries,
             default_headers=headers,
             default_query=params,
-            custom_auth=self._custom_auth
-            if isinstance(custom_auth, NotGiven)
-            else custom_auth,
             **_extra_kwargs,
         )
 
@@ -409,7 +404,6 @@ class AsyncDedalus(AsyncAPIClient):
     provider: str | None
     provider_key: str | None
     provider_model: str | None
-    _custom_auth: httpx.Auth | None
 
     _environment: Literal["production", "development"] | NotGiven
 
@@ -433,8 +427,6 @@ class AsyncDedalus(AsyncAPIClient):
         # We provide a `DefaultAsyncHttpxClient` class that you can pass to retain the default values we use for `limits`, `timeout` & `follow_redirects`.
         # See the [httpx documentation](https://www.python-httpx.org/api/#asyncclient) for more details.
         http_client: httpx.AsyncClient | None = None,
-        # Custom httpx.Auth handler for DPoP or other auth schemes.
-        custom_auth: httpx.Auth | None = None,
         # Enable or disable schema validation for data returned by the API.
         # When enabled an error APIResponseValidationError is raised
         # if the API responds with invalid data for the expected schema.
@@ -521,15 +513,20 @@ class AsyncDedalus(AsyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
-        self._custom_auth = custom_auth
         self._idempotency_header = 'Idempotency-Key'
 
         self._default_stream_cls = AsyncStream
 
-    @property
     @override
-    def custom_auth(self) -> httpx.Auth | None:
-        return self._custom_auth
+    async def _prepare_options(self, options: FinalRequestOptions) -> FinalRequestOptions:
+        # Serialize MCP servers if present
+        if options.json_data and isinstance(options.json_data, dict):
+            mcp_servers = options.json_data.get("mcp_servers")
+            if mcp_servers is not None:
+                from .lib.mcp import serialize_mcp_servers
+                options.json_data["mcp_servers"] = serialize_mcp_servers(mcp_servers)
+
+        return await super()._prepare_options(options)
 
     @cached_property
     def models(self) -> AsyncModelsResource:
@@ -610,10 +607,6 @@ class AsyncDedalus(AsyncAPIClient):
 
     @override
     def _validate_headers(self, headers: Headers, custom_headers: Headers) -> None:
-        # custom_auth handles its own auth headers via httpx.Auth flow
-        if self._custom_auth is not None:
-            return
-
         if self.api_key and headers.get('Authorization'):
             return
         if isinstance(custom_headers.get('Authorization'), Omit):
@@ -625,7 +618,7 @@ class AsyncDedalus(AsyncAPIClient):
             return
 
         raise TypeError(
-            '"Could not resolve authentication method. Expected either api_key, x_api_key, or custom_auth to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted"'
+            '"Could not resolve authentication method. Expected either api_key or x_api_key to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted"'
         )
 
     def copy(
@@ -647,7 +640,6 @@ class AsyncDedalus(AsyncAPIClient):
         set_default_headers: Mapping[str, str] | None = None,
         default_query: Mapping[str, object] | None = None,
         set_default_query: Mapping[str, object] | None = None,
-        custom_auth: httpx.Auth | None | NotGiven = not_given,
         _extra_kwargs: Mapping[str, Any] = {},
     ) -> Self:
         """
@@ -691,9 +683,6 @@ class AsyncDedalus(AsyncAPIClient):
             max_retries=max_retries if is_given(max_retries) else self.max_retries,
             default_headers=headers,
             default_query=params,
-            custom_auth=self._custom_auth
-            if isinstance(custom_auth, NotGiven)
-            else custom_auth,
             **_extra_kwargs,
         )
 

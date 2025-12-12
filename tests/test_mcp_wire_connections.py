@@ -12,7 +12,7 @@ from typing import Any
 
 import pytest
 
-from dedalus_labs.lib.runner.mcp_wire import (
+from dedalus_labs.lib.mcp import (
     serialize_connection,
     serialize_credential,
     get_credential_values_for_encryption,

@@ -112,13 +112,19 @@ def _serialize_single(
         return item
 
     if is_mcp_server(item):
+        # Check for URL first
         url = getattr(item, "url", None)
-        if url is None:
-            name = getattr(item, "name", "unknown")
-            raise ValueError(
-                f"MCP server '{name}' has no URL. Call serve() first or use a slug instead."
-            )
-        return MCPServerWireSpec.from_url(url).to_wire()
+        if url is not None:
+            return MCPServerWireSpec.from_url(url).to_wire()
+
+        # Fallback to slug
+        name = getattr(item, "name", None)
+        if name is not None:
+            return name  # Simple slug → send as string
+
+        raise ValueError(
+            "MCP server must have either 'url' or 'name' attribute"
+        )
 
     if isinstance(item, dict):
         return MCPServerWireSpec.model_validate(item).to_wire()
