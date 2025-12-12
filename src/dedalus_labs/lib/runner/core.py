@@ -34,7 +34,7 @@ from ..mcp import serialize_mcp_servers, MCPServerProtocol
 # Type alias for mcp_servers parameter - accepts strings, server objects, or mixed lists
 MCPServersInput = Union[
     str,  # Single slug or URL
-    MCPServerProtocol,  # Dedalus MCP server object
+    MCPServerProtocol,  # MCP server object
     Sequence[Union[str, MCPServerProtocol, Dict[str, Any]]],  # Mixed list
     None,
 ]
