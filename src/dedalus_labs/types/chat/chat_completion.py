@@ -1,5 +1,7 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
+from __future__ import annotations
+
 import builtins
 from typing import Dict, List, Optional
 from typing_extensions import Literal
@@ -44,6 +46,13 @@ class ChatCompletion(BaseModel):
     for the user. Only present when MCP server failures occurred.
     """
 
+    mcp_tool_executions: Optional[List["MCPToolExecution"]] = None
+    """Detailed results of MCP tool executions including inputs, outputs, and timing.
+
+    Provides full visibility into server-side tool execution for debugging and audit
+    purposes.
+    """
+
     service_tier: Optional[Literal["auto", "default", "flex", "scale", "priority"]] = None
     """Specifies the processing type used for serving the request.
 
@@ -79,3 +88,6 @@ class ChatCompletion(BaseModel):
 
     usage: Optional[CompletionUsage] = None
     """Usage statistics for the completion request."""
+
+
+from ..shared.mcp_tool_execution import MCPToolExecution

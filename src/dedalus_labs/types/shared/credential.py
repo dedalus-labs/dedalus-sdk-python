@@ -15,7 +15,7 @@ class Credential(BaseModel):
     """
 
     connection_name: str
-    """Connection name. Must match an MCPServerSpec's connection field."""
+    """Connection name. Must match a connection in MCPServer.connections."""
 
     values: Dict[str, Union[str, int, bool]]
     """Credential values. Keys are credential field names, values are the secrets."""

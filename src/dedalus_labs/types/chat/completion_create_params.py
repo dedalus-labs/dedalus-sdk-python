@@ -14,7 +14,6 @@ from .tool_choice_tool_param import ToolChoiceToolParam
 from .prediction_content_param import PredictionContentParam
 from ..shared_params.credential import Credential
 from .chat_completion_tool_param import ChatCompletionToolParam
-from ..shared_params.dedalus_model import DedalusModel
 from .thinking_config_enabled_param import ThinkingConfigEnabledParam
 from ..shared_params.mcp_credentials import MCPCredentials
 from ..shared_params.mcp_server_spec import MCPServerSpec
@@ -22,7 +21,6 @@ from .thinking_config_disabled_param import ThinkingConfigDisabledParam
 from .chat_completion_functions_param import ChatCompletionFunctionsParam
 from .chat_completion_tool_message_param import ChatCompletionToolMessageParam
 from .chat_completion_user_message_param import ChatCompletionUserMessageParam
-from ..shared_params.dedalus_model_choice import DedalusModelChoice
 from ..shared_params.response_format_text import ResponseFormatText
 from .chat_completion_system_message_param import ChatCompletionSystemMessageParam
 from .chat_completion_function_message_param import ChatCompletionFunctionMessageParam
@@ -64,7 +62,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     agent_attributes: Optional[Dict[str, float]]
     """Agent attributes. Values in [0.0, 1.0]."""
 
-    audio: Optional[Dict[str, object]]
+    audio: Optional["JSONObjectInput"]
     """Parameters for audio output.
 
     Required when audio output is requested with `mo...
@@ -106,7 +104,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     functions: Optional[Iterable[ChatCompletionFunctionsParam]]
     """Deprecated in favor of `tools`. A list of functions the model may generate J..."""
 
-    generation_config: Optional[Dict[str, object]]
+    generation_config: Optional["JSONObjectInput"]
     """Generation parameters wrapper (Google-specific)"""
 
     guardrails: Optional[Iterable[Dict[str, object]]]
@@ -143,7 +141,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     messages: Optional[Iterable[Message]]
     """Conversation history (OpenAI: messages, Google: contents, Responses: input)"""
 
-    metadata: Optional[Dict[str, object]]
+    metadata: Optional["JSONObjectInput"]
     """Set of 16 key-value pairs that can be attached to an object.
 
     This can be usef...
@@ -225,7 +223,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     safety_settings: Optional[Iterable[SafetySetting]]
     """Safety/content filtering settings (Google-specific)"""
 
-    search_parameters: Optional[Dict[str, object]]
+    search_parameters: Optional["JSONObjectInput"]
     """Set the parameters to be used for searched data.
 
     If not set, no data will be ...
@@ -245,10 +243,10 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     Whether or not to store the output of this chat completion request for use in...
     """
 
-    stream_options: Optional[Dict[str, object]]
+    stream_options: Optional["JSONObjectInput"]
     """Options for streaming response. Only set this when you set `stream: true`."""
 
-    system_instruction: Union[Dict[str, object], str, None]
+    system_instruction: Union["JSONObjectInput", str, None]
     """System instruction/prompt"""
 
     temperature: Optional[float]
@@ -263,7 +261,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     `none` means the model w...
     """
 
-    tool_config: Optional[Dict[str, object]]
+    tool_config: Optional["JSONObjectInput"]
     """Tool calling configuration (Google-specific)"""
 
     tools: Optional[Iterable[Tool]]
@@ -292,14 +290,14 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     Lower values will result in...
     """
 
-    web_search_options: Optional[Dict[str, object]]
+    web_search_options: Optional["JSONObjectInput"]
     """This tool searches the web for relevant results to use in a response.
 
     Learn m...
     """
 
 
-Model: TypeAlias = Union[str, DedalusModel, SequenceNotStr[DedalusModelChoice]]
+Model: TypeAlias = Union[str, "DedalusModel", SequenceNotStr["DedalusModelChoice"]]
 
 Credentials: TypeAlias = Union[Credential, MCPCredentials]
 
@@ -447,3 +445,7 @@ class CompletionCreateParamsStreaming(CompletionCreateParamsBase):
 
 
 CompletionCreateParams = Union[CompletionCreateParamsNonStreaming, CompletionCreateParamsStreaming]
+
+from ..shared_params.dedalus_model import DedalusModel
+from ..shared_params.json_object_input import JSONObjectInput
+from ..shared_params.dedalus_model_choice import DedalusModelChoice
