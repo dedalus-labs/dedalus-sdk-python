@@ -1,10 +1,12 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import List
+from typing import List, Union
 from typing_extensions import TypeAlias
 
-from .mcp_server_input import MCPServerInput
+from .mcp_server_spec import MCPServerSpec
 
-__all__ = ["MCPServers"]
+__all__ = ["MCPServers", "MCPServerItem"]
 
-MCPServers: TypeAlias = List[MCPServerInput]
+MCPServerItem: TypeAlias = Union[str, MCPServerSpec]
+
+MCPServers: TypeAlias = List[MCPServerItem]

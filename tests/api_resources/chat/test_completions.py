@@ -34,11 +34,11 @@ class TestCompletions:
                 "accuracy": 0.9,
                 "complexity": 0.8,
             },
-            audio={"foo": "bar"},
+            audio={"foo": "string"},
             automatic_tool_execution=True,
             cached_content="cached_content",
             credentials={
-                "connection_name": "brave-api",
+                "connection_name": "external-service",
                 "values": {"api_key": "sk-..."},
             },
             deferred=True,
@@ -51,7 +51,7 @@ class TestCompletions:
                     "parameters": {"foo": "bar"},
                 }
             ],
-            generation_config={"foo": "bar"},
+            generation_config={"foo": "string"},
             guardrails=[{"foo": "bar"}],
             handoff_config={"foo": "bar"},
             logit_bias={"foo": 0},
@@ -67,7 +67,7 @@ class TestCompletions:
                     "name": "name",
                 }
             ],
-            metadata={"foo": "bar"},
+            metadata={"foo": "string"},
             modalities=["string"],
             model_attributes={
                 "gpt-5": {
@@ -95,14 +95,14 @@ class TestCompletions:
                     "threshold": "HARM_BLOCK_THRESHOLD_UNSPECIFIED",
                 }
             ],
-            search_parameters={"foo": "bar"},
+            search_parameters={"foo": "string"},
             seed=0,
             service_tier="service_tier",
             stop=["string"],
             store=True,
             stream=False,
-            stream_options={"foo": "bar"},
-            system_instruction={"foo": "bar"},
+            stream_options={"foo": "string"},
+            system_instruction={"foo": "string"},
             temperature=0,
             thinking={
                 "budget_tokens": 1024,
@@ -112,7 +112,7 @@ class TestCompletions:
                 "type": "auto",
                 "disable_parallel_tool_use": True,
             },
-            tool_config={"foo": "bar"},
+            tool_config={"foo": "string"},
             tools=[
                 {
                     "function": {
@@ -129,7 +129,7 @@ class TestCompletions:
             top_p=0,
             user="user",
             verbosity="verbosity",
-            web_search_options={"foo": "bar"},
+            web_search_options={"foo": "string"},
         )
         assert_matches_type(ChatCompletion, completion, path=["response"])
 
@@ -178,11 +178,11 @@ class TestCompletions:
                 "accuracy": 0.9,
                 "complexity": 0.8,
             },
-            audio={"foo": "bar"},
+            audio={"foo": "string"},
             automatic_tool_execution=True,
             cached_content="cached_content",
             credentials={
-                "connection_name": "brave-api",
+                "connection_name": "external-service",
                 "values": {"api_key": "sk-..."},
             },
             deferred=True,
@@ -195,7 +195,7 @@ class TestCompletions:
                     "parameters": {"foo": "bar"},
                 }
             ],
-            generation_config={"foo": "bar"},
+            generation_config={"foo": "string"},
             guardrails=[{"foo": "bar"}],
             handoff_config={"foo": "bar"},
             logit_bias={"foo": 0},
@@ -211,7 +211,7 @@ class TestCompletions:
                     "name": "name",
                 }
             ],
-            metadata={"foo": "bar"},
+            metadata={"foo": "string"},
             modalities=["string"],
             model_attributes={
                 "gpt-5": {
@@ -239,13 +239,13 @@ class TestCompletions:
                     "threshold": "HARM_BLOCK_THRESHOLD_UNSPECIFIED",
                 }
             ],
-            search_parameters={"foo": "bar"},
+            search_parameters={"foo": "string"},
             seed=0,
             service_tier="service_tier",
             stop=["string"],
             store=True,
-            stream_options={"foo": "bar"},
-            system_instruction={"foo": "bar"},
+            stream_options={"foo": "string"},
+            system_instruction={"foo": "string"},
             temperature=0,
             thinking={
                 "budget_tokens": 1024,
@@ -255,7 +255,7 @@ class TestCompletions:
                 "type": "auto",
                 "disable_parallel_tool_use": True,
             },
-            tool_config={"foo": "bar"},
+            tool_config={"foo": "string"},
             tools=[
                 {
                     "function": {
@@ -272,7 +272,7 @@ class TestCompletions:
             top_p=0,
             user="user",
             verbosity="verbosity",
-            web_search_options={"foo": "bar"},
+            web_search_options={"foo": "string"},
         )
         completion_stream.response.close()
 
@@ -326,11 +326,11 @@ class TestAsyncCompletions:
                 "accuracy": 0.9,
                 "complexity": 0.8,
             },
-            audio={"foo": "bar"},
+            audio={"foo": "string"},
             automatic_tool_execution=True,
             cached_content="cached_content",
             credentials={
-                "connection_name": "brave-api",
+                "connection_name": "external-service",
                 "values": {"api_key": "sk-..."},
             },
             deferred=True,
@@ -343,7 +343,7 @@ class TestAsyncCompletions:
                     "parameters": {"foo": "bar"},
                 }
             ],
-            generation_config={"foo": "bar"},
+            generation_config={"foo": "string"},
             guardrails=[{"foo": "bar"}],
             handoff_config={"foo": "bar"},
             logit_bias={"foo": 0},
@@ -359,7 +359,7 @@ class TestAsyncCompletions:
                     "name": "name",
                 }
             ],
-            metadata={"foo": "bar"},
+            metadata={"foo": "string"},
             modalities=["string"],
             model_attributes={
                 "gpt-5": {
@@ -387,14 +387,14 @@ class TestAsyncCompletions:
                     "threshold": "HARM_BLOCK_THRESHOLD_UNSPECIFIED",
                 }
             ],
-            search_parameters={"foo": "bar"},
+            search_parameters={"foo": "string"},
             seed=0,
             service_tier="service_tier",
             stop=["string"],
             store=True,
             stream=False,
-            stream_options={"foo": "bar"},
-            system_instruction={"foo": "bar"},
+            stream_options={"foo": "string"},
+            system_instruction={"foo": "string"},
             temperature=0,
             thinking={
                 "budget_tokens": 1024,
@@ -404,7 +404,7 @@ class TestAsyncCompletions:
                 "type": "auto",
                 "disable_parallel_tool_use": True,
             },
-            tool_config={"foo": "bar"},
+            tool_config={"foo": "string"},
             tools=[
                 {
                     "function": {
@@ -421,7 +421,7 @@ class TestAsyncCompletions:
             top_p=0,
             user="user",
             verbosity="verbosity",
-            web_search_options={"foo": "bar"},
+            web_search_options={"foo": "string"},
         )
         assert_matches_type(ChatCompletion, completion, path=["response"])
 
@@ -470,11 +470,11 @@ class TestAsyncCompletions:
                 "accuracy": 0.9,
                 "complexity": 0.8,
             },
-            audio={"foo": "bar"},
+            audio={"foo": "string"},
             automatic_tool_execution=True,
             cached_content="cached_content",
             credentials={
-                "connection_name": "brave-api",
+                "connection_name": "external-service",
                 "values": {"api_key": "sk-..."},
             },
             deferred=True,
@@ -487,7 +487,7 @@ class TestAsyncCompletions:
                     "parameters": {"foo": "bar"},
                 }
             ],
-            generation_config={"foo": "bar"},
+            generation_config={"foo": "string"},
             guardrails=[{"foo": "bar"}],
             handoff_config={"foo": "bar"},
             logit_bias={"foo": 0},
@@ -503,7 +503,7 @@ class TestAsyncCompletions:
                     "name": "name",
                 }
             ],
-            metadata={"foo": "bar"},
+            metadata={"foo": "string"},
             modalities=["string"],
             model_attributes={
                 "gpt-5": {
@@ -531,13 +531,13 @@ class TestAsyncCompletions:
                     "threshold": "HARM_BLOCK_THRESHOLD_UNSPECIFIED",
                 }
             ],
-            search_parameters={"foo": "bar"},
+            search_parameters={"foo": "string"},
             seed=0,
             service_tier="service_tier",
             stop=["string"],
             store=True,
-            stream_options={"foo": "bar"},
-            system_instruction={"foo": "bar"},
+            stream_options={"foo": "string"},
+            system_instruction={"foo": "string"},
             temperature=0,
             thinking={
                 "budget_tokens": 1024,
@@ -547,7 +547,7 @@ class TestAsyncCompletions:
                 "type": "auto",
                 "disable_parallel_tool_use": True,
             },
-            tool_config={"foo": "bar"},
+            tool_config={"foo": "string"},
             tools=[
                 {
                     "function": {
@@ -564,7 +564,7 @@ class TestAsyncCompletions:
             top_p=0,
             user="user",
             verbosity="verbosity",
-            web_search_options={"foo": "bar"},
+            web_search_options={"foo": "string"},
         )
         await completion_stream.response.aclose()
 

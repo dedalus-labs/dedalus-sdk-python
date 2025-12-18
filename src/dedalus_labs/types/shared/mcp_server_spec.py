@@ -1,46 +1,34 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from typing import Dict, Union, Optional
-from typing_extensions import TypeAlias
+from typing import Dict, Optional
 
 from ..._models import BaseModel
-from .credentials_binding_spec import CredentialsBindingSpec
 
-__all__ = ["MCPServerSpec", "Credentials"]
-
-Credentials: TypeAlias = Union[str, CredentialsBindingSpec]
+__all__ = ["MCPServerSpec"]
 
 
 class MCPServerSpec(BaseModel):
     """Structured MCP server specification.
 
-    Slug-based: {"slug": "dedalus-labs/brave-search", "version": "v1.0.0"}
-    URL-based:  {"url": "https://mcp.dedaluslabs.ai/acme/my-server/mcp"}
+    Slug-based: {"slug": "dedalus-labs/brave-search", "name": "github-integration", "version": "v1.0.0"}
+    URL-based:  {"url": "https://mcp.dedaluslabs.ai/acme/my-server/mcp", "name": "custom-server"}
     """
 
-    connection: Optional[str] = None
-    """Connection name for credential matching.
+    name: str
+    """Server instance name for credential matching."""
 
-    Must match a key in the client's credentials list.
-    """
+    credentials: Optional[Dict[str, str]] = None
+    """Encrypted credential blobs keyed by connection name.
 
-    credentials: Optional[Dict[str, Credentials]] = None
-    """Schema declaring what credentials are needed.
-
-    Maps field names to their bindings (e.g., env var names).
-    """
-
-    encrypted_credentials: Optional[Dict[str, str]] = None
-    """Client-encrypted credential values.
-
-    Maps connection names to encrypted envelopes.
+    Values are base64url ciphertext produced by the SDK (client-side encryption with
+    the AS public key).
     """
 
     slug: Optional[str] = None
-    """Marketplace slug."""
+    """Marketplace identifier."""
 
     url: Optional[str] = None
-    """Direct URL to MCP server endpoint."""
+    """Direct URL to MCP server endpoint (Pro users)."""
 
     version: Optional[str] = None
     """Version constraint for slug-based servers."""

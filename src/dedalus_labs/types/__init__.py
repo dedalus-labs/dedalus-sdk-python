@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from . import chat, shared
+from .. import _compat
 from .image import Image as Image
 from .model import Model as Model
 from .shared import (
@@ -9,13 +11,17 @@ from .shared import (
     MCPServers as MCPServers,
     DedalusModel as DedalusModel,
     MCPServerSpec as MCPServerSpec,
+    ModelSettings as ModelSettings,
+    JSONValueInput as JSONValueInput,
     MCPCredentials as MCPCredentials,
-    MCPServerInput as MCPServerInput,
+    JSONObjectInput as JSONObjectInput,
+    JSONValueOutput as JSONValueOutput,
+    JSONObjectOutput as JSONObjectOutput,
+    MCPToolExecution as MCPToolExecution,
     DedalusModelChoice as DedalusModelChoice,
     FunctionDefinition as FunctionDefinition,
     FunctionParameters as FunctionParameters,
     ResponseFormatText as ResponseFormatText,
-    CredentialsBindingSpec as CredentialsBindingSpec,
     ResponseFormatJSONObject as ResponseFormatJSONObject,
     ResponseFormatJSONSchema as ResponseFormatJSONSchema,
 )
@@ -26,3 +32,18 @@ from .image_generate_params import ImageGenerateParams as ImageGenerateParams
 from .embedding_create_params import EmbeddingCreateParams as EmbeddingCreateParams
 from .create_embedding_response import CreateEmbeddingResponse as CreateEmbeddingResponse
 from .image_create_variation_params import ImageCreateVariationParams as ImageCreateVariationParams
+
+# Rebuild cyclical models only after all modules are imported.
+# This ensures that, when building the deferred (due to cyclical references) model schema,
+# Pydantic can resolve the necessary references.
+# See: https://github.com/pydantic/pydantic/issues/11250 for more context.
+if _compat.PYDANTIC_V1:
+    chat.chat_completion.ChatCompletion.update_forward_refs()  # type: ignore
+    shared.dedalus_model.DedalusModel.update_forward_refs()  # type: ignore
+    shared.mcp_tool_execution.MCPToolExecution.update_forward_refs()  # type: ignore
+    shared.model_settings.ModelSettings.update_forward_refs()  # type: ignore
+else:
+    chat.chat_completion.ChatCompletion.model_rebuild(_parent_namespace_depth=0)
+    shared.dedalus_model.DedalusModel.model_rebuild(_parent_namespace_depth=0)
+    shared.mcp_tool_execution.MCPToolExecution.model_rebuild(_parent_namespace_depth=0)
+    shared.model_settings.ModelSettings.model_rebuild(_parent_namespace_depth=0)

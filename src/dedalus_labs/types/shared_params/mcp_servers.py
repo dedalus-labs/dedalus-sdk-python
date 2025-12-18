@@ -7,8 +7,8 @@ from typing_extensions import TypeAlias
 
 from .mcp_server_spec import MCPServerSpec
 
-__all__ = ["MCPServers", "MCPServerInput"]
+__all__ = ["MCPServers", "MCPServerItem"]
 
-MCPServerInput: TypeAlias = Union[str, MCPServerSpec]
+MCPServerItem: TypeAlias = Union[str, MCPServerSpec]
 
-MCPServers: TypeAlias = List[MCPServerInput]
+MCPServers: TypeAlias = List[MCPServerItem]
