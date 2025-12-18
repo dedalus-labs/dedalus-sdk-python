@@ -11,7 +11,13 @@ __all__ = ["Reasoning"]
 
 
 class Reasoning(BaseModel):
-    effort: Optional[Literal["minimal", "low", "medium", "high"]] = None
+    """**gpt-5 and o-series models only**
+
+    Configuration options for
+    [reasoning models](https://platform.openai.com/docs/guides/reasoning).
+    """
+
+    effort: Optional[Literal["none", "minimal", "low", "medium", "high", "xhigh"]] = None
 
     generate_summary: Optional[Literal["auto", "concise", "detailed"]] = None
 

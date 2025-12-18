@@ -60,6 +60,11 @@ class ModelSettings(TypedDict, total=False):
     prompt_cache_key: Optional[str]
 
     reasoning: Optional[Reasoning]
+    """**gpt-5 and o-series models only**
+
+    Configuration options for
+    [reasoning models](https://platform.openai.com/docs/guides/reasoning).
+    """
 
     reasoning_effort: Optional[str]
 

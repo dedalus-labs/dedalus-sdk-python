@@ -32,7 +32,7 @@ class MCPToolResult(BaseModel):
     """Execution time in milliseconds"""
 
     result: Optional["JSONValueOutput"] = None
-    """Recursive JSON value: primitive, object, or array."""
+    """Structured result from the tool (parsed from structuredContent or content)"""
 
 
 from .json_value_output import JSONValueOutput
