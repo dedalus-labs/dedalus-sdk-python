@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-from .tools import Tool, ToolCall, JsonValue, ToolResult, ToolHandler, MCPToolResult
+from .tools import Tool, ToolCall, JsonValue, ToolResult, ToolHandler
 from .policy import PolicyInput, PolicyContext, PolicyFunction
 from .messages import Message
 
@@ -19,7 +19,6 @@ __all__ = [
     "PolicyInput",
     # Tools
     "JsonValue",
-    "MCPToolResult",
     "Tool",
     "ToolCall",
     "ToolHandler",

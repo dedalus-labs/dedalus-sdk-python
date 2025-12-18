@@ -28,7 +28,8 @@ if TYPE_CHECKING:
 
 from ..._client import Dedalus, AsyncDedalus
 
-from .types import Message, ToolCall, JsonValue, ToolResult, PolicyInput, PolicyContext, MCPToolResult
+from .types import Message, ToolCall, JsonValue, ToolResult, PolicyInput, PolicyContext
+from ...types.shared import MCPToolResult
 from ..mcp import serialize_mcp_servers, MCPServerProtocol
 
 # Type alias for mcp_servers parameter - accepts strings, server objects, or mixed lists
@@ -65,41 +66,14 @@ def _process_policy(
 
 
 def _extract_mcp_results(response: Any) -> list[MCPToolResult]:
-    """Extract MCP tool execution results from API response."""
-    mcp_execs = getattr(response, 'mcp_tool_executions', None)
-    if not mcp_execs:
-        # Try __pydantic_extra__ for extra fields not in schema
-        extra = getattr(response, '__pydantic_extra__', None)
-        if isinstance(extra, dict):
-            mcp_execs = extra.get('mcp_tool_executions')
-    if not mcp_execs:
+    """Extract MCP tool results from API response."""
+    mcp_results = getattr(response, 'mcp_tool_results', None)
+    if not mcp_results:
         return []
-
-    results: list[MCPToolResult] = []
-    for exec_data in mcp_execs:
-        try:
-            # Handle both dict and object access
-            if isinstance(exec_data, dict):
-                results.append(MCPToolResult(
-                    tool_name=exec_data.get('tool_name', ''),
-                    server_name=exec_data.get('server_name', ''),
-                    arguments=exec_data.get('arguments', {}),
-                    result=exec_data.get('result'),
-                    is_error=exec_data.get('is_error', False),
-                    duration_ms=exec_data.get('duration_ms'),
-                ))
-            else:
-                results.append(MCPToolResult(
-                    tool_name=getattr(exec_data, 'tool_name', ''),
-                    server_name=getattr(exec_data, 'server_name', ''),
-                    arguments=getattr(exec_data, 'arguments', {}),
-                    result=getattr(exec_data, 'result', None),
-                    is_error=getattr(exec_data, 'is_error', False),
-                    duration_ms=getattr(exec_data, 'duration_ms', None),
-                ))
-        except Exception:
-            continue
-    return results
+    return [
+        item if isinstance(item, MCPToolResult) else MCPToolResult.model_validate(item)
+        for item in mcp_results
+    ]
 
 
 class _ToolHandler(Protocol):
@@ -198,7 +172,7 @@ class _RunResult:
     intents: list[Dict[str, JsonValue]] | None = None
     tools_called: list[str] = field(default_factory=list)
     mcp_results: list[MCPToolResult] = field(default_factory=list)
-    """MCP tool execution results from server-side tool calls."""
+    """MCP tool results from server-side tool calls."""
 
     @property
     def output(self) -> str:

@@ -23,6 +23,7 @@ from typing_extensions import (
 import pydantic
 from pydantic.fields import FieldInfo
 
+
 from ._types import (
     Body,
     IncEx,
@@ -64,6 +65,12 @@ from ._compat import (
     field_get_default,
 )
 from ._constants import RAW_RESPONSE_HEADER
+
+# RootModel only exists in Pydantic v2
+if not PYDANTIC_V1:
+    from pydantic import RootModel as _RootModel
+else:
+    _RootModel = None  # type: ignore[assignment]
 
 if TYPE_CHECKING:
     from pydantic_core.core_schema import ModelField, ModelSchema, LiteralSchema, ModelFieldsSchema
@@ -540,6 +547,14 @@ def construct_type(*, value: object, type_: object, metadata: Optional[List[Any]
 
         _, items_type = get_args(type_)  # Dict[_, items_type]
         return {key: construct_type(value=item, type_=items_type) for key, item in value.items()}
+
+    # Handle RootModel specially. It needs value in 'root', not spread as kwargs.
+    if (
+        _RootModel is not None
+        and inspect.isclass(origin)
+        and issubclass(origin, _RootModel)
+    ):
+        return origin.model_construct(root=value)
 
     if (
         not is_literal_type(type_)
