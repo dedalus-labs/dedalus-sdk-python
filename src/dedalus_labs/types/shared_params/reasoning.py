@@ -5,10 +5,10 @@ from __future__ import annotations
 from typing import Dict, Union, Optional
 from typing_extensions import Literal, TypeAlias, TypedDict
 
-__all__ = ["ReasoningParam"]
+__all__ = ["Reasoning"]
 
 
-class ReasoningParamTyped(TypedDict, total=False):
+class ReasoningTyped(TypedDict, total=False):
     effort: Optional[Literal["minimal", "low", "medium", "high"]]
 
     generate_summary: Optional[Literal["auto", "concise", "detailed"]]
@@ -16,4 +16,4 @@ class ReasoningParamTyped(TypedDict, total=False):
     summary: Optional[Literal["auto", "concise", "detailed"]]
 
 
-ReasoningParam: TypeAlias = Union[ReasoningParamTyped, Dict[str, object]]
+Reasoning: TypeAlias = Union[ReasoningTyped, Dict[str, object]]

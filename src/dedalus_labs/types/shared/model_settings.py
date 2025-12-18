@@ -6,8 +6,8 @@ from typing import Dict, List, Union, Optional
 from typing_extensions import Literal
 
 from ..._models import BaseModel
-from ..chat.reasoning import Reasoning
-from ..chat.tool_choice import ToolChoice
+from .reasoning import Reasoning
+from .tool_choice import ToolChoice
 
 __all__ = ["ModelSettings"]
 

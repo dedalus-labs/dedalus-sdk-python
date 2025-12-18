@@ -7,17 +7,19 @@ from .. import _compat
 from .image import Image as Image
 from .model import Model as Model
 from .shared import (
+    Reasoning as Reasoning,
     Credential as Credential,
     MCPServers as MCPServers,
+    ToolChoice as ToolChoice,
     DedalusModel as DedalusModel,
     MCPServerSpec as MCPServerSpec,
+    MCPToolResult as MCPToolResult,
     ModelSettings as ModelSettings,
     JSONValueInput as JSONValueInput,
     MCPCredentials as MCPCredentials,
     JSONObjectInput as JSONObjectInput,
     JSONValueOutput as JSONValueOutput,
     JSONObjectOutput as JSONObjectOutput,
-    MCPToolExecution as MCPToolExecution,
     DedalusModelChoice as DedalusModelChoice,
     FunctionDefinition as FunctionDefinition,
     FunctionParameters as FunctionParameters,
@@ -40,10 +42,10 @@ from .image_create_variation_params import ImageCreateVariationParams as ImageCr
 if _compat.PYDANTIC_V1:
     chat.chat_completion.ChatCompletion.update_forward_refs()  # type: ignore
     shared.dedalus_model.DedalusModel.update_forward_refs()  # type: ignore
-    shared.mcp_tool_execution.MCPToolExecution.update_forward_refs()  # type: ignore
+    shared.mcp_tool_result.MCPToolResult.update_forward_refs()  # type: ignore
     shared.model_settings.ModelSettings.update_forward_refs()  # type: ignore
 else:
     chat.chat_completion.ChatCompletion.model_rebuild(_parent_namespace_depth=0)
     shared.dedalus_model.DedalusModel.model_rebuild(_parent_namespace_depth=0)
-    shared.mcp_tool_execution.MCPToolExecution.model_rebuild(_parent_namespace_depth=0)
+    shared.mcp_tool_result.MCPToolResult.model_rebuild(_parent_namespace_depth=0)
     shared.model_settings.ModelSettings.model_rebuild(_parent_namespace_depth=0)

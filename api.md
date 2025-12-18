@@ -14,11 +14,13 @@ from dedalus_labs.types import (
     MCPCredentials,
     MCPServerSpec,
     MCPServers,
-    MCPToolExecution,
+    MCPToolResult,
     ModelSettings,
+    Reasoning,
     ResponseFormatJSONObject,
     ResponseFormatJSONSchema,
     ResponseFormatText,
+    ToolChoice,
 )
 ```
 
@@ -137,10 +139,8 @@ from dedalus_labs.types.chat import (
     InputTokenDetails,
     PredictionContent,
     PromptTokensDetails,
-    Reasoning,
     ThinkingConfigDisabled,
     ThinkingConfigEnabled,
-    ToolChoice,
     ToolChoiceAny,
     ToolChoiceAuto,
     ToolChoiceNone,
