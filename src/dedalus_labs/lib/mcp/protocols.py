@@ -31,10 +31,17 @@ MCPServerRef = str  # Slug ("org/server") or URL
 
 
 @runtime_checkable
-class CredentialsProtocol(Protocol):
-    """Protocol for Credentials."""
+class CredentialProtocol(Protocol):
+    """Protocol for a single credential binding (e.g., SecretValues)."""
 
-    def to_dict(self) -> Dict[str, Any]: ...
+    @property
+    def connection(self) -> Any:
+        """Connection this credential binds to (must have .name)."""
+        ...
+
+    def values_for_encryption(self) -> Dict[str, Any]:
+        """Return CredentialEnvelope for client-side encryption."""
+        ...
 
 
 @runtime_checkable
