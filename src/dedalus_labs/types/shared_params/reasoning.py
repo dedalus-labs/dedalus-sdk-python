@@ -9,7 +9,13 @@ __all__ = ["Reasoning"]
 
 
 class ReasoningTyped(TypedDict, total=False):
-    effort: Optional[Literal["minimal", "low", "medium", "high"]]
+    """**gpt-5 and o-series models only**
+
+    Configuration options for
+    [reasoning models](https://platform.openai.com/docs/guides/reasoning).
+    """
+
+    effort: Optional[Literal["none", "minimal", "low", "medium", "high", "xhigh"]]
 
     generate_summary: Optional[Literal["auto", "concise", "detailed"]]
 
