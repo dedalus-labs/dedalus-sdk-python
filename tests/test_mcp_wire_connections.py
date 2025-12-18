@@ -14,8 +14,6 @@ import pytest
 
 from dedalus_labs.lib.mcp import (
     serialize_connection,
-    serialize_credential,
-    get_credential_values_for_encryption,
     collect_unique_connections,
     match_credentials_to_connections,
     validate_credentials_for_servers,
@@ -118,59 +116,6 @@ class TestSerializeConnection:
         assert result["name"] == "bare"
         assert result["base_url"] == "https://bare.api.com"
         assert result["timeout_ms"] == 15000
-
-
-class TestSerializeSecret:
-    """Test serialize_credential helper."""
-
-    def test_with_secret_object(self) -> None:
-        """Serialize Secret object with to_dict()."""
-        conn = MockConnection("github")
-        secret = MockCredential(conn, token="ghp_xxx")
-
-        result = serialize_credential(secret)
-
-        assert result["connection_name"] == "github"
-        assert result["values"] == {"token": "ghp_xxx"}
-
-    def test_with_dict(self) -> None:
-        """Pass-through for dict input."""
-        data = {"connection_name": "dedalus", "values": {"api_key": "sk_xxx"}}
-
-        result = serialize_credential(data)
-
-        assert result == data
-
-
-class TestGetSecretValuesForEncryption:
-    """Test get_credential_values_for_encryption helper."""
-
-    def test_with_values_for_encryption_method(self) -> None:
-        """Use values_for_encryption() when available."""
-        conn = MockConnection("github")
-        secret = MockCredential(conn, token="ghp_xxx", extra="ignored")
-
-        result = get_credential_values_for_encryption(secret)
-
-        assert result == {"token": "ghp_xxx", "extra": "ignored"}
-
-    def test_with_values_property(self) -> None:
-        """Fall back to values property."""
-
-        class SecretWithValues:
-            values = {"key": "value"}
-
-        result = get_credential_values_for_encryption(SecretWithValues())
-
-        assert result == {"key": "value"}
-
-    def test_with_dict(self) -> None:
-        """Extract values from dict."""
-        result = get_credential_values_for_encryption(
-            {"connection_name": "test", "values": {"a": "b"}}
-        )
-
-        assert result == {"a": "b"}
 
 
 class TestMatchSecretsToConnections:

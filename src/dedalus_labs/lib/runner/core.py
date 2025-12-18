@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 
 from ..._client import Dedalus, AsyncDedalus
 
-from .types import Message, ToolCall, JsonValue, ToolResult, PolicyInput, PolicyContext
+from .types import Message, ToolCall, JsonValue, ToolResult, PolicyInput, PolicyContext, MCPToolResult
 from ..mcp import serialize_mcp_servers, MCPServerProtocol
 
 # Type alias for mcp_servers parameter - accepts strings, server objects, or mixed lists
@@ -62,6 +62,44 @@ def _process_policy(
             return {}
 
     return {}
+
+
+def _extract_mcp_results(response: Any) -> list[MCPToolResult]:
+    """Extract MCP tool execution results from API response."""
+    mcp_execs = getattr(response, 'mcp_tool_executions', None)
+    if not mcp_execs:
+        # Try __pydantic_extra__ for extra fields not in schema
+        extra = getattr(response, '__pydantic_extra__', None)
+        if isinstance(extra, dict):
+            mcp_execs = extra.get('mcp_tool_executions')
+    if not mcp_execs:
+        return []
+
+    results: list[MCPToolResult] = []
+    for exec_data in mcp_execs:
+        try:
+            # Handle both dict and object access
+            if isinstance(exec_data, dict):
+                results.append(MCPToolResult(
+                    tool_name=exec_data.get('tool_name', ''),
+                    server_name=exec_data.get('server_name', ''),
+                    arguments=exec_data.get('arguments', {}),
+                    result=exec_data.get('result'),
+                    is_error=exec_data.get('is_error', False),
+                    duration_ms=exec_data.get('duration_ms'),
+                ))
+            else:
+                results.append(MCPToolResult(
+                    tool_name=getattr(exec_data, 'tool_name', ''),
+                    server_name=getattr(exec_data, 'server_name', ''),
+                    arguments=getattr(exec_data, 'arguments', {}),
+                    result=getattr(exec_data, 'result', None),
+                    is_error=getattr(exec_data, 'is_error', False),
+                    duration_ms=getattr(exec_data, 'duration_ms', None),
+                ))
+        except Exception:
+            continue
+    return results
 
 
 class _ToolHandler(Protocol):
@@ -136,6 +174,7 @@ class _ExecutionConfig:
     """Configuration for tool execution behavior and policies."""
 
     mcp_servers: list[str | Dict[str, Any]] = field(default_factory=list)  # Wire format
+    credentials: list[Any] | None = None  # CredentialProtocol objects (not serialized)
     max_steps: int = 10
     stream: bool = False
     transport: Literal['http', 'realtime'] = 'http'
@@ -158,6 +197,8 @@ class _RunResult:
     messages: list[Message] = field(default_factory=list)  # Full conversation history
     intents: list[Dict[str, JsonValue]] | None = None
     tools_called: list[str] = field(default_factory=list)
+    mcp_results: list[MCPToolResult] = field(default_factory=list)
+    """MCP tool execution results from server-side tool calls."""
 
     @property
     def output(self) -> str:
@@ -460,6 +501,7 @@ class DedalusRunner:
 
         exec_config = _ExecutionConfig(
             mcp_servers=serialized_mcp_servers,
+            credentials=list(credentials) if credentials else None,
             max_steps=max_steps,
             stream=stream,
             transport=transport,
@@ -590,6 +632,7 @@ class DedalusRunner:
                 messages=current_messages,
                 tools=tool_handler.schemas() or None,
                 mcp_servers=policy_result['mcp_servers'],
+                credentials=exec_config.credentials,
                 **{**self._mk_kwargs(model_config), **policy_result['model_kwargs']},
             )
 
@@ -665,12 +708,16 @@ class DedalusRunner:
                 verbose=exec_config.verbose,
             )
 
+        # Extract MCP tool executions from the last response
+        mcp_results = _extract_mcp_results(response)
+
         return _RunResult(
             final_output=final_text,
             tool_results=tool_results,
             steps_used=steps,
             tools_called=tools_called,
             messages=messages,
+            mcp_results=mcp_results,
         )
 
     async def _execute_streaming_async(
@@ -737,6 +784,7 @@ class DedalusRunner:
                 messages=current_messages,
                 tools=tool_handler.schemas() or None,
                 mcp_servers=policy_result['mcp_servers'],
+                credentials=exec_config.credentials,
                 stream=True,
                 **{**self._mk_kwargs(model_config), **policy_result['model_kwargs']},
             )
@@ -982,6 +1030,7 @@ class DedalusRunner:
                 messages=current_messages,
                 tools=tool_handler.schemas() or None,
                 mcp_servers=policy_result['mcp_servers'],
+                credentials=exec_config.credentials,
                 **{**self._mk_kwargs(model_config), **policy_result['model_kwargs']},
             )
 
@@ -1024,12 +1073,16 @@ class DedalusRunner:
                 tool_calls, tool_handler, messages, tool_results, tools_called, steps
             )
 
+        # Extract MCP tool executions from the last response
+        mcp_results = _extract_mcp_results(response)
+
         return _RunResult(
             final_output=final_text,
             tool_results=tool_results,
             steps_used=steps,
             tools_called=tools_called,
             messages=messages,
+            mcp_results=mcp_results,
         )
 
     def _execute_streaming_sync(
@@ -1113,6 +1166,7 @@ class DedalusRunner:
                 messages=current_messages,
                 tools=tool_handler.schemas() or None,
                 mcp_servers=policy_result['mcp_servers'],
+                credentials=exec_config.credentials,
                 stream=True,
                 **{**self._mk_kwargs(model_config), **policy_result['model_kwargs']},
             )

@@ -4,38 +4,83 @@
 #           github.com/dedalus-labs/dedalus-sdk-python/LICENSE
 # ==============================================================================
 
-"""MCP server wire format"""
+"""MCP server wire format serialization.
+
+Converts MCPServer objects and various input formats to the API wire format.
+"""
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Union, Optional, Sequence, cast
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union, cast
 
-from .protocols import MCPServerProtocol, is_mcp_server
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from typing_extensions import TypeAlias
 
-from pydantic import (
-    Field,
-    BaseModel,
-    ConfigDict,
-    field_validator,
-    model_validator,
-)
+from .protocols import MCPServerProtocol, CredentialProtocol, is_mcp_server
 
-# --- Pydantic Models ---------------------------------------------------------
+__all__ = [
+    # Core types
+    "MCPServerWireSpec",
+    # Serialization
+    "serialize_mcp_servers",
+    "serialize_credentials",
+    "serialize_connection",
+    "serialize_mcp_server_with_creds",
+    "serialize_tool_specs",
+    # Credential matching
+    "match_credentials_to_server",
+    "match_credentials_to_connections",
+    "validate_credentials_for_servers",
+    # Helpers
+    "build_connection_record",
+    "collect_unique_connections",
+]
+
+
+# ---------------------------------------------------------------------------
+# Type Aliases
+# ---------------------------------------------------------------------------
+
+# Serialized wire output: slug string or spec dict
+MCPServerWireOutput: TypeAlias = Union[str, Dict[str, Any]]
+
+# Input types that serialize_mcp_servers accepts
+MCPServerInput: TypeAlias = Union[str, Dict[str, Any], MCPServerProtocol]
+
+# Connection/credential pair for provisioning
+ConnectionCredentialPair: TypeAlias = Tuple[Any, CredentialProtocol]
+
+
+# ---------------------------------------------------------------------------
+# Wire Format Model (for validation during serialization)
+# ---------------------------------------------------------------------------
 
 
 class MCPServerWireSpec(BaseModel):
-    """MCP server spec for API transmission. Either slug or url, not both."""
+    """MCP server spec for API transmission.
+
+    Wire format: either slug or url (not both).
+    """
 
     model_config = ConfigDict(extra="forbid")
 
     slug: Optional[str] = Field(
-        default=None, pattern=r"^[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+$"
+        default=None,
+        pattern=r"^[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+$",
+        description="Marketplace identifier (org/name format)",
     )
-    version: Optional[str] = Field(default=None)
-    url: Optional[str] = Field(default=None)
+    url: Optional[str] = Field(
+        default=None,
+        description="MCP server URL endpoint",
+    )
+    version: Optional[str] = Field(
+        default=None,
+        description="Version for MCP servers",
+    )
 
     @model_validator(mode="after")
-    def validate_slug_or_url(self) -> "MCPServerWireSpec":
+    def validate_slug_or_url(self) -> MCPServerWireSpec:
+        """Require exactly one of slug or url."""
         has_slug = self.slug is not None
         has_url = self.url is not None
 
@@ -51,42 +96,54 @@ class MCPServerWireSpec(BaseModel):
     @field_validator("url")
     @classmethod
     def validate_url_format(cls, v: Optional[str]) -> Optional[str]:
+        """Validate URL scheme."""
         if v is None:
             return None
         if not v.startswith(("http://", "https://")):
             raise ValueError(f"URL must start with http:// or https://, got: {v}")
         return v
 
-    def to_wire(self) -> Union[str, Dict[str, Any]]:
-        """Simple slugs become strings, everything else becomes a dict."""
+    def to_wire(self) -> MCPServerWireOutput:
+        """Convert to wire format. Simple slugs become strings."""
         if self.slug and not self.version:
             return self.slug
         return self.model_dump(exclude_none=True)
 
     @classmethod
-    def from_slug(cls, slug: str, version: Optional[str] = None) -> "MCPServerWireSpec":
+    def from_slug(cls, slug: str, version: Optional[str] = None) -> MCPServerWireSpec:
+        """Create from slug, extracting version if embedded."""
         if "@" in slug and version is None:
             slug, version = slug.rsplit("@", 1)
         return cls(slug=slug, version=version)
 
     @classmethod
-    def from_url(cls, url: str) -> "MCPServerWireSpec":
+    def from_url(cls, url: str) -> MCPServerWireSpec:
+        """Create from direct URL."""
         return cls(url=url)
 
 
-# --- Serialization -----------------------------------------------------------
+# ---------------------------------------------------------------------------
+# MCP Server Serialization
+# ---------------------------------------------------------------------------
 
 
 def serialize_mcp_servers(
-    servers: Union[
-        str,
-        Dict[str, Any],
-        MCPServerProtocol,
-        Sequence[Union[str, Dict[str, Any], MCPServerProtocol]],
-        None,
-    ],
-) -> List[Union[str, Dict[str, Any]]]:
-    """Convert mcp_servers to API wire format. Handles strings, objects, or sequences."""
+    servers: Union[MCPServerInput, Sequence[MCPServerInput], None],
+) -> List[MCPServerWireOutput]:
+    """Convert mcp_servers input to API wire format.
+
+    Accepts:
+        - Single slug string ("org/server" or "org/server@v1")
+        - Single URL string ("https://...")
+        - Single MCPServer object (from dedalus_mcp)
+        - Single dict matching MCPServerSpec
+        - Sequence of any of the above
+        - None (returns empty list)
+
+    Returns:
+        List of wire format items (strings or dicts).
+
+    """
     if servers is None:
         return []
     if isinstance(servers, str):
@@ -95,55 +152,58 @@ def serialize_mcp_servers(
         return [_serialize_single(cast(Dict[str, Any], servers))]
     if is_mcp_server(servers):
         return [_serialize_single(cast(MCPServerProtocol, servers))]
-    # At this point, servers is Sequence[str | Dict | MCPServerProtocol]
-    seq = cast(Sequence[Union[str, Dict[str, Any], MCPServerProtocol]], servers)
-    return [_serialize_single(item) for item in seq]
+
+    # Sequence of inputs
+    return [_serialize_single(item) for item in servers]
 
 
-def _serialize_single(
-    item: Union[str, Dict[str, Any], MCPServerProtocol],
-) -> Union[str, Dict[str, Any]]:
+def _serialize_single(item: MCPServerInput) -> MCPServerWireOutput:
+    """Serialize a single MCP server input to wire format."""
     if isinstance(item, str):
+        # URL passthrough
         if item.startswith(("http://", "https://")):
             return item
+        # Slug with embedded version
         if "@" in item:
             slug, version = item.rsplit("@", 1)
             return MCPServerWireSpec.from_slug(slug, version).to_wire()
+        # Simple slug
         return item
 
     if is_mcp_server(item):
-        # Check for URL first
+        # MCPServer object - check for URL first
         url = getattr(item, "url", None)
         if url is not None:
             return MCPServerWireSpec.from_url(url).to_wire()
 
-        # Fallback to slug
+        # Fall back to name (slug)
         name = getattr(item, "name", None)
         if name is not None:
-            return name  # Simple slug → send as string
+            return name
 
-        raise ValueError(
-            "MCP server must have either 'url' or 'name' attribute"
-        )
+        raise ValueError("MCP server must have either 'url' or 'name' attribute")
 
     if isinstance(item, dict):
+        # Validate and convert dict
         return MCPServerWireSpec.model_validate(item).to_wire()
 
+    # Fallback for unknown types
     return str(item)
 
 
-# --- Credential Serialization ------------------------------------------------
+# ---------------------------------------------------------------------------
+# Credential Serialization
+# ---------------------------------------------------------------------------
 
 
-def serialize_credentials(creds: Any) -> Optional[Dict[str, Any]]:
+def serialize_credentials(creds: Optional[CredentialProtocol]) -> Optional[Dict[str, Any]]:
     """Serialize Credentials schema to wire format.
 
     Args:
-        creds: Credentials object with to_dict() method, or None
+        creds: Credentials object with to_dict() method, or None.
 
     Returns:
-        Dict mapping field names to binding specs, or None
-
+        Dict mapping field names to binding specs, or None.
     """
     if creds is None:
         return None
@@ -152,21 +212,20 @@ def serialize_credentials(creds: Any) -> Optional[Dict[str, Any]]:
     return None
 
 
-def serialize_tool_specs(tools_service: Any) -> Dict[str, Any]:
+def serialize_tool_specs(tools_service: Any) -> Dict[str, Dict[str, Any]]:
     """Serialize tool specs to intents manifest format.
 
     Args:
-        tools_service: Tools service from MCPServer with _tool_specs
+        tools_service: Tools service from MCPServer with _tool_specs attribute.
 
     Returns:
-        Dict mapping tool names to their schemas
-
+        Dict mapping tool names to {description, schema} dicts.
     """
     specs = getattr(tools_service, "_tool_specs", {})
     if not specs:
         return {}
 
-    manifest: Dict[str, Any] = {}
+    manifest: Dict[str, Dict[str, Any]] = {}
     for name, spec in specs.items():
         if hasattr(spec, "description"):
             manifest[name] = {
@@ -181,15 +240,14 @@ def serialize_tool_specs(tools_service: Any) -> Dict[str, Any]:
     return manifest
 
 
-def serialize_mcp_server_with_creds(server: Any) -> Dict[str, Any]:
+def serialize_mcp_server_with_creds(server: MCPServerProtocol) -> Dict[str, Any]:
     """Serialize MCPServer with credentials for connection provisioning.
 
     Args:
-        server: MCPServer object with credentials/connection
+        server: MCPServer object with credentials/connection attributes.
 
     Returns:
-        Dict with server config for API (credential values added separately)
-
+        Dict with server config (credential values added separately).
     """
     result: Dict[str, Any] = {"name": getattr(server, "name", "unknown")}
 
@@ -206,21 +264,82 @@ def serialize_mcp_server_with_creds(server: Any) -> Dict[str, Any]:
     return result
 
 
+# ---------------------------------------------------------------------------
+# Connection Serialization
+# ---------------------------------------------------------------------------
+
+
+def serialize_connection(connection: Any) -> Dict[str, Any]:
+    """Serialize a Connection object to wire format.
+
+    Works with any Connection-like object that provides:
+        - to_dict() method, OR
+        - name, base_url, timeout_ms attributes
+
+    Args:
+        connection: Connection object or dict.
+
+    Returns:
+        Dict with name, base_url, timeout_ms fields.
+    """
+    if hasattr(connection, "to_dict"):
+        return connection.to_dict()
+    if isinstance(connection, dict):
+        return connection
+    # Duck-type extraction
+    return {
+        "name": getattr(connection, "name", "unknown"),
+        "base_url": getattr(connection, "base_url", None),
+        "timeout_ms": getattr(connection, "timeout_ms", 30000),
+    }
+
+
+def collect_unique_connections(servers: Sequence[MCPServerProtocol]) -> List[Any]:
+    """Collect unique connections from multiple MCPServer instances.
+
+    Args:
+        servers: List of MCPServer objects.
+
+    Returns:
+        List of unique Connection objects.
+    """
+    seen_names: set[str] = set()
+    unique: List[Any] = []
+
+    for server in servers:
+        connections = getattr(server, "connections", {})
+        # Handle both dict and list formats
+        conn_list = list(connections.values()) if isinstance(connections, dict) else list(connections or [])
+
+        for conn in conn_list:
+            name = getattr(conn, "name", None) if hasattr(conn, "name") else conn.get("name") if isinstance(conn, dict) else None
+            if name and name not in seen_names:
+                seen_names.add(name)
+                unique.append(conn)
+
+    return unique
+
+
+# ---------------------------------------------------------------------------
+# Credential Matching
+# ---------------------------------------------------------------------------
+
+
 def match_credentials_to_server(
-    server: Any,
+    server: MCPServerProtocol,
     credentials: Dict[str, Dict[str, Any]],
 ) -> Optional[Dict[str, Any]]:
     """Match credentials dict to server.connection.
 
     Args:
-        server: MCPServer with optional connection field
-        credentials: Dict mapping connection names to credential dicts
+        server: MCPServer with optional connection field.
+        credentials: Dict mapping connection names to credential dicts.
 
     Returns:
-        Matched credential values, or None if no connection
+        Matched credential values, or None if no connection.
 
     Raises:
-        KeyError: If server.connection not found in credentials
+        KeyError: If server.connection not found in credentials.
 
     """
     connection = getattr(server, "connection", None)
@@ -231,169 +350,24 @@ def match_credentials_to_server(
     return credentials[connection]
 
 
-def build_connection_record(
-    server: Any,
-    credentials: Dict[str, Dict[str, Any]],
-    org_id: str,
-) -> Dict[str, Any]:
-    """Build complete connection record for provisioning.
-
-    Args:
-        server: MCPServer object
-        credentials: Dict mapping connection names to credential values
-        org_id: Organization ID for the connection
-
-    Returns:
-        Complete connection record for DB storage
-
-    """
-    matched_creds = match_credentials_to_server(server, credentials)
-
-    return {
-        "org_id": org_id,
-        "connection": getattr(server, "connection", None),
-        "credentials": serialize_credentials(getattr(server, "credentials", None)),
-        "credential_values": matched_creds,
-    }
-
-
-def serialize_connection(connection: Any) -> Dict[str, Any]:
-    """Serialize a Connection object to wire format.
-
-    Works with any Connection-like object that provides:
-    - to_dict() method, OR
-    - name, base_url, timeout_ms attributes
-
-    Args:
-        connection: Connection object or dict
-
-    Returns:
-        Dict with name, base_url, timeout_ms fields
-
-    """
-    if hasattr(connection, "to_dict"):
-        return connection.to_dict()
-    if isinstance(connection, dict):
-        return connection
-    # Duck-type extraction for protocol compatibility
-    return {
-        "name": getattr(connection, "name", "unknown"),
-        "base_url": getattr(connection, "base_url", None),
-        "timeout_ms": getattr(connection, "timeout_ms", 30000),
-    }
-
-
-def serialize_credential(credential: Any) -> Dict[str, Any]:
-    """Serialize a Credential object to wire format.
-
-    Works with any Credential-like object that provides:
-    - to_dict() method, OR
-    - connection and values attributes
-
-    Args:
-        credential: Credential object or dict
-
-    Returns:
-        Dict with connection_name and values fields
-
-    """
-    if hasattr(credential, "to_dict"):
-        return credential.to_dict()
-    if isinstance(credential, dict):
-        return credential
-    # Duck-type extraction
-    conn = getattr(credential, "connection", None)
-    conn_name = getattr(conn, "name", "unknown") if conn else "unknown"
-    values = getattr(credential, "values", {})
-    return {"connection_name": conn_name, "values": values}
-
-
-def get_credential_values_for_encryption(credential: Any) -> Dict[str, Any]:
-    """Extract credential values for client-side encryption.
-
-    This returns ONLY the credential values (no metadata) that will be
-    encrypted with the server's public key before transmission.
-
-    Args:
-        credential: Credential object with values_for_encryption() or values property
-
-    Returns:
-        Dict of credential values to encrypt
-
-    """
-    if hasattr(credential, "values_for_encryption"):
-        return credential.values_for_encryption()
-    # Check for dict first to avoid treating dict.values method as property
-    if isinstance(credential, dict) and "values" in credential:
-        return credential["values"]
-    if hasattr(credential, "values"):
-        values = credential.values
-        # Handle both property (returns dict) and dict-like (has items method)
-        if callable(values):
-            return {}  # dict.values() method, not what we want
-        return dict(values) if hasattr(values, "items") else values
-    return {}
-
-
-def collect_unique_connections(servers: Sequence[Any]) -> List[Any]:
-    """Collect unique connections from multiple MCPServer instances.
-
-    If two servers share the same Connection object (by name), it appears
-    only once in the result. This enables single-provisioning for shared
-    connections.
-
-    Args:
-        servers: List of MCPServer objects
-
-    Returns:
-        List of unique Connection objects (deduplicated by name)
-
-    """
-    seen_names: set[str] = set()
-    unique: List[Any] = []
-
-    for server in servers:
-        connections = getattr(server, "connections", {})
-        # Handle both dict (MCPServer.connections) and list formats
-        if isinstance(connections, dict):
-            conn_list = list(connections.values())
-        else:
-            conn_list = list(connections) if connections else []
-
-        for conn in conn_list:
-            name = (
-                getattr(conn, "name", None)
-                if hasattr(conn, "name")
-                else conn.get("name")
-                if isinstance(conn, dict)
-                else None
-            )
-            if name and name not in seen_names:
-                seen_names.add(name)
-                unique.append(conn)
-
-    return unique
-
-
 def match_credentials_to_connections(
     connections: Sequence[Any],
-    credentials: Sequence[Any],
-) -> List[tuple[Any, Any]]:
+    credentials: Sequence[CredentialProtocol],
+) -> List[ConnectionCredentialPair]:
     """Match Credential objects to their Connection definitions.
 
     Args:
-        connections: List of Connection objects
-        credentials: List of Credential objects
+        connections: List of Connection objects.
+        credentials: List of Credential objects.
 
     Returns:
-        List of (connection, credential) pairs
+        List of (connection, credential) pairs.
 
     Raises:
-        ValueError: If a connection has no matching credential
-
+        ValueError: If any connection lacks a matching credential.
     """
     # Build lookup by connection name
-    creds_by_name: Dict[str, Any] = {}
+    creds_by_name: Dict[str, CredentialProtocol] = {}
     for cred in credentials:
         if hasattr(cred, "connection"):
             name = getattr(cred.connection, "name", None)
@@ -405,13 +379,11 @@ def match_credentials_to_connections(
             creds_by_name[name] = cred
 
     # Match connections to credentials
-    pairs: List[tuple[Any, Any]] = []
+    pairs: List[ConnectionCredentialPair] = []
     missing: List[str] = []
 
     for conn in connections:
-        name = (
-            getattr(conn, "name", None) if hasattr(conn, "name") else conn.get("name")
-        )
+        name = getattr(conn, "name", None) if hasattr(conn, "name") else conn.get("name") if isinstance(conn, dict) else None
         if name and name in creds_by_name:
             pairs.append((conn, creds_by_name[name]))
         elif name:
@@ -427,42 +399,49 @@ def match_credentials_to_connections(
 
 
 def validate_credentials_for_servers(
-    servers: Sequence[Any],
-    credentials: Sequence[Any],
-) -> List[tuple[Any, Any]]:
+    servers: Sequence[MCPServerProtocol],
+    credentials: Sequence[CredentialProtocol],
+) -> List[ConnectionCredentialPair]:
     """Validate that all connections across servers have credentials.
 
-    This is the main entry point for SDK initialization validation.
-    It collects unique connections from all servers and ensures each
-    has a matching Credential.
+    Main entry point for SDK initialization validation. Collects unique
+    connections from all servers and ensures each has a matching Credential.
 
     Args:
-        servers: List of MCPServer objects
-        credentials: List of Credential objects
+        servers: List of MCPServer objects.
+        credentials: List of Credential objects.
 
     Returns:
-        List of (connection, credential) pairs ready for provisioning
+        List of (connection, credential) pairs ready for provisioning.
 
     Raises:
-        ValueError: If any connection lacks a credential (fail-fast at init)
-
+        ValueError: If any connection lacks a credential (fail-fast at init).
     """
     connections = collect_unique_connections(servers)
     return match_credentials_to_connections(connections, credentials)
 
 
-__all__ = [
-    "MCPServerWireSpec",
-    "serialize_mcp_servers",
-    "serialize_credentials",
-    "serialize_mcp_server_with_creds",
-    "match_credentials_to_server",
-    "build_connection_record",
-    # Connection/Credential protocol
-    "serialize_connection",
-    "serialize_credential",
-    "get_credential_values_for_encryption",
-    "collect_unique_connections",
-    "match_credentials_to_connections",
-    "validate_credentials_for_servers",
-]
+def build_connection_record(
+    server: MCPServerProtocol,
+    credentials: Dict[str, Dict[str, Any]],
+    org_id: str,
+) -> Dict[str, Any]:
+    """Build a connection record.
+
+    Args:
+        server: MCPServer object.
+        credentials: Dict mapping connection names to credential values.
+        org_id: Organization ID for the connection.
+
+    Returns:
+        Connection record payload.
+
+    """
+    matched_creds = match_credentials_to_server(server, credentials)
+
+    return {
+        "org_id": org_id,
+        "connection": getattr(server, "connection", None),
+        "credentials": serialize_credentials(getattr(server, "credentials", None)),
+        "credential_values": matched_creds,
+    }

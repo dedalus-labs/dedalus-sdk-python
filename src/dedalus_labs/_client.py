@@ -31,6 +31,7 @@ from ._base_client import (
     SyncAPIClient,
     AsyncAPIClient,
 )
+from .lib.mcp import prepare_mcp_request, prepare_mcp_request_sync
 
 if TYPE_CHECKING:
     from .resources import chat, audio, images, models, embeddings
@@ -182,13 +183,8 @@ class Dedalus(SyncAPIClient):
 
     @override
     def _prepare_options(self, options: FinalRequestOptions) -> FinalRequestOptions:
-        # Serialize MCP servers if present
         if options.json_data and isinstance(options.json_data, dict):
-            mcp_servers = options.json_data.get("mcp_servers")
-            if mcp_servers is not None:
-                from .lib.mcp import serialize_mcp_servers
-                options.json_data["mcp_servers"] = serialize_mcp_servers(mcp_servers)
-
+            options.json_data = prepare_mcp_request_sync(options.json_data, self.as_base_url, self._client)
         return super()._prepare_options(options)
 
     @cached_property
@@ -519,13 +515,8 @@ class AsyncDedalus(AsyncAPIClient):
 
     @override
     async def _prepare_options(self, options: FinalRequestOptions) -> FinalRequestOptions:
-        # Serialize MCP servers if present
         if options.json_data and isinstance(options.json_data, dict):
-            mcp_servers = options.json_data.get("mcp_servers")
-            if mcp_servers is not None:
-                from .lib.mcp import serialize_mcp_servers
-                options.json_data["mcp_servers"] = serialize_mcp_servers(mcp_servers)
-
+            options.json_data = await prepare_mcp_request(options.json_data, self.as_base_url, self._client)
         return await super()._prepare_options(options)
 
     @cached_property

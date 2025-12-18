@@ -7,6 +7,7 @@
 """MCP server integration utilities."""
 
 from .protocols import (
+    CredentialProtocol,
     MCPServerProtocol,
     MCPServerRef,
     MCPServerWithCredsProtocol,
@@ -14,19 +15,23 @@ from .protocols import (
     is_mcp_server,
     normalize_mcp_servers,
 )
+from .request import (
+    EncryptedCredentials,
+    prepare_mcp_request,
+    prepare_mcp_request_sync,
+)
 from .wire import (
     MCPServerWireSpec,
-    serialize_mcp_servers,
-    serialize_connection,
-    serialize_credential,
-    get_credential_values_for_encryption,
     collect_unique_connections,
     match_credentials_to_connections,
+    serialize_connection,
+    serialize_mcp_servers,
     validate_credentials_for_servers,
 )
 
 __all__ = [
     # Protocols
+    "CredentialProtocol",
     "MCPServerProtocol",
     "MCPServerRef",
     "MCPServerWithCredsProtocol",
@@ -35,11 +40,13 @@ __all__ = [
     "normalize_mcp_servers",
     # Wire format
     "MCPServerWireSpec",
-    "serialize_mcp_servers",
-    "serialize_connection",
-    "serialize_credential",
-    "get_credential_values_for_encryption",
     "collect_unique_connections",
     "match_credentials_to_connections",
+    "serialize_connection",
+    "serialize_mcp_servers",
     "validate_credentials_for_servers",
+    # Request preparation
+    "EncryptedCredentials",
+    "prepare_mcp_request",
+    "prepare_mcp_request_sync",
 ]
