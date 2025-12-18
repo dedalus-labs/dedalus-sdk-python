@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Dict, Union
 from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
-__all__ = ["ToolChoiceParam", "MCPToolChoice"]
+__all__ = ["ToolChoice", "MCPToolChoice"]
 
 
 class MCPToolChoice(TypedDict, total=False):
@@ -14,4 +14,4 @@ class MCPToolChoice(TypedDict, total=False):
     server_label: Required[str]
 
 
-ToolChoiceParam: TypeAlias = Union[Literal["auto", "required", "none"], str, Dict[str, object], MCPToolChoice]
+ToolChoice: TypeAlias = Union[Literal["auto", "required", "none"], str, Dict[str, object], MCPToolChoice]

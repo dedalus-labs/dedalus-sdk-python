@@ -6,15 +6,21 @@ from typing import Optional
 
 from ..._models import BaseModel
 
-__all__ = ["MCPToolExecution"]
+__all__ = ["MCPToolResult"]
 
 
-class MCPToolExecution(BaseModel):
-    """Details of a single MCP tool execution.
+class MCPToolResult(BaseModel):
+    """Result of a single MCP tool execution.
 
     Provides visibility into MCP tool calls including the full input arguments
     and structured output, enabling debugging and audit trails.
     """
+
+    arguments: "JSONObjectOutput"
+    """Input arguments passed to the tool"""
+
+    is_error: bool
+    """Whether the tool execution resulted in an error"""
 
     server_name: str
     """Name of the MCP server that handled the tool"""
@@ -22,17 +28,11 @@ class MCPToolExecution(BaseModel):
     tool_name: str
     """Name of the MCP tool that was executed"""
 
-    arguments: Optional["JSONObjectOutput"] = None
-    """Input arguments passed to the tool"""
-
     duration_ms: Optional[int] = None
     """Execution time in milliseconds"""
 
-    is_error: Optional[bool] = None
-    """Whether the tool execution resulted in an error"""
-
     result: Optional["JSONValueOutput"] = None
-    """Structured result from the tool (parsed from structuredContent or content)"""
+    """Recursive JSON value: primitive, object, or array."""
 
 
 from .json_value_output import JSONValueOutput

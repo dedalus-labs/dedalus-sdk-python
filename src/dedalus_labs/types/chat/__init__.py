@@ -12,9 +12,7 @@ from .url_citation import URLCitation as URLCitation
 from .function_call import FunctionCall as FunctionCall
 from .chat_completion import ChatCompletion as ChatCompletion
 from .choice_logprobs import ChoiceLogprobs as ChoiceLogprobs
-from .reasoning_param import ReasoningParam as ReasoningParam
 from .completion_usage import CompletionUsage as CompletionUsage
-from .tool_choice_param import ToolChoiceParam as ToolChoiceParam
 from .input_token_details import InputTokenDetails as InputTokenDetails
 from .chat_completion_audio import ChatCompletionAudio as ChatCompletionAudio
 from .chat_completion_chunk import ChatCompletionChunk as ChatCompletionChunk

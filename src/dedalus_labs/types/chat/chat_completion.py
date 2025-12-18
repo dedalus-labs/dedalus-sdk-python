@@ -46,7 +46,7 @@ class ChatCompletion(BaseModel):
     for the user. Only present when MCP server failures occurred.
     """
 
-    mcp_tool_executions: Optional[List["MCPToolExecution"]] = None
+    mcp_tool_results: Optional[List["MCPToolResult"]] = None
     """Detailed results of MCP tool executions including inputs, outputs, and timing.
 
     Provides full visibility into server-side tool execution for debugging and audit
@@ -90,4 +90,4 @@ class ChatCompletion(BaseModel):
     """Usage statistics for the completion request."""
 
 
-from ..shared.mcp_tool_execution import MCPToolExecution
+from ..shared.mcp_tool_result import MCPToolResult

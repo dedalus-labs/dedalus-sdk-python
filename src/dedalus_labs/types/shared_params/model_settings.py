@@ -6,8 +6,8 @@ from typing import Dict, Union, Iterable, Optional
 from typing_extensions import Literal, TypedDict
 
 from ..._types import SequenceNotStr
-from ..chat.reasoning_param import ReasoningParam
-from ..chat.tool_choice_param import ToolChoiceParam
+from .reasoning import Reasoning
+from .tool_choice import ToolChoice
 
 __all__ = ["ModelSettings"]
 
@@ -59,7 +59,7 @@ class ModelSettings(TypedDict, total=False):
 
     prompt_cache_key: Optional[str]
 
-    reasoning: Optional[ReasoningParam]
+    reasoning: Optional[Reasoning]
 
     reasoning_effort: Optional[str]
 
@@ -93,7 +93,7 @@ class ModelSettings(TypedDict, total=False):
 
     timeout: Optional[float]
 
-    tool_choice: Optional[ToolChoiceParam]
+    tool_choice: Optional[ToolChoice]
 
     tool_config: Optional["JSONObjectInput"]
 
