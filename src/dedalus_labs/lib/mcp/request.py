@@ -17,9 +17,10 @@ from __future__ import annotations
 import copy
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence
 
-from typing_extensions import TypeAlias, TypedDict
+from dedalus_labs.types.shared_params.mcp_server_spec import MCPServerSpec
+from dedalus_labs.types.shared_params.mcp_servers import MCPServerItem
 
 from ..crypto import encrypt_credentials, fetch_encryption_key, fetch_encryption_key_sync
 from .protocols import CredentialProtocol
@@ -32,28 +33,6 @@ __all__ = [
     "prepare_mcp_request_sync",
     "EncryptedCredentials",
 ]
-
-
-# ---------------------------------------------------------------------------
-# Wire format types (TODO: will be replaced post-SDK-regen)
-# ---------------------------------------------------------------------------
-
-
-class MCPServerSpecWire(TypedDict, total=False):
-    """Wire format for MCPServerSpec matching API schema.
-
-    Either slug or url is required. Name is required when credentials are embedded.
-    """
-
-    slug: str
-    url: str
-    name: str
-    version: str
-    credentials: Dict[str, str]  # Encrypted credential blobs keyed by connection name
-
-
-# Serialized server: either a slug string or a structured spec
-MCPServerWire: TypeAlias = Union[str, MCPServerSpecWire]
 
 
 @dataclass(frozen=True)
@@ -188,9 +167,9 @@ def _encrypt_credentials(
 
 
 def _embed_credentials(
-    servers: List[MCPServerWire],
+    servers: List[MCPServerItem],
     encrypted: EncryptedCredentials,
-) -> List[MCPServerSpecWire]:
+) -> List[MCPServerSpec]:
     """Embed encrypted credentials into each server spec.
 
     Converts slug strings to full specs and adds credentials to all servers.
@@ -200,11 +179,11 @@ def _embed_credentials(
         encrypted: EncryptedCredentials instance.
 
     Returns:
-        List of MCPServerSpecWire dicts with credentials embedded.
+        List of MCPServerSpec dicts with credentials embedded.
 
     """
     creds_dict = encrypted.to_dict()
-    result: List[MCPServerSpecWire] = []
+    result: List[MCPServerSpec] = []
 
     for server in servers:
         if isinstance(server, str):
@@ -217,7 +196,7 @@ def _embed_credentials(
         elif isinstance(server, dict):
             # Existing spec -> add name (if missing) and credentials
             name = server.get("name") or server.get("slug") or server.get("url") or ""
-            spec: MCPServerSpecWire = {**server, "name": name, "credentials": creds_dict}
+            spec: MCPServerSpec = {**server, "name": name, "credentials": creds_dict}
             result.append(spec)
 
     return result
