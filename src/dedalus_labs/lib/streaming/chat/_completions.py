@@ -37,9 +37,8 @@ from ..._parsing import (
     parse_function_tool_arguments,
 )
 from ...._streaming import Stream, AsyncStream
-from ....types.chat.chat_completion_chunk import ChatCompletionChunk, Choice as ChoiceChunk
+from ....types.chat.chat_completion_chunk import ChatCompletionChunk, Choice as ChoiceChunk, ChoiceLogprobs
 from ....types.chat.parsed_chat_completion import ParsedChatCompletion
-from ....types.chat.choice_logprobs import ChoiceLogprobs
 
 
 InputTool = Dict[str, Any]

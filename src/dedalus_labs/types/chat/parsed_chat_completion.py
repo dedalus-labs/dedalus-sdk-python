@@ -2,9 +2,8 @@
 
 from typing import List, Generic, TypeVar, Optional
 
-from .choice import Choice
 from ..._models import GenericModel
-from .chat_completion import ChatCompletion
+from .chat_completion import ChatCompletion, Choice
 from .chat_completion_message import ChatCompletionMessage
 from .parsed_function_tool_call import ParsedFunctionToolCall
 

@@ -2,8 +2,7 @@
 
 from typing import Optional
 
-from .function import Function
-from .chat_completion_message_tool_call import ChatCompletionMessageToolCall as FunctionToolCall
+from .chat_completion_message_tool_call import ChatCompletionMessageToolCall as FunctionToolCall, Function
 
 __all__ = ["ParsedFunctionToolCall", "ParsedFunction"]
 
