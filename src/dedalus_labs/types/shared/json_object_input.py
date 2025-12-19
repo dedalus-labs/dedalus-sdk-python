@@ -1,19 +1,12 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
-# TODO: Temporarily using RootModel for recursive type support (Python 3.10+)
 
 from __future__ import annotations
 
 from typing import Dict, Optional
-
-from pydantic import RootModel
-
-from .json_value_input import JSONValueInput
+from typing_extensions import TypeAlias
 
 __all__ = ["JSONObjectInput"]
 
+JSONObjectInput: TypeAlias = Dict[str, Optional["JSONValueInput"]]
 
-class JSONObjectInput(RootModel[Dict[str, Optional[JSONValueInput]]]):
-    pass  # Don't include a docstring to use the upstream type's docstring
-
-
-JSONObjectInput.model_rebuild(_parent_namespace_depth=0)
+from .json_value_input import JSONValueInput
