@@ -6,19 +6,17 @@ from typing import Dict, Union, Iterable, Optional
 from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
 from ..._types import SequenceNotStr
-from ..shared_params import mcp_servers as _mcp_servers
+from ..shared_params import mcp_servers
 from .tool_choice_any_param import ToolChoiceAnyParam
 from .tool_choice_auto_param import ToolChoiceAutoParam
 from .tool_choice_none_param import ToolChoiceNoneParam
 from .tool_choice_tool_param import ToolChoiceToolParam
 from .prediction_content_param import PredictionContentParam
 from ..shared_params.credential import Credential
-from .chat_completion_tool_param import ChatCompletionToolParam
 from .thinking_config_enabled_param import ThinkingConfigEnabledParam
 from ..shared_params.mcp_credentials import MCPCredentials
 from ..shared_params.mcp_server_spec import MCPServerSpec
 from .thinking_config_disabled_param import ThinkingConfigDisabledParam
-from .chat_completion_functions_param import ChatCompletionFunctionsParam
 from .chat_completion_tool_message_param import ChatCompletionToolMessageParam
 from .chat_completion_user_message_param import ChatCompletionUserMessageParam
 from ..shared_params.response_format_text import ResponseFormatText
@@ -27,11 +25,11 @@ from .chat_completion_function_message_param import ChatCompletionFunctionMessag
 from .chat_completion_assistant_message_param import ChatCompletionAssistantMessageParam
 from .chat_completion_developer_message_param import ChatCompletionDeveloperMessageParam
 from ..shared_params.response_format_json_object import ResponseFormatJSONObject
-from ..shared_params.response_format_json_schema import ResponseFormatJSONSchema
 
 __all__ = [
     "CompletionCreateParamsBase",
     "Model",
+    "Audio",
     "Credentials",
     "MCPServers",
     "Message",
@@ -62,11 +60,16 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     agent_attributes: Optional[Dict[str, float]]
     """Agent attributes. Values in [0.0, 1.0]."""
 
-    audio: Optional["JSONObjectInput"]
+    audio: Optional[Audio]
     """Parameters for audio output.
 
     Required when audio output is requested with `modalities: ["audio"]`.
     [Learn more](https://platform.openai.com/docs/guides/audio).
+
+    Fields:
+
+    - voice (required): VoiceIdsShared
+    - format (required): Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]
     """
 
     automatic_tool_execution: bool
@@ -106,7 +109,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     function_call: Optional[str]
     """Wrapper for union variant: function call mode."""
 
-    functions: Optional[Iterable[ChatCompletionFunctionsParam]]
+    functions: Optional[Iterable["ChatCompletionFunctionsParam"]]
     """Deprecated in favor of `tools`.
 
     A list of functions the model may generate JSON inputs for.
@@ -367,9 +370,37 @@ class CompletionCreateParamsBase(TypedDict, total=False):
 
 Model: TypeAlias = Union[str, "DedalusModel", SequenceNotStr["DedalusModelChoice"]]
 
+
+class Audio(TypedDict, total=False):
+    """Parameters for audio output.
+
+    Required when audio output is requested with
+    `modalities: ["audio"]`. [Learn more](https://platform.openai.com/docs/guides/audio).
+
+    Fields:
+    - voice (required): VoiceIdsShared
+    - format (required): Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]
+    """
+
+    format: Required[Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]]
+    """Specifies the output audio format.
+
+    Must be one of `wav`, `mp3`, `flac`, `opus`, or `pcm16`.
+    """
+
+    voice: Required[
+        Union[str, Literal["alloy", "ash", "ballad", "coral", "echo", "sage", "shimmer", "verse", "marin", "cedar"]]
+    ]
+    """The voice the model uses to respond.
+
+    Supported voices are `alloy`, `ash`, `ballad`, `coral`, `echo`, `fable`, `nova`,
+    `onyx`, `sage`, and `shimmer`.
+    """
+
+
 Credentials: TypeAlias = Union[Credential, MCPCredentials]
 
-MCPServers: TypeAlias = Union[str, MCPServerSpec, _mcp_servers.MCPServers]
+MCPServers: TypeAlias = Union[str, MCPServerSpec, mcp_servers.MCPServers]
 
 Message: TypeAlias = Union[
     ChatCompletionDeveloperMessageParam,
@@ -380,7 +411,7 @@ Message: TypeAlias = Union[
     ChatCompletionFunctionMessageParam,
 ]
 
-ResponseFormat: TypeAlias = Union[ResponseFormatText, ResponseFormatJSONSchema, ResponseFormatJSONObject]
+ResponseFormat: TypeAlias = Union[ResponseFormatText, "ResponseFormatJSONSchema", ResponseFormatJSONObject]
 
 
 class SafetySetting(TypedDict, total=False):
@@ -442,7 +473,12 @@ class ToolCustomToolChatCompletionsCustomFormatTextFormat(TypedDict, total=False
 
 
 class ToolCustomToolChatCompletionsCustomFormatGrammarFormatGrammar(TypedDict, total=False):
-    """Your chosen grammar."""
+    """Your chosen grammar.
+
+    Fields:
+    - definition (required): str
+    - syntax (required): Literal["lark", "regex"]
+    """
 
     definition: Required[str]
     """The grammar definition."""
@@ -460,7 +496,13 @@ class ToolCustomToolChatCompletionsCustomFormatGrammarFormat(TypedDict, total=Fa
     """
 
     grammar: Required[ToolCustomToolChatCompletionsCustomFormatGrammarFormatGrammar]
-    """Your chosen grammar."""
+    """Your chosen grammar.
+
+    Fields:
+
+    - definition (required): str
+    - syntax (required): Literal["lark", "regex"]
+    """
 
     type: Required[Literal["grammar"]]
     """Grammar format. Always `grammar`."""
@@ -499,7 +541,7 @@ class ToolCustomToolChatCompletions(TypedDict, total=False):
     """The type of the custom tool. Always `custom`."""
 
 
-Tool: TypeAlias = Union[ChatCompletionToolParam, ToolCustomToolChatCompletions]
+Tool: TypeAlias = Union["ChatCompletionToolParam", ToolCustomToolChatCompletions]
 
 
 class CompletionCreateParamsNonStreaming(CompletionCreateParamsBase, total=False):
@@ -514,6 +556,9 @@ class CompletionCreateParamsStreaming(CompletionCreateParamsBase):
 
 CompletionCreateParams = Union[CompletionCreateParamsNonStreaming, CompletionCreateParamsStreaming]
 
+from .chat_completion_tool_param import ChatCompletionToolParam
 from ..shared_params.dedalus_model import DedalusModel
+from .chat_completion_functions_param import ChatCompletionFunctionsParam
 from ..shared_params.json_object_input import JSONObjectInput
 from ..shared_params.dedalus_model_choice import DedalusModelChoice
+from ..shared_params.response_format_json_schema import ResponseFormatJSONSchema

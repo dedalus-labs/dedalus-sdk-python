@@ -7,15 +7,15 @@ from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
 from .chat_completion_content_part_file_param import ChatCompletionContentPartFileParam
 from .chat_completion_content_part_text_param import ChatCompletionContentPartTextParam
-from .chat_completion_content_part_audio_param import ChatCompletionContentPartAudioParam
 from .chat_completion_content_part_image_param import ChatCompletionContentPartImageParam
+from .chat_completion_content_part_input_audio_param import ChatCompletionContentPartInputAudioParam
 
 __all__ = ["ChatCompletionUserMessageParam", "ContentChatCompletionRequestUserMessageContentArray"]
 
 ContentChatCompletionRequestUserMessageContentArray: TypeAlias = Union[
     ChatCompletionContentPartTextParam,
     ChatCompletionContentPartImageParam,
-    ChatCompletionContentPartAudioParam,
+    ChatCompletionContentPartInputAudioParam,
     ChatCompletionContentPartFileParam,
 ]
 

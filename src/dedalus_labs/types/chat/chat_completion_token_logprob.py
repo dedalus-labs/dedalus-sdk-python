@@ -3,9 +3,31 @@
 from typing import List, Optional
 
 from ..._models import BaseModel
-from .top_logprob import TopLogprob
 
-__all__ = ["ChatCompletionTokenLogprob"]
+__all__ = ["ChatCompletionTokenLogprob", "TopLogprob"]
+
+
+class TopLogprob(BaseModel):
+    """Token and its log probability."""
+
+    token: str
+    """The token."""
+
+    bytes: Optional[List[int]] = None
+    """A list of integers representing the UTF-8 bytes representation of the token.
+
+    Useful in instances where characters are represented by multiple tokens and
+    their byte representations must be combined to generate the correct text
+    representation. Can be `null` if there is no bytes representation for the token.
+    """
+
+    logprob: float
+    """The log probability of this token, if it is within the top 20 most likely
+    tokens.
+
+    Otherwise, the value `-9999.0` is used to signify that the token is very
+    unlikely.
+    """
 
 
 class ChatCompletionTokenLogprob(BaseModel):

@@ -209,12 +209,12 @@ client = Dedalus()
 
 chat_completion = client.chat.completions.create(
     model="openai/gpt-5",
-    prediction={
-        "content": "string",
-        "type": "content",
+    audio={
+        "format": "mp3",
+        "voice": "alloy",
     },
 )
-print(chat_completion.prediction)
+print(chat_completion.audio)
 ```
 
 ## File uploads

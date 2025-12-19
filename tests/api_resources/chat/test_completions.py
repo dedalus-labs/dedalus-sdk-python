@@ -34,7 +34,10 @@ class TestCompletions:
                 "accuracy": 0.9,
                 "complexity": 0.8,
             },
-            audio={"foo": "string"},
+            audio={
+                "format": "mp3",
+                "voice": "alloy",
+            },
             automatic_tool_execution=True,
             cached_content="cached_content",
             credentials={
@@ -48,7 +51,7 @@ class TestCompletions:
                 {
                     "name": "name",
                     "description": "description",
-                    "parameters": {"foo": "bar"},
+                    "parameters": {"foo": "string"},
                 }
             ],
             generation_config={"foo": "string"},
@@ -118,7 +121,7 @@ class TestCompletions:
                     "function": {
                         "name": "name",
                         "description": "description",
-                        "parameters": {"foo": "bar"},
+                        "parameters": {"foo": "string"},
                         "strict": True,
                     },
                     "type": "function",
@@ -178,7 +181,10 @@ class TestCompletions:
                 "accuracy": 0.9,
                 "complexity": 0.8,
             },
-            audio={"foo": "string"},
+            audio={
+                "format": "mp3",
+                "voice": "alloy",
+            },
             automatic_tool_execution=True,
             cached_content="cached_content",
             credentials={
@@ -192,7 +198,7 @@ class TestCompletions:
                 {
                     "name": "name",
                     "description": "description",
-                    "parameters": {"foo": "bar"},
+                    "parameters": {"foo": "string"},
                 }
             ],
             generation_config={"foo": "string"},
@@ -261,7 +267,7 @@ class TestCompletions:
                     "function": {
                         "name": "name",
                         "description": "description",
-                        "parameters": {"foo": "bar"},
+                        "parameters": {"foo": "string"},
                         "strict": True,
                     },
                     "type": "function",
@@ -326,7 +332,10 @@ class TestAsyncCompletions:
                 "accuracy": 0.9,
                 "complexity": 0.8,
             },
-            audio={"foo": "string"},
+            audio={
+                "format": "mp3",
+                "voice": "alloy",
+            },
             automatic_tool_execution=True,
             cached_content="cached_content",
             credentials={
@@ -340,7 +349,7 @@ class TestAsyncCompletions:
                 {
                     "name": "name",
                     "description": "description",
-                    "parameters": {"foo": "bar"},
+                    "parameters": {"foo": "string"},
                 }
             ],
             generation_config={"foo": "string"},
@@ -410,7 +419,7 @@ class TestAsyncCompletions:
                     "function": {
                         "name": "name",
                         "description": "description",
-                        "parameters": {"foo": "bar"},
+                        "parameters": {"foo": "string"},
                         "strict": True,
                     },
                     "type": "function",
@@ -470,7 +479,10 @@ class TestAsyncCompletions:
                 "accuracy": 0.9,
                 "complexity": 0.8,
             },
-            audio={"foo": "string"},
+            audio={
+                "format": "mp3",
+                "voice": "alloy",
+            },
             automatic_tool_execution=True,
             cached_content="cached_content",
             credentials={
@@ -484,7 +496,7 @@ class TestAsyncCompletions:
                 {
                     "name": "name",
                     "description": "description",
-                    "parameters": {"foo": "bar"},
+                    "parameters": {"foo": "string"},
                 }
             ],
             generation_config={"foo": "string"},
@@ -553,7 +565,7 @@ class TestAsyncCompletions:
                     "function": {
                         "name": "name",
                         "description": "description",
-                        "parameters": {"foo": "bar"},
+                        "parameters": {"foo": "string"},
                         "strict": True,
                     },
                     "type": "function",

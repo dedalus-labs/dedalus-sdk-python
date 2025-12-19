@@ -11,7 +11,6 @@ from .mcp_server_spec import MCPServerSpec as MCPServerSpec
 from .json_value_input import JSONValueInput as JSONValueInput
 from .json_object_input import JSONObjectInput as JSONObjectInput
 from .function_definition import FunctionDefinition as FunctionDefinition
-from .function_parameters import FunctionParameters as FunctionParameters
 from .dedalus_model_choice import DedalusModelChoice as DedalusModelChoice
 from .response_format_text import ResponseFormatText as ResponseFormatText
 from .response_format_json_object import ResponseFormatJSONObject as ResponseFormatJSONObject

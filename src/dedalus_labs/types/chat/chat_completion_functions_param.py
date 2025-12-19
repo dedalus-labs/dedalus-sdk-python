@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from typing_extensions import Required, TypedDict
 
-from ..shared_params.function_parameters import FunctionParameters
-
 __all__ = ["ChatCompletionFunctionsParam"]
 
 
@@ -31,7 +29,7 @@ class ChatCompletionFunctionsParam(TypedDict, total=False):
     how to call the function.
     """
 
-    parameters: FunctionParameters
+    parameters: "JSONObjectInput"
     """The parameters the functions accepts, described as a JSON Schema object.
 
     See the [guide](https://platform.openai.com/docs/guides/function-calling) for
@@ -41,3 +39,6 @@ class ChatCompletionFunctionsParam(TypedDict, total=False):
 
     Omitting `parameters` defines a function with an empty parameter list.
     """
+
+
+from ..shared_params.json_object_input import JSONObjectInput

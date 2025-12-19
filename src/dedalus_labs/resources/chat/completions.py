@@ -55,7 +55,7 @@ class CompletionsResource(SyncAPIResource):
         *,
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
-        audio: Optional[JSONObjectInput] | Omit = omit,
+        audio: Optional[completion_create_params.Audio] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
@@ -177,6 +177,11 @@ class CompletionsResource(SyncAPIResource):
           audio: Parameters for audio output. Required when audio output is requested with
               `modalities: ["audio"]`.
               [Learn more](https://platform.openai.com/docs/guides/audio).
+
+              Fields:
+
+              - voice (required): VoiceIdsShared
+              - format (required): Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]
 
           automatic_tool_execution: Execute tools server-side. If false, returns raw tool calls for manual handling.
 
@@ -382,7 +387,7 @@ class CompletionsResource(SyncAPIResource):
         model: completion_create_params.Model,
         stream: Literal[True],
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
-        audio: Optional[JSONObjectInput] | Omit = omit,
+        audio: Optional[completion_create_params.Audio] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
@@ -505,6 +510,11 @@ class CompletionsResource(SyncAPIResource):
           audio: Parameters for audio output. Required when audio output is requested with
               `modalities: ["audio"]`.
               [Learn more](https://platform.openai.com/docs/guides/audio).
+
+              Fields:
+
+              - voice (required): VoiceIdsShared
+              - format (required): Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]
 
           automatic_tool_execution: Execute tools server-side. If false, returns raw tool calls for manual handling.
 
@@ -708,7 +718,7 @@ class CompletionsResource(SyncAPIResource):
         model: completion_create_params.Model,
         stream: bool,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
-        audio: Optional[JSONObjectInput] | Omit = omit,
+        audio: Optional[completion_create_params.Audio] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
@@ -831,6 +841,11 @@ class CompletionsResource(SyncAPIResource):
           audio: Parameters for audio output. Required when audio output is requested with
               `modalities: ["audio"]`.
               [Learn more](https://platform.openai.com/docs/guides/audio).
+
+              Fields:
+
+              - voice (required): VoiceIdsShared
+              - format (required): Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]
 
           automatic_tool_execution: Execute tools server-side. If false, returns raw tool calls for manual handling.
 
@@ -1033,7 +1048,7 @@ class CompletionsResource(SyncAPIResource):
         *,
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
-        audio: Optional[JSONObjectInput] | Omit = omit,
+        audio: Optional[completion_create_params.Audio] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
@@ -1195,7 +1210,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         *,
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
-        audio: Optional[JSONObjectInput] | Omit = omit,
+        audio: Optional[completion_create_params.Audio] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
@@ -1317,6 +1332,11 @@ class AsyncCompletionsResource(AsyncAPIResource):
           audio: Parameters for audio output. Required when audio output is requested with
               `modalities: ["audio"]`.
               [Learn more](https://platform.openai.com/docs/guides/audio).
+
+              Fields:
+
+              - voice (required): VoiceIdsShared
+              - format (required): Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]
 
           automatic_tool_execution: Execute tools server-side. If false, returns raw tool calls for manual handling.
 
@@ -1522,7 +1542,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         model: completion_create_params.Model,
         stream: Literal[True],
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
-        audio: Optional[JSONObjectInput] | Omit = omit,
+        audio: Optional[completion_create_params.Audio] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
@@ -1645,6 +1665,11 @@ class AsyncCompletionsResource(AsyncAPIResource):
           audio: Parameters for audio output. Required when audio output is requested with
               `modalities: ["audio"]`.
               [Learn more](https://platform.openai.com/docs/guides/audio).
+
+              Fields:
+
+              - voice (required): VoiceIdsShared
+              - format (required): Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]
 
           automatic_tool_execution: Execute tools server-side. If false, returns raw tool calls for manual handling.
 
@@ -1848,7 +1873,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         model: completion_create_params.Model,
         stream: bool,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
-        audio: Optional[JSONObjectInput] | Omit = omit,
+        audio: Optional[completion_create_params.Audio] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
@@ -1971,6 +1996,11 @@ class AsyncCompletionsResource(AsyncAPIResource):
           audio: Parameters for audio output. Required when audio output is requested with
               `modalities: ["audio"]`.
               [Learn more](https://platform.openai.com/docs/guides/audio).
+
+              Fields:
+
+              - voice (required): VoiceIdsShared
+              - format (required): Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]
 
           automatic_tool_execution: Execute tools server-side. If false, returns raw tool calls for manual handling.
 
@@ -2173,7 +2203,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         *,
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
-        audio: Optional[JSONObjectInput] | Omit = omit,
+        audio: Optional[completion_create_params.Audio] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,

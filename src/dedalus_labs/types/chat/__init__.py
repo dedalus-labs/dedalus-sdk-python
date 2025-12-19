@@ -2,21 +2,11 @@
 
 from __future__ import annotations
 
-from .choice import Choice as Choice
-from .custom import Custom as Custom
-from .function import Function as Function
-from .annotation import Annotation as Annotation
-from .top_logprob import TopLogprob as TopLogprob
 from .choice_delta import ChoiceDelta as ChoiceDelta
-from .url_citation import URLCitation as URLCitation
-from .function_call import FunctionCall as FunctionCall
 from .chat_completion import ChatCompletion as ChatCompletion
-from .choice_logprobs import ChoiceLogprobs as ChoiceLogprobs
 from .completion_usage import CompletionUsage as CompletionUsage
 from .input_token_details import InputTokenDetails as InputTokenDetails
-from .chat_completion_audio import ChatCompletionAudio as ChatCompletionAudio
 from .chat_completion_chunk import ChatCompletionChunk as ChatCompletionChunk
-from .prompt_tokens_details import PromptTokensDetails as PromptTokensDetails
 from .tool_choice_any_param import ToolChoiceAnyParam as ToolChoiceAnyParam
 from .choice_delta_tool_call import ChoiceDeltaToolCall as ChoiceDeltaToolCall
 from .tool_choice_auto_param import ToolChoiceAutoParam as ToolChoiceAutoParam
@@ -25,9 +15,7 @@ from .tool_choice_tool_param import ToolChoiceToolParam as ToolChoiceToolParam
 from .chat_completion_message import ChatCompletionMessage as ChatCompletionMessage
 from .completion_create_params import CompletionCreateParams as CompletionCreateParams
 from .prediction_content_param import PredictionContentParam as PredictionContentParam
-from .completion_tokens_details import CompletionTokensDetails as CompletionTokensDetails
 from .chat_completion_tool_param import ChatCompletionToolParam as ChatCompletionToolParam
-from .chat_completion_audio_param import ChatCompletionAudioParam as ChatCompletionAudioParam
 from .chat_completion_token_logprob import ChatCompletionTokenLogprob as ChatCompletionTokenLogprob
 from .thinking_config_enabled_param import ThinkingConfigEnabledParam as ThinkingConfigEnabledParam
 from .thinking_config_disabled_param import ThinkingConfigDisabledParam as ThinkingConfigDisabledParam
@@ -36,7 +24,6 @@ from .chat_completion_message_tool_call import ChatCompletionMessageToolCall as 
 from .chat_completion_tool_message_param import ChatCompletionToolMessageParam as ChatCompletionToolMessageParam
 from .chat_completion_user_message_param import ChatCompletionUserMessageParam as ChatCompletionUserMessageParam
 from .chat_completion_system_message_param import ChatCompletionSystemMessageParam as ChatCompletionSystemMessageParam
-from .choice_delta_tool_call_function_param import ChoiceDeltaToolCallFunctionParam as ChoiceDeltaToolCallFunctionParam
 from .chat_completion_function_message_param import (
     ChatCompletionFunctionMessageParam as ChatCompletionFunctionMessageParam,
 )
@@ -52,8 +39,8 @@ from .chat_completion_content_part_text_param import (
 from .chat_completion_developer_message_param import (
     ChatCompletionDeveloperMessageParam as ChatCompletionDeveloperMessageParam,
 )
-from .chat_completion_content_part_audio_param import (
-    ChatCompletionContentPartAudioParam as ChatCompletionContentPartAudioParam,
+from .chat_completion_message_tool_call_param import (
+    ChatCompletionMessageToolCallParam as ChatCompletionMessageToolCallParam,
 )
 from .chat_completion_content_part_image_param import (
     ChatCompletionContentPartImageParam as ChatCompletionContentPartImageParam,
@@ -63,4 +50,10 @@ from .chat_completion_message_custom_tool_call import (
 )
 from .chat_completion_content_part_refusal_param import (
     ChatCompletionContentPartRefusalParam as ChatCompletionContentPartRefusalParam,
+)
+from .chat_completion_content_part_input_audio_param import (
+    ChatCompletionContentPartInputAudioParam as ChatCompletionContentPartInputAudioParam,
+)
+from .chat_completion_message_custom_tool_call_param import (
+    ChatCompletionMessageCustomToolCallParam as ChatCompletionMessageCustomToolCallParam,
 )
