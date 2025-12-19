@@ -42,20 +42,20 @@ if TYPE_CHECKING:
     from .resources.audio.audio import AudioResource, AsyncAudioResource
 
 __all__ = [
-    "ENVIRONMENTS",
-    "Timeout",
-    "Transport",
-    "ProxiesTypes",
-    "RequestOptions",
-    "Dedalus",
-    "AsyncDedalus",
-    "Client",
-    "AsyncClient",
+    'ENVIRONMENTS',
+    'Timeout',
+    'Transport',
+    'ProxiesTypes',
+    'RequestOptions',
+    'Dedalus',
+    'AsyncDedalus',
+    'Client',
+    'AsyncClient',
 ]
 
 ENVIRONMENTS: Dict[str, str] = {
-    "production": "https://api.dedaluslabs.ai",
-    "development": "http://localhost:4010",
+    'production': 'https://api.dedaluslabs.ai',
+    'development': 'http://localhost:4010',
 }
 
 
@@ -69,7 +69,7 @@ class Dedalus(SyncAPIClient):
     provider_key: str | None
     provider_model: str | None
 
-    _environment: Literal["production", "development"] | NotGiven
+    _environment: Literal['production', 'development'] | NotGiven
 
     def __init__(
         self,
@@ -81,7 +81,7 @@ class Dedalus(SyncAPIClient):
         provider: str | None = None,
         provider_key: str | None = None,
         provider_model: str | None = None,
-        environment: Literal["production", "development"] | NotGiven = not_given,
+        environment: Literal['production', 'development'] | NotGiven = not_given,
         base_url: str | httpx.URL | None | NotGiven = not_given,
         timeout: float | Timeout | None | NotGiven = not_given,
         max_retries: int = DEFAULT_MAX_RETRIES,
@@ -121,7 +121,7 @@ class Dedalus(SyncAPIClient):
         self.x_api_key = x_api_key
 
         if as_base_url is None:
-            as_base_url = os.environ.get("DEDALUS_AS_URL")
+            as_base_url = os.environ.get('DEDALUS_AS_URL')
         self.as_base_url = as_base_url
 
         if dedalus_org_id is None:
@@ -142,29 +142,29 @@ class Dedalus(SyncAPIClient):
 
         self._environment = environment
 
-        base_url_env = os.environ.get("DEDALUS_BASE_URL")
+        base_url_env = os.environ.get('DEDALUS_BASE_URL')
         if is_given(base_url) and base_url is not None:
             # cast required because mypy doesn't understand the type narrowing
-            base_url = cast("str | httpx.URL", base_url)  # pyright: ignore[reportUnnecessaryCast]
+            base_url = cast('str | httpx.URL', base_url)  # pyright: ignore[reportUnnecessaryCast]
         elif is_given(environment):
             if base_url_env and base_url is not None:
                 raise ValueError(
-                    "Ambiguous URL; The `DEDALUS_BASE_URL` env var and the `environment` argument are given. If you want to use the environment, you must pass base_url=None",
+                    'Ambiguous URL; The `DEDALUS_BASE_URL` env var and the `environment` argument are given. If you want to use the environment, you must pass base_url=None',
                 )
 
             try:
                 base_url = ENVIRONMENTS[environment]
             except KeyError as exc:
-                raise ValueError(f"Unknown environment: {environment}") from exc
+                raise ValueError(f'Unknown environment: {environment}') from exc
         elif base_url_env is not None:
             base_url = base_url_env
         else:
-            self._environment = environment = "production"
+            self._environment = environment = 'production'
 
             try:
                 base_url = ENVIRONMENTS[environment]
             except KeyError as exc:
-                raise ValueError(f"Unknown environment: {environment}") from exc
+                raise ValueError(f'Unknown environment: {environment}') from exc
 
         super().__init__(
             version=__version__,
@@ -277,7 +277,7 @@ class Dedalus(SyncAPIClient):
             return
 
         raise TypeError(
-            '"Could not resolve authentication method. Expected either api_key or x_api_key to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted"'
+            'Could not resolve authentication method. Expected either api_key or x_api_key to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted'
         )
 
     def copy(
@@ -290,7 +290,7 @@ class Dedalus(SyncAPIClient):
         provider: str | None = None,
         provider_key: str | None = None,
         provider_model: str | None = None,
-        environment: Literal["production", "development"] | None = None,
+        environment: Literal['production', 'development'] | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: float | Timeout | None | NotGiven = not_given,
         http_client: httpx.Client | None = None,
@@ -401,7 +401,7 @@ class AsyncDedalus(AsyncAPIClient):
     provider_key: str | None
     provider_model: str | None
 
-    _environment: Literal["production", "development"] | NotGiven
+    _environment: Literal['production', 'development'] | NotGiven
 
     def __init__(
         self,
@@ -413,7 +413,7 @@ class AsyncDedalus(AsyncAPIClient):
         provider: str | None = None,
         provider_key: str | None = None,
         provider_model: str | None = None,
-        environment: Literal["production", "development"] | NotGiven = not_given,
+        environment: Literal['production', 'development'] | NotGiven = not_given,
         base_url: str | httpx.URL | None | NotGiven = not_given,
         timeout: float | Timeout | None | NotGiven = not_given,
         max_retries: int = DEFAULT_MAX_RETRIES,
@@ -453,7 +453,7 @@ class AsyncDedalus(AsyncAPIClient):
         self.x_api_key = x_api_key
 
         if as_base_url is None:
-            as_base_url = os.environ.get("DEDALUS_AS_URL")
+            as_base_url = os.environ.get('DEDALUS_AS_URL')
         self.as_base_url = as_base_url
 
         if dedalus_org_id is None:
@@ -474,29 +474,29 @@ class AsyncDedalus(AsyncAPIClient):
 
         self._environment = environment
 
-        base_url_env = os.environ.get("DEDALUS_BASE_URL")
+        base_url_env = os.environ.get('DEDALUS_BASE_URL')
         if is_given(base_url) and base_url is not None:
             # cast required because mypy doesn't understand the type narrowing
-            base_url = cast("str | httpx.URL", base_url)  # pyright: ignore[reportUnnecessaryCast]
+            base_url = cast('str | httpx.URL', base_url)  # pyright: ignore[reportUnnecessaryCast]
         elif is_given(environment):
             if base_url_env and base_url is not None:
                 raise ValueError(
-                    "Ambiguous URL; The `DEDALUS_BASE_URL` env var and the `environment` argument are given. If you want to use the environment, you must pass base_url=None",
+                    'Ambiguous URL; The `DEDALUS_BASE_URL` env var and the `environment` argument are given. If you want to use the environment, you must pass base_url=None',
                 )
 
             try:
                 base_url = ENVIRONMENTS[environment]
             except KeyError as exc:
-                raise ValueError(f"Unknown environment: {environment}") from exc
+                raise ValueError(f'Unknown environment: {environment}') from exc
         elif base_url_env is not None:
             base_url = base_url_env
         else:
-            self._environment = environment = "production"
+            self._environment = environment = 'production'
 
             try:
                 base_url = ENVIRONMENTS[environment]
             except KeyError as exc:
-                raise ValueError(f"Unknown environment: {environment}") from exc
+                raise ValueError(f'Unknown environment: {environment}') from exc
 
         super().__init__(
             version=__version__,
@@ -609,7 +609,7 @@ class AsyncDedalus(AsyncAPIClient):
             return
 
         raise TypeError(
-            '"Could not resolve authentication method. Expected either api_key or x_api_key to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted"'
+            'Could not resolve authentication method. Expected either api_key or x_api_key to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted'
         )
 
     def copy(
@@ -622,7 +622,7 @@ class AsyncDedalus(AsyncAPIClient):
         provider: str | None = None,
         provider_key: str | None = None,
         provider_model: str | None = None,
-        environment: Literal["production", "development"] | None = None,
+        environment: Literal['production', 'development'] | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: float | Timeout | None | NotGiven = not_given,
         http_client: httpx.AsyncClient | None = None,
