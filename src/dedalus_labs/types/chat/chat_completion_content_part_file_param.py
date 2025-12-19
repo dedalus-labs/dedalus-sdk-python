@@ -8,7 +8,7 @@ __all__ = ["ChatCompletionContentPartFileParam", "File"]
 
 
 class File(TypedDict, total=False):
-    """Schema for ChatCompletionRequestMessageContentPartFileFile.
+    """Schema for File.
 
     Fields:
     - filename (optional): str
@@ -35,11 +35,11 @@ class ChatCompletionContentPartFileParam(TypedDict, total=False):
 
     Fields:
     - type (required): Literal["file"]
-    - file (required): ChatCompletionRequestMessageContentPartFileFile
+    - file (required): File
     """
 
     file: Required[File]
-    """Schema for ChatCompletionRequestMessageContentPartFileFile.
+    """Schema for File.
 
     Fields:
 

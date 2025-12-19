@@ -27,11 +27,11 @@ class ChoiceLogprobs(BaseModel):
 
 
 class Choice(BaseModel):
-    """Schema for ChoicesItem.
+    """Schema for CreateChatCompletionStreamResponseChoicesItem.
 
     Fields:
     - delta (required): ChatCompletionStreamResponseDelta
-    - logprobs (optional): Logprobs
+    - logprobs (optional): CreateChatCompletionStreamResponseChoicesItemLogprobs
     - finish_reason (required): Literal["stop", "length", "tool_calls", "content_filter", "function_call"]
     - index (required): int
     """
@@ -70,7 +70,7 @@ class ChatCompletionChunk(BaseModel):
 
     Fields:
     - id (required): str
-    - choices (required): list[ChoicesItem]
+    - choices (required): list[CreateChatCompletionStreamResponseChoicesItem]
     - created (required): int
     - model (required): str
     - service_tier (optional): ServiceTier

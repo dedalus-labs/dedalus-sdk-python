@@ -16,7 +16,7 @@ class MCPToolResult(BaseModel):
     and structured output, enabling debugging and audit trails.
     """
 
-    arguments: "JSONObjectOutput"
+    arguments: "JSONObjectInput"
     """Input arguments passed to the tool"""
 
     is_error: bool
@@ -31,9 +31,9 @@ class MCPToolResult(BaseModel):
     duration_ms: Optional[int] = None
     """Execution time in milliseconds"""
 
-    result: Optional["JSONValueOutput"] = None
+    result: Optional["JSONValueInput"] = None
     """Structured result from the tool (parsed from structuredContent or content)"""
 
 
-from .json_value_output import JSONValueOutput
-from .json_object_output import JSONObjectOutput
+from .json_value_input import JSONValueInput
+from .json_object_input import JSONObjectInput

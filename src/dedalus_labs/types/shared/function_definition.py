@@ -1,9 +1,10 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
+from __future__ import annotations
+
 from typing import Optional
 
 from ..._models import BaseModel
-from .function_parameters import FunctionParameters
 
 __all__ = ["FunctionDefinition"]
 
@@ -31,7 +32,7 @@ class FunctionDefinition(BaseModel):
     how to call the function.
     """
 
-    parameters: Optional[FunctionParameters] = None
+    parameters: Optional["JSONObjectInput"] = None
     """The parameters the functions accepts, described as a JSON Schema object.
 
     See the [guide](https://platform.openai.com/docs/guides/function-calling) for
@@ -50,3 +51,6 @@ class FunctionDefinition(BaseModel):
     `true`. Learn more about Structured Outputs in the
     [function calling guide](https://platform.openai.com/docs/guides/function-calling).
     """
+
+
+from .json_object_input import JSONObjectInput

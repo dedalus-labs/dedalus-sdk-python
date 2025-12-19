@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from typing_extensions import Literal, Required, TypedDict
 
-__all__ = ["ChatCompletionContentPartAudioParam", "InputAudio"]
+__all__ = ["ChatCompletionContentPartInputAudioParam", "InputAudio"]
 
 
 class InputAudio(TypedDict, total=False):
-    """Schema for ChatCompletionRequestMessageContentPartAudioInputAudio.
+    """Schema for InputAudio.
 
     Fields:
     - data (required): str
@@ -22,16 +22,16 @@ class InputAudio(TypedDict, total=False):
     """The format of the encoded audio data. Currently supports "wav" and "mp3"."""
 
 
-class ChatCompletionContentPartAudioParam(TypedDict, total=False):
+class ChatCompletionContentPartInputAudioParam(TypedDict, total=False):
     """Learn about [audio inputs](https://platform.openai.com/docs/guides/audio).
 
     Fields:
     - type (required): Literal["input_audio"]
-    - input_audio (required): ChatCompletionRequestMessageContentPartAudioInputAudio
+    - input_audio (required): InputAudio
     """
 
     input_audio: Required[InputAudio]
-    """Schema for ChatCompletionRequestMessageContentPartAudioInputAudio.
+    """Schema for InputAudio.
 
     Fields:
 

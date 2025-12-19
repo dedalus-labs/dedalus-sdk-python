@@ -8,7 +8,7 @@ __all__ = ["ChatCompletionContentPartImageParam", "ImageURL"]
 
 
 class ImageURL(TypedDict, total=False):
-    """Schema for ChatCompletionRequestMessageContentPartImageImageUrl.
+    """Schema for ImageUrl.
 
     Fields:
     - url (required): AnyUrl
@@ -31,11 +31,11 @@ class ChatCompletionContentPartImageParam(TypedDict, total=False):
 
     Fields:
     - type (required): Literal["image_url"]
-    - image_url (required): ChatCompletionRequestMessageContentPartImageImageUrl
+    - image_url (required): ImageUrl
     """
 
     image_url: Required[ImageURL]
-    """Schema for ChatCompletionRequestMessageContentPartImageImageUrl.
+    """Schema for ImageUrl.
 
     Fields:
 
