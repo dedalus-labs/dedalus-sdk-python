@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from typing import Dict, List, Union, Optional
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAliasType
 
 __all__ = ["JSONValueInput"]
 
-JSONValueInput: TypeAlias = Union[
-    str, float, bool, Dict[str, Optional["JSONValueInput"]], List[Optional["JSONValueInput"]], None
-]
+JSONValueInput = TypeAliasType(
+    "JSONValueInput",
+    Union[str, float, bool, Dict[str, Optional["JSONValueInput"]], List[Optional["JSONValueInput"]], None],
+)

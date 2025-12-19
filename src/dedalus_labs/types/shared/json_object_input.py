@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 from typing import Dict, Optional
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAliasType
+
+from .json_value_input import JSONValueInput
 
 __all__ = ["JSONObjectInput"]
 
-JSONObjectInput: TypeAlias = Dict[str, Optional["JSONValueInput"]]
-
-from .json_value_input import JSONValueInput
+JSONObjectInput = TypeAliasType(
+    "JSONObjectInput",
+    Dict[str, Optional[JSONValueInput]],
+)

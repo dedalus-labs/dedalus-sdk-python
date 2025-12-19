@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 from typing import Dict, Optional
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAliasType
+
+from .json_value_output import JSONValueOutput
 
 __all__ = ["JSONObjectOutput"]
 
-JSONObjectOutput: TypeAlias = Dict[str, Optional["JSONValueOutput"]]
-
-from .json_value_output import JSONValueOutput
+JSONObjectOutput = TypeAliasType(
+    "JSONObjectOutput",
+    Dict[str, Optional[JSONValueOutput]],
+)
