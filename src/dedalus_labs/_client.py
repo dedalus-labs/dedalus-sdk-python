@@ -42,20 +42,20 @@ if TYPE_CHECKING:
     from .resources.audio.audio import AudioResource, AsyncAudioResource
 
 __all__ = [
-    'ENVIRONMENTS',
-    'Timeout',
-    'Transport',
-    'ProxiesTypes',
-    'RequestOptions',
-    'Dedalus',
-    'AsyncDedalus',
-    'Client',
-    'AsyncClient',
+    "ENVIRONMENTS",
+    "Timeout",
+    "Transport",
+    "ProxiesTypes",
+    "RequestOptions",
+    "Dedalus",
+    "AsyncDedalus",
+    "Client",
+    "AsyncClient",
 ]
 
 ENVIRONMENTS: Dict[str, str] = {
-    'production': 'https://api.dedaluslabs.ai',
-    'development': 'http://localhost:4010',
+    "production": "https://api.dedaluslabs.ai",
+    "development": "http://localhost:4010",
 }
 
 
@@ -69,7 +69,7 @@ class Dedalus(SyncAPIClient):
     provider_key: str | None
     provider_model: str | None
 
-    _environment: Literal['production', 'development'] | NotGiven
+    _environment: Literal["production", "development"] | NotGiven
 
     def __init__(
         self,
@@ -81,7 +81,7 @@ class Dedalus(SyncAPIClient):
         provider: str | None = None,
         provider_key: str | None = None,
         provider_model: str | None = None,
-        environment: Literal['production', 'development'] | NotGiven = not_given,
+        environment: Literal["production", "development"] | NotGiven = not_given,
         base_url: str | httpx.URL | None | NotGiven = not_given,
         timeout: float | Timeout | None | NotGiven = not_given,
         max_retries: int = DEFAULT_MAX_RETRIES,
@@ -113,58 +113,58 @@ class Dedalus(SyncAPIClient):
         - `provider_model` from `DEDALUS_PROVIDER_MODEL`
         """
         if api_key is None:
-            api_key = os.environ.get('DEDALUS_API_KEY')
+            api_key = os.environ.get("DEDALUS_API_KEY")
         self.api_key = api_key
 
         if x_api_key is None:
-            x_api_key = os.environ.get('DEDALUS_X_API_KEY')
+            x_api_key = os.environ.get("DEDALUS_X_API_KEY")
         self.x_api_key = x_api_key
 
         if as_base_url is None:
-            as_base_url = os.environ.get('DEDALUS_AS_URL')
+            as_base_url = os.environ.get("DEDALUS_AS_URL")
         self.as_base_url = as_base_url
 
         if dedalus_org_id is None:
-            dedalus_org_id = os.environ.get('DEDALUS_ORG_ID')
+            dedalus_org_id = os.environ.get("DEDALUS_ORG_ID")
         self.dedalus_org_id = dedalus_org_id
 
         if provider is None:
-            provider = os.environ.get('DEDALUS_PROVIDER')
+            provider = os.environ.get("DEDALUS_PROVIDER")
         self.provider = provider
 
         if provider_key is None:
-            provider_key = os.environ.get('DEDALUS_PROVIDER_KEY')
+            provider_key = os.environ.get("DEDALUS_PROVIDER_KEY")
         self.provider_key = provider_key
 
         if provider_model is None:
-            provider_model = os.environ.get('DEDALUS_PROVIDER_MODEL')
+            provider_model = os.environ.get("DEDALUS_PROVIDER_MODEL")
         self.provider_model = provider_model
 
         self._environment = environment
 
-        base_url_env = os.environ.get('DEDALUS_BASE_URL')
+        base_url_env = os.environ.get("DEDALUS_BASE_URL")
         if is_given(base_url) and base_url is not None:
             # cast required because mypy doesn't understand the type narrowing
-            base_url = cast('str | httpx.URL', base_url)  # pyright: ignore[reportUnnecessaryCast]
+            base_url = cast("str | httpx.URL", base_url)  # pyright: ignore[reportUnnecessaryCast]
         elif is_given(environment):
             if base_url_env and base_url is not None:
                 raise ValueError(
-                    'Ambiguous URL; The `DEDALUS_BASE_URL` env var and the `environment` argument are given. If you want to use the environment, you must pass base_url=None',
+                    "Ambiguous URL; The `DEDALUS_BASE_URL` env var and the `environment` argument are given. If you want to use the environment, you must pass base_url=None",
                 )
 
             try:
                 base_url = ENVIRONMENTS[environment]
             except KeyError as exc:
-                raise ValueError(f'Unknown environment: {environment}') from exc
+                raise ValueError(f"Unknown environment: {environment}") from exc
         elif base_url_env is not None:
             base_url = base_url_env
         else:
-            self._environment = environment = 'production'
+            self._environment = environment = "production"
 
             try:
                 base_url = ENVIRONMENTS[environment]
             except KeyError as exc:
-                raise ValueError(f'Unknown environment: {environment}') from exc
+                raise ValueError(f"Unknown environment: {environment}") from exc
 
         super().__init__(
             version=__version__,
@@ -177,7 +177,7 @@ class Dedalus(SyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
-        self._idempotency_header = 'Idempotency-Key'
+        self._idempotency_header = "Idempotency-Key"
 
         self._default_stream_cls = Stream
 
@@ -228,7 +228,7 @@ class Dedalus(SyncAPIClient):
     @property
     @override
     def qs(self) -> Querystring:
-        return Querystring(array_format='comma')
+        return Querystring(array_format="comma")
 
     @property
     @override
@@ -240,44 +240,42 @@ class Dedalus(SyncAPIClient):
         api_key = self.api_key
         if api_key is None:
             return {}
-        return {'Authorization': f'Bearer {api_key}'}
+        return {"Authorization": f"Bearer {api_key}"}
 
     @property
     def _api_key_auth(self) -> dict[str, str]:
         x_api_key = self.x_api_key
         if x_api_key is None:
             return {}
-        return {'x-api-key': x_api_key}
+        return {"x-api-key": x_api_key}
 
     @property
     @override
     def default_headers(self) -> dict[str, str | Omit]:
         return {
             **super().default_headers,
-            'X-Stainless-Async': 'false',
-            'User-Agent': 'Dedalus-SDK',
-            'X-SDK-Version': '1.0.0',
-            'X-Provider': self.provider if self.provider is not None else Omit(),
-            'X-Provider-Key': self.provider_key
-            if self.provider_key is not None
-            else Omit(),
+            "X-Stainless-Async": "false",
+            "User-Agent": "Dedalus-SDK",
+            "X-SDK-Version": "1.0.0",
+            "X-Provider": self.provider if self.provider is not None else Omit(),
+            "X-Provider-Key": self.provider_key if self.provider_key is not None else Omit(),
             **self._custom_headers,
         }
 
     @override
     def _validate_headers(self, headers: Headers, custom_headers: Headers) -> None:
-        if self.api_key and headers.get('Authorization'):
+        if self.api_key and headers.get("Authorization"):
             return
-        if isinstance(custom_headers.get('Authorization'), Omit):
+        if isinstance(custom_headers.get("Authorization"), Omit):
             return
 
-        if self.x_api_key and headers.get('x-api-key'):
+        if self.x_api_key and headers.get("x-api-key"):
             return
-        if isinstance(custom_headers.get('x-api-key'), Omit):
+        if isinstance(custom_headers.get("x-api-key"), Omit):
             return
 
         raise TypeError(
-            'Could not resolve authentication method. Expected either api_key or x_api_key to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted'
+            "Could not resolve authentication method. Expected either api_key or x_api_key to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted"
         )
 
     def copy(
@@ -290,7 +288,7 @@ class Dedalus(SyncAPIClient):
         provider: str | None = None,
         provider_key: str | None = None,
         provider_model: str | None = None,
-        environment: Literal['production', 'development'] | None = None,
+        environment: Literal["production", "development"] | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: float | Timeout | None | NotGiven = not_given,
         http_client: httpx.Client | None = None,
@@ -305,14 +303,10 @@ class Dedalus(SyncAPIClient):
         Create a new client instance re-using the same options given to the current client with optional overriding.
         """
         if default_headers is not None and set_default_headers is not None:
-            raise ValueError(
-                'The `default_headers` and `set_default_headers` arguments are mutually exclusive'
-            )
+            raise ValueError("The `default_headers` and `set_default_headers` arguments are mutually exclusive")
 
         if default_query is not None and set_default_query is not None:
-            raise ValueError(
-                'The `default_query` and `set_default_query` arguments are mutually exclusive'
-            )
+            raise ValueError("The `default_query` and `set_default_query` arguments are mutually exclusive")
 
         headers = self._custom_headers
         if default_headers is not None:
@@ -361,14 +355,10 @@ class Dedalus(SyncAPIClient):
             return _exceptions.BadRequestError(err_msg, response=response, body=body)
 
         if response.status_code == 401:
-            return _exceptions.AuthenticationError(
-                err_msg, response=response, body=body
-            )
+            return _exceptions.AuthenticationError(err_msg, response=response, body=body)
 
         if response.status_code == 403:
-            return _exceptions.PermissionDeniedError(
-                err_msg, response=response, body=body
-            )
+            return _exceptions.PermissionDeniedError(err_msg, response=response, body=body)
 
         if response.status_code == 404:
             return _exceptions.NotFoundError(err_msg, response=response, body=body)
@@ -377,17 +367,13 @@ class Dedalus(SyncAPIClient):
             return _exceptions.ConflictError(err_msg, response=response, body=body)
 
         if response.status_code == 422:
-            return _exceptions.UnprocessableEntityError(
-                err_msg, response=response, body=body
-            )
+            return _exceptions.UnprocessableEntityError(err_msg, response=response, body=body)
 
         if response.status_code == 429:
             return _exceptions.RateLimitError(err_msg, response=response, body=body)
 
         if response.status_code >= 500:
-            return _exceptions.InternalServerError(
-                err_msg, response=response, body=body
-            )
+            return _exceptions.InternalServerError(err_msg, response=response, body=body)
         return APIStatusError(err_msg, response=response, body=body)
 
 
@@ -401,7 +387,7 @@ class AsyncDedalus(AsyncAPIClient):
     provider_key: str | None
     provider_model: str | None
 
-    _environment: Literal['production', 'development'] | NotGiven
+    _environment: Literal["production", "development"] | NotGiven
 
     def __init__(
         self,
@@ -413,7 +399,7 @@ class AsyncDedalus(AsyncAPIClient):
         provider: str | None = None,
         provider_key: str | None = None,
         provider_model: str | None = None,
-        environment: Literal['production', 'development'] | NotGiven = not_given,
+        environment: Literal["production", "development"] | NotGiven = not_given,
         base_url: str | httpx.URL | None | NotGiven = not_given,
         timeout: float | Timeout | None | NotGiven = not_given,
         max_retries: int = DEFAULT_MAX_RETRIES,
@@ -445,58 +431,58 @@ class AsyncDedalus(AsyncAPIClient):
         - `provider_model` from `DEDALUS_PROVIDER_MODEL`
         """
         if api_key is None:
-            api_key = os.environ.get('DEDALUS_API_KEY')
+            api_key = os.environ.get("DEDALUS_API_KEY")
         self.api_key = api_key
 
         if x_api_key is None:
-            x_api_key = os.environ.get('DEDALUS_X_API_KEY')
+            x_api_key = os.environ.get("DEDALUS_X_API_KEY")
         self.x_api_key = x_api_key
 
         if as_base_url is None:
-            as_base_url = os.environ.get('DEDALUS_AS_URL')
+            as_base_url = os.environ.get("DEDALUS_AS_URL")
         self.as_base_url = as_base_url
 
         if dedalus_org_id is None:
-            dedalus_org_id = os.environ.get('DEDALUS_ORG_ID')
+            dedalus_org_id = os.environ.get("DEDALUS_ORG_ID")
         self.dedalus_org_id = dedalus_org_id
 
         if provider is None:
-            provider = os.environ.get('DEDALUS_PROVIDER')
+            provider = os.environ.get("DEDALUS_PROVIDER")
         self.provider = provider
 
         if provider_key is None:
-            provider_key = os.environ.get('DEDALUS_PROVIDER_KEY')
+            provider_key = os.environ.get("DEDALUS_PROVIDER_KEY")
         self.provider_key = provider_key
 
         if provider_model is None:
-            provider_model = os.environ.get('DEDALUS_PROVIDER_MODEL')
+            provider_model = os.environ.get("DEDALUS_PROVIDER_MODEL")
         self.provider_model = provider_model
 
         self._environment = environment
 
-        base_url_env = os.environ.get('DEDALUS_BASE_URL')
+        base_url_env = os.environ.get("DEDALUS_BASE_URL")
         if is_given(base_url) and base_url is not None:
             # cast required because mypy doesn't understand the type narrowing
-            base_url = cast('str | httpx.URL', base_url)  # pyright: ignore[reportUnnecessaryCast]
+            base_url = cast("str | httpx.URL", base_url)  # pyright: ignore[reportUnnecessaryCast]
         elif is_given(environment):
             if base_url_env and base_url is not None:
                 raise ValueError(
-                    'Ambiguous URL; The `DEDALUS_BASE_URL` env var and the `environment` argument are given. If you want to use the environment, you must pass base_url=None',
+                    "Ambiguous URL; The `DEDALUS_BASE_URL` env var and the `environment` argument are given. If you want to use the environment, you must pass base_url=None",
                 )
 
             try:
                 base_url = ENVIRONMENTS[environment]
             except KeyError as exc:
-                raise ValueError(f'Unknown environment: {environment}') from exc
+                raise ValueError(f"Unknown environment: {environment}") from exc
         elif base_url_env is not None:
             base_url = base_url_env
         else:
-            self._environment = environment = 'production'
+            self._environment = environment = "production"
 
             try:
                 base_url = ENVIRONMENTS[environment]
             except KeyError as exc:
-                raise ValueError(f'Unknown environment: {environment}') from exc
+                raise ValueError(f"Unknown environment: {environment}") from exc
 
         super().__init__(
             version=__version__,
@@ -509,7 +495,7 @@ class AsyncDedalus(AsyncAPIClient):
             _strict_response_validation=_strict_response_validation,
         )
 
-        self._idempotency_header = 'Idempotency-Key'
+        self._idempotency_header = "Idempotency-Key"
 
         self._default_stream_cls = AsyncStream
 
@@ -560,7 +546,7 @@ class AsyncDedalus(AsyncAPIClient):
     @property
     @override
     def qs(self) -> Querystring:
-        return Querystring(array_format='comma')
+        return Querystring(array_format="comma")
 
     @property
     @override
@@ -572,44 +558,42 @@ class AsyncDedalus(AsyncAPIClient):
         api_key = self.api_key
         if api_key is None:
             return {}
-        return {'Authorization': f'Bearer {api_key}'}
+        return {"Authorization": f"Bearer {api_key}"}
 
     @property
     def _api_key_auth(self) -> dict[str, str]:
         x_api_key = self.x_api_key
         if x_api_key is None:
             return {}
-        return {'x-api-key': x_api_key}
+        return {"x-api-key": x_api_key}
 
     @property
     @override
     def default_headers(self) -> dict[str, str | Omit]:
         return {
             **super().default_headers,
-            'X-Stainless-Async': f'async:{get_async_library()}',
-            'User-Agent': 'Dedalus-SDK',
-            'X-SDK-Version': '1.0.0',
-            'X-Provider': self.provider if self.provider is not None else Omit(),
-            'X-Provider-Key': self.provider_key
-            if self.provider_key is not None
-            else Omit(),
+            "X-Stainless-Async": f"async:{get_async_library()}",
+            "User-Agent": "Dedalus-SDK",
+            "X-SDK-Version": "1.0.0",
+            "X-Provider": self.provider if self.provider is not None else Omit(),
+            "X-Provider-Key": self.provider_key if self.provider_key is not None else Omit(),
             **self._custom_headers,
         }
 
     @override
     def _validate_headers(self, headers: Headers, custom_headers: Headers) -> None:
-        if self.api_key and headers.get('Authorization'):
+        if self.api_key and headers.get("Authorization"):
             return
-        if isinstance(custom_headers.get('Authorization'), Omit):
+        if isinstance(custom_headers.get("Authorization"), Omit):
             return
 
-        if self.x_api_key and headers.get('x-api-key'):
+        if self.x_api_key and headers.get("x-api-key"):
             return
-        if isinstance(custom_headers.get('x-api-key'), Omit):
+        if isinstance(custom_headers.get("x-api-key"), Omit):
             return
 
         raise TypeError(
-            'Could not resolve authentication method. Expected either api_key or x_api_key to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted'
+            "Could not resolve authentication method. Expected either api_key or x_api_key to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted"
         )
 
     def copy(
@@ -622,7 +606,7 @@ class AsyncDedalus(AsyncAPIClient):
         provider: str | None = None,
         provider_key: str | None = None,
         provider_model: str | None = None,
-        environment: Literal['production', 'development'] | None = None,
+        environment: Literal["production", "development"] | None = None,
         base_url: str | httpx.URL | None = None,
         timeout: float | Timeout | None | NotGiven = not_given,
         http_client: httpx.AsyncClient | None = None,
@@ -637,14 +621,10 @@ class AsyncDedalus(AsyncAPIClient):
         Create a new client instance re-using the same options given to the current client with optional overriding.
         """
         if default_headers is not None and set_default_headers is not None:
-            raise ValueError(
-                'The `default_headers` and `set_default_headers` arguments are mutually exclusive'
-            )
+            raise ValueError("The `default_headers` and `set_default_headers` arguments are mutually exclusive")
 
         if default_query is not None and set_default_query is not None:
-            raise ValueError(
-                'The `default_query` and `set_default_query` arguments are mutually exclusive'
-            )
+            raise ValueError("The `default_query` and `set_default_query` arguments are mutually exclusive")
 
         headers = self._custom_headers
         if default_headers is not None:
@@ -693,14 +673,10 @@ class AsyncDedalus(AsyncAPIClient):
             return _exceptions.BadRequestError(err_msg, response=response, body=body)
 
         if response.status_code == 401:
-            return _exceptions.AuthenticationError(
-                err_msg, response=response, body=body
-            )
+            return _exceptions.AuthenticationError(err_msg, response=response, body=body)
 
         if response.status_code == 403:
-            return _exceptions.PermissionDeniedError(
-                err_msg, response=response, body=body
-            )
+            return _exceptions.PermissionDeniedError(err_msg, response=response, body=body)
 
         if response.status_code == 404:
             return _exceptions.NotFoundError(err_msg, response=response, body=body)
@@ -709,17 +685,13 @@ class AsyncDedalus(AsyncAPIClient):
             return _exceptions.ConflictError(err_msg, response=response, body=body)
 
         if response.status_code == 422:
-            return _exceptions.UnprocessableEntityError(
-                err_msg, response=response, body=body
-            )
+            return _exceptions.UnprocessableEntityError(err_msg, response=response, body=body)
 
         if response.status_code == 429:
             return _exceptions.RateLimitError(err_msg, response=response, body=body)
 
         if response.status_code >= 500:
-            return _exceptions.InternalServerError(
-                err_msg, response=response, body=body
-            )
+            return _exceptions.InternalServerError(err_msg, response=response, body=body)
         return APIStatusError(err_msg, response=response, body=body)
 
 

@@ -205,6 +205,7 @@ target-version = "py38"
 
 [tool.ruff.format]
 docstring-code-format = true
+quote-style = "double"
 
 [tool.ruff.lint]
 select = [

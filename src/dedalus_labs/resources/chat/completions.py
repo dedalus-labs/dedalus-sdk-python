@@ -1125,7 +1125,11 @@ class CompletionsResource(SyncAPIResource):
         from ..._utils import is_given
 
         # Validate response_format is not a Pydantic model
-        if is_given(response_format) and inspect.isclass(response_format) and issubclass(response_format, pydantic.BaseModel):
+        if (
+            is_given(response_format)
+            and inspect.isclass(response_format)
+            and issubclass(response_format, pydantic.BaseModel)
+        ):
             raise TypeError(
                 "You tried to pass a `BaseModel` class to `chat.completions.create()`; "
                 "You must use `chat.completions.parse()` instead"
@@ -2593,7 +2597,11 @@ class AsyncCompletionsResource(AsyncAPIResource):
         from ..._utils import is_given
 
         # Validate response_format is not a Pydantic model
-        if is_given(response_format) and inspect.isclass(response_format) and issubclass(response_format, pydantic.BaseModel):
+        if (
+            is_given(response_format)
+            and inspect.isclass(response_format)
+            and issubclass(response_format, pydantic.BaseModel)
+        ):
             raise TypeError(
                 "You tried to pass a `BaseModel` class to `chat.completions.create()`; "
                 "You must use `chat.completions.parse()` instead"

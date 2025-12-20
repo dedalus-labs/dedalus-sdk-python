@@ -40,8 +40,7 @@ def _require_crypto() -> None:
     """Raise if cryptography is not installed."""
     if not _CRYPTO_AVAILABLE:
         raise ImportError(
-            "cryptography is required for credential encryption. "
-            "Install with: uv pip install 'dedalus-labs[auth]'"
+            "cryptography is required for credential encryption. Install with: uv pip install 'dedalus-labs[auth]'"
         )
 
 

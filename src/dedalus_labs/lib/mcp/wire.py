@@ -312,7 +312,13 @@ def collect_unique_connections(servers: Sequence[MCPServerProtocol]) -> List[Any
         conn_list = list(connections.values()) if isinstance(connections, dict) else list(connections or [])
 
         for conn in conn_list:
-            name = getattr(conn, "name", None) if hasattr(conn, "name") else conn.get("name") if isinstance(conn, dict) else None
+            name = (
+                getattr(conn, "name", None)
+                if hasattr(conn, "name")
+                else conn.get("name")
+                if isinstance(conn, dict)
+                else None
+            )
             if name and name not in seen_names:
                 seen_names.add(name)
                 unique.append(conn)
@@ -383,7 +389,13 @@ def match_credentials_to_connections(
     missing: List[str] = []
 
     for conn in connections:
-        name = getattr(conn, "name", None) if hasattr(conn, "name") else conn.get("name") if isinstance(conn, dict) else None
+        name = (
+            getattr(conn, "name", None)
+            if hasattr(conn, "name")
+            else conn.get("name")
+            if isinstance(conn, dict)
+            else None
+        )
         if name and name in creds_by_name:
             pairs.append((conn, creds_by_name[name]))
         elif name:
