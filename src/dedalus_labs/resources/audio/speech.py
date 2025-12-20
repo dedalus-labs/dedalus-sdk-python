@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Union
 from typing_extensions import Literal
 
 import httpx
@@ -51,12 +51,14 @@ class SpeechResource(SyncAPIResource):
         self,
         *,
         input: str,
-        model: str,
-        voice: Literal["alloy", "ash", "ballad", "coral", "echo", "fable", "onyx", "nova", "sage", "shimmer", "verse"],
-        instructions: Optional[str] | Omit = omit,
-        response_format: Optional[Literal["mp3", "opus", "aac", "flac", "wav", "pcm"]] | Omit = omit,
-        speed: Optional[float] | Omit = omit,
-        stream_format: Optional[Literal["sse", "audio"]] | Omit = omit,
+        model: Union[str, Literal["tts-1", "tts-1-hd", "gpt-4o-mini-tts"]],
+        voice: Union[
+            str, Literal["alloy", "ash", "ballad", "coral", "echo", "sage", "shimmer", "verse", "marin", "cedar"]
+        ],
+        instructions: str | Omit = omit,
+        response_format: Literal["mp3", "opus", "aac", "flac", "wav", "pcm"] | Omit = omit,
+        speed: float | Omit = omit,
+        stream_format: Literal["sse", "audio"] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -79,7 +81,7 @@ class SpeechResource(SyncAPIResource):
 
           model:
               One of the available [TTS models](https://platform.openai.com/docs/models#tts):
-              `openai/tts-1`, `openai/tts-1-hd` or `openai/gpt-4o-mini-tts`.
+              `tts-1`, `tts-1-hd` or `gpt-4o-mini-tts`.
 
           voice: The voice to use when generating the audio. Supported voices are `alloy`, `ash`,
               `ballad`, `coral`, `echo`, `fable`, `onyx`, `nova`, `sage`, `shimmer`, and
@@ -158,12 +160,14 @@ class AsyncSpeechResource(AsyncAPIResource):
         self,
         *,
         input: str,
-        model: str,
-        voice: Literal["alloy", "ash", "ballad", "coral", "echo", "fable", "onyx", "nova", "sage", "shimmer", "verse"],
-        instructions: Optional[str] | Omit = omit,
-        response_format: Optional[Literal["mp3", "opus", "aac", "flac", "wav", "pcm"]] | Omit = omit,
-        speed: Optional[float] | Omit = omit,
-        stream_format: Optional[Literal["sse", "audio"]] | Omit = omit,
+        model: Union[str, Literal["tts-1", "tts-1-hd", "gpt-4o-mini-tts"]],
+        voice: Union[
+            str, Literal["alloy", "ash", "ballad", "coral", "echo", "sage", "shimmer", "verse", "marin", "cedar"]
+        ],
+        instructions: str | Omit = omit,
+        response_format: Literal["mp3", "opus", "aac", "flac", "wav", "pcm"] | Omit = omit,
+        speed: float | Omit = omit,
+        stream_format: Literal["sse", "audio"] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -186,7 +190,7 @@ class AsyncSpeechResource(AsyncAPIResource):
 
           model:
               One of the available [TTS models](https://platform.openai.com/docs/models#tts):
-              `openai/tts-1`, `openai/tts-1-hd` or `openai/gpt-4o-mini-tts`.
+              `tts-1`, `tts-1-hd` or `gpt-4o-mini-tts`.
 
           voice: The voice to use when generating the audio. Supported voices are `alloy`, `ash`,
               `ballad`, `coral`, `echo`, `fable`, `onyx`, `nova`, `sage`, `shimmer`, and

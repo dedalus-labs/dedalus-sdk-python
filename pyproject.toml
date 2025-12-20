@@ -5,7 +5,7 @@ description = "The official Python library for the Dedalus API"
 dynamic = ["readme"]
 license = "MIT"
 authors = [
-{ name = "Dedalus Labs", email = "founders@dedaluslabs.ai" }
+{ name = "Dedalus Labs", email = "oss@dedaluslabs.ai" }
 ]
 
 dependencies = [

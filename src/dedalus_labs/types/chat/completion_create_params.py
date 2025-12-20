@@ -6,13 +6,14 @@ from typing import Dict, Union, Iterable, Optional
 from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
 from ..._types import SequenceNotStr
-from ..shared_params import mcp_servers
+from ..shared_params import mcp_servers as _mcp_servers
 from .tool_choice_any_param import ToolChoiceAnyParam
 from .tool_choice_auto_param import ToolChoiceAutoParam
 from .tool_choice_none_param import ToolChoiceNoneParam
 from .tool_choice_tool_param import ToolChoiceToolParam
 from .prediction_content_param import PredictionContentParam
 from ..shared_params.credential import Credential
+from .chat_completion_audio_param import ChatCompletionAudioParam
 from .thinking_config_enabled_param import ThinkingConfigEnabledParam
 from ..shared_params.mcp_credentials import MCPCredentials
 from ..shared_params.mcp_server_spec import MCPServerSpec
@@ -29,7 +30,6 @@ from ..shared_params.response_format_json_object import ResponseFormatJSONObject
 __all__ = [
     "CompletionCreateParamsBase",
     "Model",
-    "Audio",
     "Credentials",
     "MCPServers",
     "Message",
@@ -60,7 +60,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     agent_attributes: Optional[Dict[str, float]]
     """Agent attributes. Values in [0.0, 1.0]."""
 
-    audio: Optional[Audio]
+    audio: Optional[ChatCompletionAudioParam]
     """Parameters for audio output.
 
     Required when audio output is requested with `modalities: ["audio"]`.
@@ -370,37 +370,9 @@ class CompletionCreateParamsBase(TypedDict, total=False):
 
 Model: TypeAlias = Union[str, "DedalusModel", SequenceNotStr["DedalusModelChoice"]]
 
-
-class Audio(TypedDict, total=False):
-    """Parameters for audio output.
-
-    Required when audio output is requested with
-    `modalities: ["audio"]`. [Learn more](https://platform.openai.com/docs/guides/audio).
-
-    Fields:
-    - voice (required): VoiceIdsShared
-    - format (required): Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]
-    """
-
-    format: Required[Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]]
-    """Specifies the output audio format.
-
-    Must be one of `wav`, `mp3`, `flac`, `opus`, or `pcm16`.
-    """
-
-    voice: Required[
-        Union[str, Literal["alloy", "ash", "ballad", "coral", "echo", "sage", "shimmer", "verse", "marin", "cedar"]]
-    ]
-    """The voice the model uses to respond.
-
-    Supported voices are `alloy`, `ash`, `ballad`, `coral`, `echo`, `fable`, `nova`,
-    `onyx`, `sage`, and `shimmer`.
-    """
-
-
 Credentials: TypeAlias = Union[Credential, MCPCredentials]
 
-MCPServers: TypeAlias = Union[str, MCPServerSpec, mcp_servers.MCPServers]
+MCPServers: TypeAlias = Union[str, MCPServerSpec, _mcp_servers.MCPServers]
 
 Message: TypeAlias = Union[
     ChatCompletionDeveloperMessageParam,

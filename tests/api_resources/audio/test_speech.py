@@ -28,9 +28,9 @@ class TestSpeech:
     def test_method_create(self, client: Dedalus, respx_mock: MockRouter) -> None:
         respx_mock.post("/v1/audio/speech").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
         speech = client.audio.speech.create(
-            input="Hello, how are you today?",
-            model="openai/tts-1",
-            voice="alloy",
+            input="input",
+            model="string",
+            voice="string",
         )
         assert speech.is_closed
         assert speech.json() == {"foo": "bar"}
@@ -42,12 +42,12 @@ class TestSpeech:
     def test_method_create_with_all_params(self, client: Dedalus, respx_mock: MockRouter) -> None:
         respx_mock.post("/v1/audio/speech").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
         speech = client.audio.speech.create(
-            input="Hello, how are you today?",
-            model="openai/tts-1",
-            voice="alloy",
+            input="input",
+            model="string",
+            voice="string",
             instructions="instructions",
             response_format="mp3",
-            speed=1,
+            speed=0.25,
             stream_format="sse",
         )
         assert speech.is_closed
@@ -61,9 +61,9 @@ class TestSpeech:
         respx_mock.post("/v1/audio/speech").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
 
         speech = client.audio.speech.with_raw_response.create(
-            input="Hello, how are you today?",
-            model="openai/tts-1",
-            voice="alloy",
+            input="input",
+            model="string",
+            voice="string",
         )
 
         assert speech.is_closed is True
@@ -76,9 +76,9 @@ class TestSpeech:
     def test_streaming_response_create(self, client: Dedalus, respx_mock: MockRouter) -> None:
         respx_mock.post("/v1/audio/speech").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
         with client.audio.speech.with_streaming_response.create(
-            input="Hello, how are you today?",
-            model="openai/tts-1",
-            voice="alloy",
+            input="input",
+            model="string",
+            voice="string",
         ) as speech:
             assert not speech.is_closed
             assert speech.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -100,9 +100,9 @@ class TestAsyncSpeech:
     async def test_method_create(self, async_client: AsyncDedalus, respx_mock: MockRouter) -> None:
         respx_mock.post("/v1/audio/speech").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
         speech = await async_client.audio.speech.create(
-            input="Hello, how are you today?",
-            model="openai/tts-1",
-            voice="alloy",
+            input="input",
+            model="string",
+            voice="string",
         )
         assert speech.is_closed
         assert await speech.json() == {"foo": "bar"}
@@ -114,12 +114,12 @@ class TestAsyncSpeech:
     async def test_method_create_with_all_params(self, async_client: AsyncDedalus, respx_mock: MockRouter) -> None:
         respx_mock.post("/v1/audio/speech").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
         speech = await async_client.audio.speech.create(
-            input="Hello, how are you today?",
-            model="openai/tts-1",
-            voice="alloy",
+            input="input",
+            model="string",
+            voice="string",
             instructions="instructions",
             response_format="mp3",
-            speed=1,
+            speed=0.25,
             stream_format="sse",
         )
         assert speech.is_closed
@@ -133,9 +133,9 @@ class TestAsyncSpeech:
         respx_mock.post("/v1/audio/speech").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
 
         speech = await async_client.audio.speech.with_raw_response.create(
-            input="Hello, how are you today?",
-            model="openai/tts-1",
-            voice="alloy",
+            input="input",
+            model="string",
+            voice="string",
         )
 
         assert speech.is_closed is True
@@ -148,9 +148,9 @@ class TestAsyncSpeech:
     async def test_streaming_response_create(self, async_client: AsyncDedalus, respx_mock: MockRouter) -> None:
         respx_mock.post("/v1/audio/speech").mock(return_value=httpx.Response(200, json={"foo": "bar"}))
         async with async_client.audio.speech.with_streaming_response.create(
-            input="Hello, how are you today?",
-            model="openai/tts-1",
-            voice="alloy",
+            input="input",
+            model="string",
+            voice="string",
         ) as speech:
             assert not speech.is_closed
             assert speech.http_request.headers.get("X-Stainless-Lang") == "python"
