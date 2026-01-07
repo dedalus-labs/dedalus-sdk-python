@@ -26,5 +26,6 @@ ToolResult = Dict[str, Union[str, int, JsonValue]]
 
 class ToolHandler(Protocol):
     """Protocol for tool handlers."""
+
     def schemas(self) -> List[Dict[str, Any]]: ...
     async def exec(self, name: str, args: Dict[str, JsonValue]) -> JsonValue: ...

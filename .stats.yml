@@ -1,4 +1,4 @@
 configured_endpoints: 10
-openapi_spec_url: https://storage.googleapis.com/stainless-sdk-openapi-specs/dedalus-labs%2Fdedalus-sdk-80b5674ed6df36496affb928c4a55548eb2efa4e5f386b6fbe38f8b5346e338a.yml
-openapi_spec_hash: 385bc6c3277511f9c5628c1057ac8e3c
-config_hash: 66ac9bd55220d09272afff370ed3ace8
+openapi_spec_url: https://storage.googleapis.com/stainless-sdk-openapi-specs/dedalus-labs%2Fdedalus-sdk-53ad5eb1f35533f8ed01f9dc832053738c4fd38d89e749138c98b906a2d72b10.yml
+openapi_spec_hash: 4aeb2f6edd9095ae1da9329f8e8c6969
+config_hash: 04cd6cbc27fd75e343dc6d12e5f1f898

@@ -460,7 +460,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=1.9.0,<3" },
     { name = "pyjwt", extras = ["crypto"], marker = "extra == 'auth'", specifier = ">=2.10.1" },
     { name = "sniffio" },
-    { name = "typing-extensions", specifier = ">=4.11,<5" },
+    { name = "typing-extensions", specifier = ">=4.10,<5" },
 ]
 provides-extras = ["aiohttp", "auth"]
 

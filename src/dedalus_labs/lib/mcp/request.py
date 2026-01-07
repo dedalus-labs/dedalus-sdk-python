@@ -160,8 +160,7 @@ def _encrypt_credentials(
 
     """
     encrypted = {
-        cred.connection.name: encrypt_credentials(public_key, cred.values_for_encryption())
-        for cred in credentials
+        cred.connection.name: encrypt_credentials(public_key, cred.values_for_encryption()) for cred in credentials
     }
     return EncryptedCredentials(**encrypted)
 
@@ -188,11 +187,13 @@ def _embed_credentials(
     for server in servers:
         if isinstance(server, str):
             # Slug string -> full spec with name = slug
-            result.append({
-                "slug": server,
-                "name": server,
-                "credentials": creds_dict,
-            })
+            result.append(
+                {
+                    "slug": server,
+                    "name": server,
+                    "credentials": creds_dict,
+                }
+            )
         elif isinstance(server, dict):
             # Existing spec -> add name (if missing) and credentials
             name = server.get("name") or server.get("slug") or server.get("url") or ""

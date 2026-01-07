@@ -37,20 +37,15 @@ from ..._parsing import (
     parse_function_tool_arguments,
 )
 from ...._streaming import Stream, AsyncStream
-from ....types.chat.chat_completion_chunk import ChatCompletionChunk, Choice as ChoiceChunk, ChoiceLogprobs
+from ....types.chat.chat_completion_chunk import ChatCompletionChunk
+from ....types.chat.stream_choice import StreamChoice as ChoiceChunk
+from ....types.chat.stream_choice_logprobs import StreamChoiceLogprobs as ChoiceLogprobs
 from ....types.chat.parsed_chat_completion import ParsedChatCompletion
+from ...._exceptions import LengthFinishReasonError, ContentFilterFinishReasonError
 
 
 InputTool = Dict[str, Any]
 ResponseFormatParam = Dict[str, Any]
-
-
-class LengthFinishReasonError(RuntimeError):
-    """Raised when streaming stops due to max tokens before parsing completes."""
-
-
-class ContentFilterFinishReasonError(RuntimeError):
-    """Raised when streaming output is blocked by a content filter."""
 
 
 class ChatCompletionStream(Generic[ResponseFormatT]):

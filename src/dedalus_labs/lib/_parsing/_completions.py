@@ -163,8 +163,10 @@ def maybe_parse_content(
     response_format: type[ResponseFormatT] | ResponseFormatParam | Omit,
     message: ChoiceMessage | ParsedChatCompletionMessage[object],
 ) -> ResponseFormatT | None:
-    if has_rich_response_format(response_format) and getattr(message, "content", None) and not getattr(
-        message, "refusal", None
+    if (
+        has_rich_response_format(response_format)
+        and getattr(message, "content", None)
+        and not getattr(message, "refusal", None)
     ):
         return _parse_content(response_format, cast(str, message.content))
 
@@ -201,7 +203,11 @@ def get_input_tool_by_name(
     name: str,
 ) -> Dict[str, Any] | None:
     return next(
-        (tool for tool in input_tools if tool.get("type") == "function" and tool.get("function", {}).get("name") == name),
+        (
+            tool
+            for tool in input_tools
+            if tool.get("type") == "function" and tool.get("function", {}).get("name") == name
+        ),
         None,
     )
 

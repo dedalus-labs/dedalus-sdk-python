@@ -19,7 +19,7 @@ from ..._response import (
     async_to_streamed_response_wrapper,
 )
 from ..._streaming import Stream, AsyncStream
-from ...types.chat import completion_create_params
+from ...types.chat import ChatCompletionAudioParam, completion_create_params
 from ..._base_client import make_request_options
 from ...types.chat.chat_completion import ChatCompletion
 from ...types.chat.chat_completion_chunk import ChatCompletionChunk
@@ -35,6 +35,7 @@ from ...lib.streaming.chat import (
 )
 from ...types.chat.prediction_content_param import PredictionContentParam
 from ...types.shared_params.json_object_input import JSONObjectInput
+from ...types.chat.chat_completion_audio_param import ChatCompletionAudioParam
 from ...types.chat.chat_completion_functions_param import ChatCompletionFunctionsParam
 
 __all__ = ["CompletionsResource", "AsyncCompletionsResource"]
@@ -66,7 +67,7 @@ class CompletionsResource(SyncAPIResource):
         *,
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
-        audio: Optional[completion_create_params.Audio] | Omit = omit,
+        audio: Optional[ChatCompletionAudioParam] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
@@ -398,7 +399,7 @@ class CompletionsResource(SyncAPIResource):
         model: completion_create_params.Model,
         stream: Literal[True],
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
-        audio: Optional[completion_create_params.Audio] | Omit = omit,
+        audio: Optional[ChatCompletionAudioParam] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
@@ -729,7 +730,7 @@ class CompletionsResource(SyncAPIResource):
         model: completion_create_params.Model,
         stream: bool,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
-        audio: Optional[completion_create_params.Audio] | Omit = omit,
+        audio: Optional[ChatCompletionAudioParam] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
@@ -1059,7 +1060,7 @@ class CompletionsResource(SyncAPIResource):
         *,
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
-        audio: Optional[completion_create_params.Audio] | Omit = omit,
+        audio: Optional[ChatCompletionAudioParam] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
@@ -1124,7 +1125,11 @@ class CompletionsResource(SyncAPIResource):
         from ..._utils import is_given
 
         # Validate response_format is not a Pydantic model
-        if is_given(response_format) and inspect.isclass(response_format) and issubclass(response_format, pydantic.BaseModel):
+        if (
+            is_given(response_format)
+            and inspect.isclass(response_format)
+            and issubclass(response_format, pydantic.BaseModel)
+        ):
             raise TypeError(
                 "You tried to pass a `BaseModel` class to `chat.completions.create()`; "
                 "You must use `chat.completions.parse()` instead"
@@ -1534,7 +1539,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         *,
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
-        audio: Optional[completion_create_params.Audio] | Omit = omit,
+        audio: Optional[ChatCompletionAudioParam] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
@@ -1866,7 +1871,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         model: completion_create_params.Model,
         stream: Literal[True],
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
-        audio: Optional[completion_create_params.Audio] | Omit = omit,
+        audio: Optional[ChatCompletionAudioParam] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
@@ -2197,7 +2202,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         model: completion_create_params.Model,
         stream: bool,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
-        audio: Optional[completion_create_params.Audio] | Omit = omit,
+        audio: Optional[ChatCompletionAudioParam] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
@@ -2527,7 +2532,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         *,
         model: completion_create_params.Model,
         agent_attributes: Optional[Dict[str, float]] | Omit = omit,
-        audio: Optional[completion_create_params.Audio] | Omit = omit,
+        audio: Optional[ChatCompletionAudioParam] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
@@ -2592,7 +2597,11 @@ class AsyncCompletionsResource(AsyncAPIResource):
         from ..._utils import is_given
 
         # Validate response_format is not a Pydantic model
-        if is_given(response_format) and inspect.isclass(response_format) and issubclass(response_format, pydantic.BaseModel):
+        if (
+            is_given(response_format)
+            and inspect.isclass(response_format)
+            and issubclass(response_format, pydantic.BaseModel)
+        ):
             raise TypeError(
                 "You tried to pass a `BaseModel` class to `chat.completions.create()`; "
                 "You must use `chat.completions.parse()` instead"
