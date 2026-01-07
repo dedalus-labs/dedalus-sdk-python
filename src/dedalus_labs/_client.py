@@ -264,14 +264,10 @@ class Dedalus(SyncAPIClient):
 
     @override
     def _validate_headers(self, headers: Headers, custom_headers: Headers) -> None:
-        if self.api_key and headers.get("Authorization"):
-            return
-        if isinstance(custom_headers.get("Authorization"), Omit):
+        if headers.get("Authorization") or isinstance(custom_headers.get("Authorization"), Omit):
             return
 
-        if self.x_api_key and headers.get("x-api-key"):
-            return
-        if isinstance(custom_headers.get("x-api-key"), Omit):
+        if headers.get("x-api-key") or isinstance(custom_headers.get("x-api-key"), Omit):
             return
 
         raise TypeError(
@@ -582,14 +578,10 @@ class AsyncDedalus(AsyncAPIClient):
 
     @override
     def _validate_headers(self, headers: Headers, custom_headers: Headers) -> None:
-        if self.api_key and headers.get("Authorization"):
-            return
-        if isinstance(custom_headers.get("Authorization"), Omit):
+        if headers.get("Authorization") or isinstance(custom_headers.get("Authorization"), Omit):
             return
 
-        if self.x_api_key and headers.get("x-api-key"):
-            return
-        if isinstance(custom_headers.get("x-api-key"), Omit):
+        if headers.get("x-api-key") or isinstance(custom_headers.get("x-api-key"), Omit):
             return
 
         raise TypeError(
