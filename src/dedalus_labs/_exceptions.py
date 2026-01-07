@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing_extensions import Literal
 
 import httpx
+
+if TYPE_CHECKING:
+    from .types.chat.parsed_chat_completion import ParsedChatCompletion
 
 __all__ = [
     "BadRequestError",
@@ -15,6 +19,8 @@ __all__ = [
     "UnprocessableEntityError",
     "RateLimitError",
     "InternalServerError",
+    "LengthFinishReasonError",
+    "ContentFilterFinishReasonError",
 ]
 
 
@@ -106,3 +112,30 @@ class RateLimitError(APIStatusError):
 
 class InternalServerError(APIStatusError):
     pass
+
+
+class LengthFinishReasonError(DedalusError):
+    """Raised when streaming stops due to max tokens before parsing completes."""
+
+    completion: ParsedChatCompletion
+    """The completion that caused this error.
+
+    Note: this will *not* be a complete `ParsedChatCompletion` object when streaming
+    as `usage` will not be included.
+    """
+
+    def __init__(self, *, completion: ParsedChatCompletion) -> None:
+        msg = "Could not parse response content as the length limit was reached"
+        if completion.usage:
+            msg += f" - {completion.usage}"
+        super().__init__(msg)
+        self.completion = completion
+
+
+class ContentFilterFinishReasonError(DedalusError):
+    """Raised when streaming output is blocked by a content filter."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "Could not parse response content as the request was rejected by the content filter"
+        )
