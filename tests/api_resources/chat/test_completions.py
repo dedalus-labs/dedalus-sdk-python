@@ -9,7 +9,9 @@ import pytest
 
 from tests.utils import assert_matches_type
 from dedalus_labs import Dedalus, AsyncDedalus
-from dedalus_labs.types.chat import ChatCompletion
+from dedalus_labs.types.chat import (
+    ChatCompletion,
+)
 
 base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 
@@ -35,8 +37,8 @@ class TestCompletions:
                 "complexity": 0.8,
             },
             audio={
-                "format": "mp3",
-                "voice": "alloy",
+                "format": "wav",
+                "voice": "string",
             },
             automatic_tool_execution=True,
             cached_content="cached_content",
@@ -182,8 +184,8 @@ class TestCompletions:
                 "complexity": 0.8,
             },
             audio={
-                "format": "mp3",
-                "voice": "alloy",
+                "format": "wav",
+                "voice": "string",
             },
             automatic_tool_execution=True,
             cached_content="cached_content",
@@ -333,8 +335,8 @@ class TestAsyncCompletions:
                 "complexity": 0.8,
             },
             audio={
-                "format": "mp3",
-                "voice": "alloy",
+                "format": "wav",
+                "voice": "string",
             },
             automatic_tool_execution=True,
             cached_content="cached_content",
@@ -480,8 +482,8 @@ class TestAsyncCompletions:
                 "complexity": 0.8,
             },
             audio={
-                "format": "mp3",
-                "voice": "alloy",
+                "format": "wav",
+                "voice": "string",
             },
             automatic_tool_execution=True,
             cached_content="cached_content",

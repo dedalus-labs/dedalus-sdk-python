@@ -2,20 +2,28 @@
 
 from __future__ import annotations
 
+from .choice import Choice as Choice
+from .audio_param import AudioParam as AudioParam
 from .choice_delta import ChoiceDelta as ChoiceDelta
+from .stream_choice import StreamChoice as StreamChoice
 from .chat_completion import ChatCompletion as ChatCompletion
+from .choice_logprobs import ChoiceLogprobs as ChoiceLogprobs
 from .completion_usage import CompletionUsage as CompletionUsage
 from .input_token_details import InputTokenDetails as InputTokenDetails
 from .chat_completion_chunk import ChatCompletionChunk as ChatCompletionChunk
+from .prompt_tokens_details import PromptTokensDetails as PromptTokensDetails
 from .tool_choice_any_param import ToolChoiceAnyParam as ToolChoiceAnyParam
 from .choice_delta_tool_call import ChoiceDeltaToolCall as ChoiceDeltaToolCall
+from .stream_choice_logprobs import StreamChoiceLogprobs as StreamChoiceLogprobs
 from .tool_choice_auto_param import ToolChoiceAutoParam as ToolChoiceAutoParam
 from .tool_choice_none_param import ToolChoiceNoneParam as ToolChoiceNoneParam
 from .tool_choice_tool_param import ToolChoiceToolParam as ToolChoiceToolParam
 from .chat_completion_message import ChatCompletionMessage as ChatCompletionMessage
 from .completion_create_params import CompletionCreateParams as CompletionCreateParams
 from .prediction_content_param import PredictionContentParam as PredictionContentParam
+from .completion_tokens_details import CompletionTokensDetails as CompletionTokensDetails
 from .chat_completion_tool_param import ChatCompletionToolParam as ChatCompletionToolParam
+from .chat_completion_audio_param import ChatCompletionAudioParam as ChatCompletionAudioParam
 from .chat_completion_token_logprob import ChatCompletionTokenLogprob as ChatCompletionTokenLogprob
 from .thinking_config_enabled_param import ThinkingConfigEnabledParam as ThinkingConfigEnabledParam
 from .thinking_config_disabled_param import ThinkingConfigDisabledParam as ThinkingConfigDisabledParam

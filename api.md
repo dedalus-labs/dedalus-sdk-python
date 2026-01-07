@@ -100,8 +100,10 @@ Types:
 
 ```python
 from dedalus_labs.types.chat import (
+    Audio,
     ChatCompletion,
     ChatCompletionAssistantMessageParam,
+    ChatCompletionAudioParam,
     ChatCompletionChunk,
     ChatCompletionContentPartFileParam,
     ChatCompletionContentPartImageParam,
@@ -120,11 +122,17 @@ from dedalus_labs.types.chat import (
     ChatCompletionToolMessageParam,
     ChatCompletionToolParam,
     ChatCompletionUserMessageParam,
+    Choice,
     ChoiceDelta,
     ChoiceDeltaToolCall,
+    ChoiceLogprobs,
+    CompletionTokensDetails,
     CompletionUsage,
     InputTokenDetails,
     PredictionContent,
+    PromptTokensDetails,
+    StreamChoice,
+    StreamChoiceLogprobs,
     ThinkingConfigDisabled,
     ThinkingConfigEnabled,
     ToolChoiceAny,
