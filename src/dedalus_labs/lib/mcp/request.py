@@ -186,14 +186,10 @@ def _embed_credentials(
 
     for server in servers:
         if isinstance(server, str):
-            # Slug string -> full spec with name = slug
-            result.append(
-                {
-                    "slug": server,
-                    "name": server,
-                    "credentials": creds_dict,
-                }
-            )
+            if server.startswith(("http://", "https://")):
+                result.append({"url": server, "name": server, "credentials": creds_dict})
+            else:
+                result.append({"slug": server, "name": server, "credentials": creds_dict})
         elif isinstance(server, dict):
             # Existing spec -> add name (if missing) and credentials
             name = server.get("name") or server.get("slug") or server.get("url") or ""
