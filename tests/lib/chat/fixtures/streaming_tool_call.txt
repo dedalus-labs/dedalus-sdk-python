@@ -1,0 +1,31 @@
+data: {"id":"chatcmpl-tool123","object":"chat.completion.chunk","created":1727346165,"model":"gpt-4o","choices":[{"index":0,"delta":{"role":"assistant","content":null,"tool_calls":[{"index":0,"id":"call_abc123","type":"function","function":{"name":"GetWeatherArgs","arguments":""}}]},"logprobs":null,"finish_reason":null}],"system_fingerprint":"fp_test"}
+
+data: {"id":"chatcmpl-tool123","object":"chat.completion.chunk","created":1727346165,"model":"gpt-4o","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{"}}]},"logprobs":null,"finish_reason":null}],"system_fingerprint":"fp_test"}
+
+data: {"id":"chatcmpl-tool123","object":"chat.completion.chunk","created":1727346165,"model":"gpt-4o","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\"city\""}}]},"logprobs":null,"finish_reason":null}],"system_fingerprint":"fp_test"}
+
+data: {"id":"chatcmpl-tool123","object":"chat.completion.chunk","created":1727346165,"model":"gpt-4o","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":":"}}]},"logprobs":null,"finish_reason":null}],"system_fingerprint":"fp_test"}
+
+data: {"id":"chatcmpl-tool123","object":"chat.completion.chunk","created":1727346165,"model":"gpt-4o","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\"Edinburgh\""}}]},"logprobs":null,"finish_reason":null}],"system_fingerprint":"fp_test"}
+
+data: {"id":"chatcmpl-tool123","object":"chat.completion.chunk","created":1727346165,"model":"gpt-4o","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":","}}]},"logprobs":null,"finish_reason":null}],"system_fingerprint":"fp_test"}
+
+data: {"id":"chatcmpl-tool123","object":"chat.completion.chunk","created":1727346165,"model":"gpt-4o","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\"country\""}}]},"logprobs":null,"finish_reason":null}],"system_fingerprint":"fp_test"}
+
+data: {"id":"chatcmpl-tool123","object":"chat.completion.chunk","created":1727346165,"model":"gpt-4o","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":":"}}]},"logprobs":null,"finish_reason":null}],"system_fingerprint":"fp_test"}
+
+data: {"id":"chatcmpl-tool123","object":"chat.completion.chunk","created":1727346165,"model":"gpt-4o","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\"UK\""}}]},"logprobs":null,"finish_reason":null}],"system_fingerprint":"fp_test"}
+
+data: {"id":"chatcmpl-tool123","object":"chat.completion.chunk","created":1727346165,"model":"gpt-4o","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":","}}]},"logprobs":null,"finish_reason":null}],"system_fingerprint":"fp_test"}
+
+data: {"id":"chatcmpl-tool123","object":"chat.completion.chunk","created":1727346165,"model":"gpt-4o","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\"units\""}}]},"logprobs":null,"finish_reason":null}],"system_fingerprint":"fp_test"}
+
+data: {"id":"chatcmpl-tool123","object":"chat.completion.chunk","created":1727346165,"model":"gpt-4o","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":":"}}]},"logprobs":null,"finish_reason":null}],"system_fingerprint":"fp_test"}
+
+data: {"id":"chatcmpl-tool123","object":"chat.completion.chunk","created":1727346165,"model":"gpt-4o","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\"c\""}}]},"logprobs":null,"finish_reason":null}],"system_fingerprint":"fp_test"}
+
+data: {"id":"chatcmpl-tool123","object":"chat.completion.chunk","created":1727346165,"model":"gpt-4o","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"}"}}]},"logprobs":null,"finish_reason":null}],"system_fingerprint":"fp_test"}
+
+data: {"id":"chatcmpl-tool123","object":"chat.completion.chunk","created":1727346165,"model":"gpt-4o","choices":[{"index":0,"delta":{},"logprobs":null,"finish_reason":"tool_calls"}],"system_fingerprint":"fp_test","usage":{"prompt_tokens":76,"completion_tokens":24,"total_tokens":100}}
+
+data: [DONE]

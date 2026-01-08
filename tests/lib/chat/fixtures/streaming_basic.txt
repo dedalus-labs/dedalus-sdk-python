@@ -1,0 +1,11 @@
+data: {"id":"chatcmpl-test123","object":"chat.completion.chunk","created":1727346142,"model":"gpt-4o","choices":[{"index":0,"delta":{"role":"assistant","content":""},"logprobs":null,"finish_reason":null}],"system_fingerprint":"fp_test"}
+
+data: {"id":"chatcmpl-test123","object":"chat.completion.chunk","created":1727346142,"model":"gpt-4o","choices":[{"index":0,"delta":{"content":"Hello"},"logprobs":null,"finish_reason":null}],"system_fingerprint":"fp_test"}
+
+data: {"id":"chatcmpl-test123","object":"chat.completion.chunk","created":1727346142,"model":"gpt-4o","choices":[{"index":0,"delta":{"content":" there"},"logprobs":null,"finish_reason":null}],"system_fingerprint":"fp_test"}
+
+data: {"id":"chatcmpl-test123","object":"chat.completion.chunk","created":1727346142,"model":"gpt-4o","choices":[{"index":0,"delta":{"content":"!"},"logprobs":null,"finish_reason":null}],"system_fingerprint":"fp_test"}
+
+data: {"id":"chatcmpl-test123","object":"chat.completion.chunk","created":1727346142,"model":"gpt-4o","choices":[{"index":0,"delta":{},"logprobs":null,"finish_reason":"stop"}],"system_fingerprint":"fp_test"}
+
+data: [DONE]
