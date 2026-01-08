@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
+import logging
 from typing import TYPE_CHECKING, Any, Dict, Iterable, cast
-from typing_extensions import TypeGuard, TypeVar
+from typing_extensions import TypeGuard, TypeVar, assert_never
 
 import pydantic
 
@@ -12,13 +13,8 @@ from ..._utils import is_dict, is_given
 from ..._compat import PYDANTIC_V1, model_parse_json
 from ..._models import construct_type_unchecked
 from .._pydantic import is_basemodel_type, is_dataclass_like_type, to_strict_json_schema
-
-if TYPE_CHECKING:
-    # Import proper ResponseFormat type from server schemas
-    # At runtime this is just a dict, but for type checking we want the union
-    ResponseFormatParam = Dict[str, Any]
-else:
-    ResponseFormatParam = Dict[str, Any]
+from ..._exceptions import LengthFinishReasonError, ContentFilterFinishReasonError
+from ...types.chat.completion_create_params import ResponseFormat as ResponseFormatParam
 
 if TYPE_CHECKING:
     from ...types.chat.completion import (
@@ -40,6 +36,8 @@ ResponseFormatT = TypeVar(
     default=None,
 )
 _default_response_format: None = None
+
+log: logging.Logger = logging.getLogger("dedalus.lib.parsing")
 
 
 def type_to_response_format_param(
@@ -107,6 +105,12 @@ def parse_chat_completion(
 
     parsed_choices = []
     for choice in chat_completion.choices:
+        if choice.finish_reason == "length":
+            raise LengthFinishReasonError(completion=chat_completion)
+
+        if choice.finish_reason == "content_filter":
+            raise ContentFilterFinishReasonError()
+
         message = choice.message
 
         tool_calls = []
@@ -129,6 +133,15 @@ def parse_chat_completion(
                             type_=ParsedFunctionToolCall,
                         )
                     )
+                elif getattr(tool_call, "type", None) == "custom":
+                    log.warning(
+                        "Custom tool calls are not callable. Ignoring tool call: %s - %s",
+                        tool_call.id,  # type: ignore[attr-defined]
+                        getattr(getattr(tool_call, "custom", None), "name", "unknown"),
+                        stacklevel=2,
+                    )
+                elif TYPE_CHECKING:  # type: ignore[unreachable]
+                    assert_never(tool_call)
                 else:
                     tool_calls.append(tool_call)
 
