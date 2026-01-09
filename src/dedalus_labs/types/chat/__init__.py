@@ -2,10 +2,66 @@
 
 from __future__ import annotations
 
-from .model_id import ModelID as ModelID
-from .completion import Completion as Completion
-from .top_logprob import TopLogprob as TopLogprob
-from .models_param import ModelsParam as ModelsParam
-from .stream_chunk import StreamChunk as StreamChunk
+from .choice import Choice as Choice
+from .audio_param import AudioParam as AudioParam
+from .choice_delta import ChoiceDelta as ChoiceDelta
+from .stream_choice import StreamChoice as StreamChoice
+from .chat_completion import ChatCompletion as ChatCompletion
+from .choice_logprobs import ChoiceLogprobs as ChoiceLogprobs
+from .completion_usage import CompletionUsage as CompletionUsage
+from .input_token_details import InputTokenDetails as InputTokenDetails
+from .chat_completion_chunk import ChatCompletionChunk as ChatCompletionChunk
+from .prompt_tokens_details import PromptTokensDetails as PromptTokensDetails
+from .tool_choice_any_param import ToolChoiceAnyParam as ToolChoiceAnyParam
+from .choice_delta_tool_call import ChoiceDeltaToolCall as ChoiceDeltaToolCall
+from .stream_choice_logprobs import StreamChoiceLogprobs as StreamChoiceLogprobs
+from .tool_choice_auto_param import ToolChoiceAutoParam as ToolChoiceAutoParam
+from .tool_choice_none_param import ToolChoiceNoneParam as ToolChoiceNoneParam
+from .tool_choice_tool_param import ToolChoiceToolParam as ToolChoiceToolParam
+from .chat_completion_message import ChatCompletionMessage as ChatCompletionMessage
 from .completion_create_params import CompletionCreateParams as CompletionCreateParams
+from .prediction_content_param import PredictionContentParam as PredictionContentParam
+from .completion_tokens_details import CompletionTokensDetails as CompletionTokensDetails
+from .chat_completion_tool_param import ChatCompletionToolParam as ChatCompletionToolParam
+from .chat_completion_audio_param import ChatCompletionAudioParam as ChatCompletionAudioParam
 from .chat_completion_token_logprob import ChatCompletionTokenLogprob as ChatCompletionTokenLogprob
+from .thinking_config_enabled_param import ThinkingConfigEnabledParam as ThinkingConfigEnabledParam
+from .thinking_config_disabled_param import ThinkingConfigDisabledParam as ThinkingConfigDisabledParam
+from .chat_completion_functions_param import ChatCompletionFunctionsParam as ChatCompletionFunctionsParam
+from .chat_completion_message_tool_call import ChatCompletionMessageToolCall as ChatCompletionMessageToolCall
+from .chat_completion_tool_message_param import ChatCompletionToolMessageParam as ChatCompletionToolMessageParam
+from .chat_completion_user_message_param import ChatCompletionUserMessageParam as ChatCompletionUserMessageParam
+from .chat_completion_system_message_param import ChatCompletionSystemMessageParam as ChatCompletionSystemMessageParam
+from .chat_completion_function_message_param import (
+    ChatCompletionFunctionMessageParam as ChatCompletionFunctionMessageParam,
+)
+from .chat_completion_assistant_message_param import (
+    ChatCompletionAssistantMessageParam as ChatCompletionAssistantMessageParam,
+)
+from .chat_completion_content_part_file_param import (
+    ChatCompletionContentPartFileParam as ChatCompletionContentPartFileParam,
+)
+from .chat_completion_content_part_text_param import (
+    ChatCompletionContentPartTextParam as ChatCompletionContentPartTextParam,
+)
+from .chat_completion_developer_message_param import (
+    ChatCompletionDeveloperMessageParam as ChatCompletionDeveloperMessageParam,
+)
+from .chat_completion_message_tool_call_param import (
+    ChatCompletionMessageToolCallParam as ChatCompletionMessageToolCallParam,
+)
+from .chat_completion_content_part_image_param import (
+    ChatCompletionContentPartImageParam as ChatCompletionContentPartImageParam,
+)
+from .chat_completion_message_custom_tool_call import (
+    ChatCompletionMessageCustomToolCall as ChatCompletionMessageCustomToolCall,
+)
+from .chat_completion_content_part_refusal_param import (
+    ChatCompletionContentPartRefusalParam as ChatCompletionContentPartRefusalParam,
+)
+from .chat_completion_content_part_input_audio_param import (
+    ChatCompletionContentPartInputAudioParam as ChatCompletionContentPartInputAudioParam,
+)
+from .chat_completion_message_custom_tool_call_param import (
+    ChatCompletionMessageCustomToolCallParam as ChatCompletionMessageCustomToolCallParam,
+)

@@ -2,9 +2,16 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any, Optional, cast
 from typing_extensions import Literal
 
 import httpx
+
+from ._utils import is_dict
+from ._models import construct_type
+
+if TYPE_CHECKING:
+    from .types.chat import ChatCompletion
 
 __all__ = [
     "BadRequestError",
@@ -15,6 +22,8 @@ __all__ = [
     "UnprocessableEntityError",
     "RateLimitError",
     "InternalServerError",
+    "LengthFinishReasonError",
+    "ContentFilterFinishReasonError",
 ]
 
 
@@ -37,11 +46,24 @@ class APIError(DedalusError):
     If there was no response associated with this error then it will be `None`.
     """
 
-    def __init__(self, message: str, request: httpx.Request, *, body: object | None) -> None:  # noqa: ARG002
+    code: Optional[str] = None
+    param: Optional[str] = None
+    type: Optional[str]
+
+    def __init__(self, message: str, request: httpx.Request, *, body: object | None) -> None:
         super().__init__(message)
         self.request = request
         self.message = message
         self.body = body
+
+        if is_dict(body):
+            self.code = cast(Any, construct_type(type_=Optional[str], value=body.get("code")))
+            self.param = cast(Any, construct_type(type_=Optional[str], value=body.get("param")))
+            self.type = cast(Any, construct_type(type_=str, value=body.get("type")))
+        else:
+            self.code = None
+            self.param = None
+            self.type = None
 
 
 class APIResponseValidationError(APIError):
@@ -59,11 +81,13 @@ class APIStatusError(APIError):
 
     response: httpx.Response
     status_code: int
+    request_id: str | None
 
     def __init__(self, message: str, *, response: httpx.Response, body: object | None) -> None:
         super().__init__(message, response.request, body=body)
         self.response = response
         self.status_code = response.status_code
+        self.request_id = response.headers.get("x-request-id")
 
 
 class APIConnectionError(APIError):
@@ -106,3 +130,27 @@ class RateLimitError(APIStatusError):
 
 class InternalServerError(APIStatusError):
     pass
+
+
+class LengthFinishReasonError(DedalusError):
+    completion: ChatCompletion
+    """The completion that caused this error.
+
+    Note: this will *not* be a complete `ChatCompletion` object when streaming as `usage`
+          will not be included.
+    """
+
+    def __init__(self, *, completion: ChatCompletion) -> None:
+        msg = "Could not parse response content as the length limit was reached"
+        if completion.usage:
+            msg += f" - {completion.usage}"
+
+        super().__init__(msg)
+        self.completion = completion
+
+
+class ContentFilterFinishReasonError(DedalusError):
+    def __init__(self) -> None:
+        super().__init__(
+            f"Could not parse response content as the request was rejected by the content filter",
+        )

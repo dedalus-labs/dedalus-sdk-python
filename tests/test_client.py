@@ -92,7 +92,7 @@ class TestDedalus:
         # options that have a default are overridden correctly
         copied = client.copy(max_retries=7)
         assert copied.max_retries == 7
-        assert client.max_retries == 2
+        assert client.max_retries == 0
 
         copied2 = copied.copy(max_retries=6)
         assert copied2.max_retries == 6
@@ -355,7 +355,7 @@ class TestDedalus:
 
         with pytest.raises(
             TypeError,
-            match="Could not resolve authentication method. Expected the api_key to be set. Or for the `Authorization` headers to be explicitly omitted",
+            match="Could not resolve authentication method. Expected either api_key or x_api_key to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted",
         ):
             client2._build_request(FinalRequestOptions(method="get", url="/foo"))
 
@@ -765,21 +765,21 @@ class TestDedalus:
         "remaining_retries,retry_after,timeout",
         [
             [3, "20", 20],
-            [3, "0", 0.5],
-            [3, "-10", 0.5],
+            [3, "0", 0.1],
+            [3, "-10", 0.1],
             [3, "60", 60],
-            [3, "61", 0.5],
+            [3, "61", 0.1],
             [3, "Fri, 29 Sep 2023 16:26:57 GMT", 20],
-            [3, "Fri, 29 Sep 2023 16:26:37 GMT", 0.5],
-            [3, "Fri, 29 Sep 2023 16:26:27 GMT", 0.5],
+            [3, "Fri, 29 Sep 2023 16:26:37 GMT", 0.1],
+            [3, "Fri, 29 Sep 2023 16:26:27 GMT", 0.1],
             [3, "Fri, 29 Sep 2023 16:27:37 GMT", 60],
-            [3, "Fri, 29 Sep 2023 16:27:38 GMT", 0.5],
-            [3, "99999999999999999999999999999999999", 0.5],
-            [3, "Zun, 29 Sep 2023 16:26:27 GMT", 0.5],
-            [3, "", 0.5],
-            [2, "", 0.5 * 2.0],
-            [1, "", 0.5 * 4.0],
-            [-1100, "", 8],  # test large number potentially overflowing
+            [3, "Fri, 29 Sep 2023 16:27:38 GMT", 0.1],
+            [3, "99999999999999999999999999999999999", 0.1],
+            [3, "Zun, 29 Sep 2023 16:26:27 GMT", 0.1],
+            [3, "", 0.1],
+            [2, "", 0.1 * 2.0],
+            [1, "", 0.1 * 4.0],
+            [-1100, "", 3],  # test large number potentially overflowing
         ],
     )
     @mock.patch("time.time", mock.MagicMock(return_value=1696004797))
@@ -789,25 +789,25 @@ class TestDedalus:
         headers = httpx.Headers({"retry-after": retry_after})
         options = FinalRequestOptions(method="get", url="/foo", max_retries=3)
         calculated = client._calculate_retry_timeout(remaining_retries, options, headers)
-        assert calculated == pytest.approx(timeout, 0.5 * 0.875)  # pyright: ignore[reportUnknownMemberType]
+        assert calculated == pytest.approx(timeout, 0.1 * 0.875)  # pyright: ignore[reportUnknownMemberType]
 
     @mock.patch("dedalus_labs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     def test_retrying_timeout_errors_doesnt_leak(self, respx_mock: MockRouter, client: Dedalus) -> None:
-        respx_mock.get("/health").mock(side_effect=httpx.TimeoutException("Test timeout error"))
+        respx_mock.post("/v1/chat/completions").mock(side_effect=httpx.TimeoutException("Test timeout error"))
 
         with pytest.raises(APITimeoutError):
-            client.health.with_streaming_response.check().__enter__()
+            client.chat.completions.with_streaming_response.create(model="openai/gpt-5").__enter__()
 
         assert _get_open_connections(client) == 0
 
     @mock.patch("dedalus_labs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     def test_retrying_status_errors_doesnt_leak(self, respx_mock: MockRouter, client: Dedalus) -> None:
-        respx_mock.get("/health").mock(return_value=httpx.Response(500))
+        respx_mock.post("/v1/chat/completions").mock(return_value=httpx.Response(500))
 
         with pytest.raises(APIStatusError):
-            client.health.with_streaming_response.check().__enter__()
+            client.chat.completions.with_streaming_response.create(model="openai/gpt-5").__enter__()
         assert _get_open_connections(client) == 0
 
     @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
@@ -834,9 +834,9 @@ class TestDedalus:
                 return httpx.Response(500)
             return httpx.Response(200)
 
-        respx_mock.get("/health").mock(side_effect=retry_handler)
+        respx_mock.post("/v1/chat/completions").mock(side_effect=retry_handler)
 
-        response = client.health.with_raw_response.check()
+        response = client.chat.completions.with_raw_response.create(model="openai/gpt-5")
 
         assert response.retries_taken == failures_before_success
         assert int(response.http_request.headers.get("x-stainless-retry-count")) == failures_before_success
@@ -858,9 +858,11 @@ class TestDedalus:
                 return httpx.Response(500)
             return httpx.Response(200)
 
-        respx_mock.get("/health").mock(side_effect=retry_handler)
+        respx_mock.post("/v1/chat/completions").mock(side_effect=retry_handler)
 
-        response = client.health.with_raw_response.check(extra_headers={"x-stainless-retry-count": Omit()})
+        response = client.chat.completions.with_raw_response.create(
+            model="openai/gpt-5", extra_headers={"x-stainless-retry-count": Omit()}
+        )
 
         assert len(response.http_request.headers.get_list("x-stainless-retry-count")) == 0
 
@@ -881,9 +883,11 @@ class TestDedalus:
                 return httpx.Response(500)
             return httpx.Response(200)
 
-        respx_mock.get("/health").mock(side_effect=retry_handler)
+        respx_mock.post("/v1/chat/completions").mock(side_effect=retry_handler)
 
-        response = client.health.with_raw_response.check(extra_headers={"x-stainless-retry-count": "42"})
+        response = client.chat.completions.with_raw_response.create(
+            model="openai/gpt-5", extra_headers={"x-stainless-retry-count": "42"}
+        )
 
         assert response.http_request.headers.get("x-stainless-retry-count") == "42"
 
@@ -968,7 +972,7 @@ class TestAsyncDedalus:
         # options that have a default are overridden correctly
         copied = async_client.copy(max_retries=7)
         assert copied.max_retries == 7
-        assert async_client.max_retries == 2
+        assert async_client.max_retries == 0
 
         copied2 = copied.copy(max_retries=6)
         assert copied2.max_retries == 6
@@ -1235,7 +1239,7 @@ class TestAsyncDedalus:
 
         with pytest.raises(
             TypeError,
-            match="Could not resolve authentication method. Expected the api_key to be set. Or for the `Authorization` headers to be explicitly omitted",
+            match="Could not resolve authentication method. Expected either api_key or x_api_key to be set. Or for one of the `Authorization` or `x-api-key` headers to be explicitly omitted",
         ):
             client2._build_request(FinalRequestOptions(method="get", url="/foo"))
 
@@ -1660,21 +1664,21 @@ class TestAsyncDedalus:
         "remaining_retries,retry_after,timeout",
         [
             [3, "20", 20],
-            [3, "0", 0.5],
-            [3, "-10", 0.5],
+            [3, "0", 0.1],
+            [3, "-10", 0.1],
             [3, "60", 60],
-            [3, "61", 0.5],
+            [3, "61", 0.1],
             [3, "Fri, 29 Sep 2023 16:26:57 GMT", 20],
-            [3, "Fri, 29 Sep 2023 16:26:37 GMT", 0.5],
-            [3, "Fri, 29 Sep 2023 16:26:27 GMT", 0.5],
+            [3, "Fri, 29 Sep 2023 16:26:37 GMT", 0.1],
+            [3, "Fri, 29 Sep 2023 16:26:27 GMT", 0.1],
             [3, "Fri, 29 Sep 2023 16:27:37 GMT", 60],
-            [3, "Fri, 29 Sep 2023 16:27:38 GMT", 0.5],
-            [3, "99999999999999999999999999999999999", 0.5],
-            [3, "Zun, 29 Sep 2023 16:26:27 GMT", 0.5],
-            [3, "", 0.5],
-            [2, "", 0.5 * 2.0],
-            [1, "", 0.5 * 4.0],
-            [-1100, "", 8],  # test large number potentially overflowing
+            [3, "Fri, 29 Sep 2023 16:27:38 GMT", 0.1],
+            [3, "99999999999999999999999999999999999", 0.1],
+            [3, "Zun, 29 Sep 2023 16:26:27 GMT", 0.1],
+            [3, "", 0.1],
+            [2, "", 0.1 * 2.0],
+            [1, "", 0.1 * 4.0],
+            [-1100, "", 3],  # test large number potentially overflowing
         ],
     )
     @mock.patch("time.time", mock.MagicMock(return_value=1696004797))
@@ -1684,27 +1688,27 @@ class TestAsyncDedalus:
         headers = httpx.Headers({"retry-after": retry_after})
         options = FinalRequestOptions(method="get", url="/foo", max_retries=3)
         calculated = async_client._calculate_retry_timeout(remaining_retries, options, headers)
-        assert calculated == pytest.approx(timeout, 0.5 * 0.875)  # pyright: ignore[reportUnknownMemberType]
+        assert calculated == pytest.approx(timeout, 0.1 * 0.875)  # pyright: ignore[reportUnknownMemberType]
 
     @mock.patch("dedalus_labs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     async def test_retrying_timeout_errors_doesnt_leak(
         self, respx_mock: MockRouter, async_client: AsyncDedalus
     ) -> None:
-        respx_mock.get("/health").mock(side_effect=httpx.TimeoutException("Test timeout error"))
+        respx_mock.post("/v1/chat/completions").mock(side_effect=httpx.TimeoutException("Test timeout error"))
 
         with pytest.raises(APITimeoutError):
-            await async_client.health.with_streaming_response.check().__aenter__()
+            await async_client.chat.completions.with_streaming_response.create(model="openai/gpt-5").__aenter__()
 
         assert _get_open_connections(async_client) == 0
 
     @mock.patch("dedalus_labs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
     async def test_retrying_status_errors_doesnt_leak(self, respx_mock: MockRouter, async_client: AsyncDedalus) -> None:
-        respx_mock.get("/health").mock(return_value=httpx.Response(500))
+        respx_mock.post("/v1/chat/completions").mock(return_value=httpx.Response(500))
 
         with pytest.raises(APIStatusError):
-            await async_client.health.with_streaming_response.check().__aenter__()
+            await async_client.chat.completions.with_streaming_response.create(model="openai/gpt-5").__aenter__()
         assert _get_open_connections(async_client) == 0
 
     @pytest.mark.parametrize("failures_before_success", [0, 2, 4])
@@ -1731,9 +1735,9 @@ class TestAsyncDedalus:
                 return httpx.Response(500)
             return httpx.Response(200)
 
-        respx_mock.get("/health").mock(side_effect=retry_handler)
+        respx_mock.post("/v1/chat/completions").mock(side_effect=retry_handler)
 
-        response = await client.health.with_raw_response.check()
+        response = await client.chat.completions.with_raw_response.create(model="openai/gpt-5")
 
         assert response.retries_taken == failures_before_success
         assert int(response.http_request.headers.get("x-stainless-retry-count")) == failures_before_success
@@ -1755,9 +1759,11 @@ class TestAsyncDedalus:
                 return httpx.Response(500)
             return httpx.Response(200)
 
-        respx_mock.get("/health").mock(side_effect=retry_handler)
+        respx_mock.post("/v1/chat/completions").mock(side_effect=retry_handler)
 
-        response = await client.health.with_raw_response.check(extra_headers={"x-stainless-retry-count": Omit()})
+        response = await client.chat.completions.with_raw_response.create(
+            model="openai/gpt-5", extra_headers={"x-stainless-retry-count": Omit()}
+        )
 
         assert len(response.http_request.headers.get_list("x-stainless-retry-count")) == 0
 
@@ -1778,9 +1784,11 @@ class TestAsyncDedalus:
                 return httpx.Response(500)
             return httpx.Response(200)
 
-        respx_mock.get("/health").mock(side_effect=retry_handler)
+        respx_mock.post("/v1/chat/completions").mock(side_effect=retry_handler)
 
-        response = await client.health.with_raw_response.check(extra_headers={"x-stainless-retry-count": "42"})
+        response = await client.chat.completions.with_raw_response.create(
+            model="openai/gpt-5", extra_headers={"x-stainless-retry-count": "42"}
+        )
 
         assert response.http_request.headers.get("x-stainless-retry-count") == "42"
 

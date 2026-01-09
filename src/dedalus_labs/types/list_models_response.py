@@ -10,6 +10,8 @@ __all__ = ["ListModelsResponse"]
 
 
 class ListModelsResponse(BaseModel):
+    """Response for /v1/models endpoint."""
+
     data: List[Model]
     """List of available models"""
 

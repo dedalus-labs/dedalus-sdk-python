@@ -4,25 +4,27 @@
 #           github.com/dedalus-labs/dedalus-sdk-python/LICENSE
 # ==============================================================================
 
+"""Dedalus runner module."""
+
 from __future__ import annotations
 
-from .core import DedalusRunner
+from ..utils._schemas import to_schema
+from .core import DedalusRunner, MCPServersInput
 from .types import (
-    Tool,
-    Message,
-    ToolCall,
     JsonValue,
-    ToolResult,
-    PolicyInput,
-    ToolHandler,
+    Message,
     PolicyContext,
     PolicyFunction,
+    PolicyInput,
+    Tool,
+    ToolCall,
+    ToolHandler,
+    ToolResult,
 )
-from ..utils import to_schema
 
 __all__ = [
     "DedalusRunner",
-    # Types
+    "MCPServersInput",
     "JsonValue",
     "Message",
     "PolicyContext",

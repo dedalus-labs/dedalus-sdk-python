@@ -5,6 +5,7 @@ from typing_extensions import Literal, Annotated, TypeAlias
 
 from ..._utils import PropertyInfo
 from ..._models import BaseModel
+from ..chat.input_token_details import InputTokenDetails
 
 __all__ = [
     "TranscriptionCreateResponse",
@@ -16,12 +17,25 @@ __all__ = [
     "CreateTranscriptionResponseJSONLogprob",
     "CreateTranscriptionResponseJSONUsage",
     "CreateTranscriptionResponseJSONUsageTranscriptTextUsageTokens",
-    "CreateTranscriptionResponseJSONUsageTranscriptTextUsageTokensInputTokenDetails",
     "CreateTranscriptionResponseJSONUsageTranscriptTextUsageDuration",
 ]
 
 
 class CreateTranscriptionResponseVerboseJSONSegment(BaseModel):
+    """
+    Fields:
+    - id (required): int
+    - seek (required): int
+    - start (required): float
+    - end (required): float
+    - text (required): str
+    - tokens (required): list[int]
+    - temperature (required): float
+    - avg_logprob (required): float
+    - compression_ratio (required): float
+    - no_speech_prob (required): float
+    """
+
     id: int
     """Unique identifier of the segment."""
 
@@ -64,6 +78,8 @@ class CreateTranscriptionResponseVerboseJSONSegment(BaseModel):
 
 
 class CreateTranscriptionResponseVerboseJSONUsage(BaseModel):
+    """Usage statistics for models billed by audio input duration."""
+
     seconds: float
     """Duration of the input audio in seconds."""
 
@@ -72,6 +88,13 @@ class CreateTranscriptionResponseVerboseJSONUsage(BaseModel):
 
 
 class CreateTranscriptionResponseVerboseJSONWord(BaseModel):
+    """
+    Fields:
+    - word (required): str
+    - start (required): float
+    - end (required): float
+    """
+
     end: float
     """End time of the word in seconds."""
 
@@ -83,6 +106,18 @@ class CreateTranscriptionResponseVerboseJSONWord(BaseModel):
 
 
 class CreateTranscriptionResponseVerboseJSON(BaseModel):
+    """
+    Represents a verbose json transcription response returned by model, based on the provided input.
+
+    Fields:
+      - language (required): str
+      - duration (required): float
+      - text (required): str
+      - words (optional): list[TranscriptionWord]
+      - segments (optional): list[TranscriptionSegment]
+      - usage (optional): TranscriptTextUsageDuration
+    """
+
     duration: float
     """The duration of the input audio."""
 
@@ -103,6 +138,13 @@ class CreateTranscriptionResponseVerboseJSON(BaseModel):
 
 
 class CreateTranscriptionResponseJSONLogprob(BaseModel):
+    """
+    Fields:
+    - token (optional): str
+    - logprob (optional): float
+    - bytes (optional): list[float]
+    """
+
     token: Optional[str] = None
     """The token in the transcription."""
 
@@ -113,15 +155,17 @@ class CreateTranscriptionResponseJSONLogprob(BaseModel):
     """The log probability of the token."""
 
 
-class CreateTranscriptionResponseJSONUsageTranscriptTextUsageTokensInputTokenDetails(BaseModel):
-    audio_tokens: Optional[int] = None
-    """Number of audio tokens billed for this request."""
-
-    text_tokens: Optional[int] = None
-    """Number of text tokens billed for this request."""
-
-
 class CreateTranscriptionResponseJSONUsageTranscriptTextUsageTokens(BaseModel):
+    """Usage statistics for models billed by token usage.
+
+    Fields:
+      - type (required): Literal['tokens']
+      - input_tokens (required): int
+      - input_token_details (optional): InputTokenDetails
+      - output_tokens (required): int
+      - total_tokens (required): int
+    """
+
     input_tokens: int
     """Number of input tokens billed for this request."""
 
@@ -134,11 +178,18 @@ class CreateTranscriptionResponseJSONUsageTranscriptTextUsageTokens(BaseModel):
     type: Literal["tokens"]
     """The type of the usage object. Always `tokens` for this variant."""
 
-    input_token_details: Optional[CreateTranscriptionResponseJSONUsageTranscriptTextUsageTokensInputTokenDetails] = None
+    input_token_details: Optional[InputTokenDetails] = None
     """Details about the input tokens billed for this request."""
 
 
 class CreateTranscriptionResponseJSONUsageTranscriptTextUsageDuration(BaseModel):
+    """Usage statistics for models billed by audio input duration.
+
+    Fields:
+      - type (required): Literal['duration']
+      - seconds (required): float
+    """
+
     seconds: float
     """Duration of the input audio in seconds."""
 
@@ -156,6 +207,15 @@ CreateTranscriptionResponseJSONUsage: TypeAlias = Annotated[
 
 
 class CreateTranscriptionResponseJSON(BaseModel):
+    """
+    Represents a transcription response returned by model, based on the provided input.
+
+    Fields:
+      - text (required): str
+      - logprobs (optional): list[LogprobsItem]
+      - usage (optional): Usage
+    """
+
     text: str
     """The transcribed text."""
 

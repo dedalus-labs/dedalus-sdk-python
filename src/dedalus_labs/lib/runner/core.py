@@ -9,17 +9,37 @@ from __future__ import annotations
 import json
 import asyncio
 import inspect
-from typing import TYPE_CHECKING, Any, Dict, Literal, Callable, Iterator, Protocol, AsyncIterator
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Literal,
+    Callable,
+    Iterator,
+    Protocol,
+    AsyncIterator,
+    Sequence,
+    Union,
+)
 from dataclasses import field, asdict, dataclass
 
-from dedalus_labs import Dedalus, AsyncDedalus
-
 if TYPE_CHECKING:
-    from ...types.dedalus_model import DedalusModel
+    from ...types.shared.dedalus_model import DedalusModel
 
+from ..._client import Dedalus, AsyncDedalus
 
 from .types import Message, ToolCall, JsonValue, ToolResult, PolicyInput, PolicyContext
-from ..utils import to_schema
+from ...types.shared import MCPToolResult
+from ..mcp import serialize_mcp_servers, MCPServerProtocol
+
+# Type alias for mcp_servers parameter - accepts strings, server objects, or mixed lists
+MCPServersInput = Union[
+    str,  # Single slug or URL
+    MCPServerProtocol,  # MCP server object
+    Sequence[Union[str, MCPServerProtocol, Dict[str, Any]]],  # Mixed list
+    None,
+]
+from ..utils._schemas import to_schema
 
 
 def _process_policy(policy: PolicyInput, context: PolicyContext) -> Dict[str, JsonValue]:
@@ -41,6 +61,14 @@ def _process_policy(policy: PolicyInput, context: PolicyContext) -> Dict[str, Js
             return {}
 
     return {}
+
+
+def _extract_mcp_results(response: Any) -> list[MCPToolResult]:
+    """Extract MCP tool results from API response."""
+    mcp_results = getattr(response, "mcp_tool_results", None)
+    if not mcp_results:
+        return []
+    return [item if isinstance(item, MCPToolResult) else MCPToolResult.model_validate(item) for item in mcp_results]
 
 
 class _ToolHandler(Protocol):
@@ -114,7 +142,8 @@ class _ModelConfig:
 class _ExecutionConfig:
     """Configuration for tool execution behavior and policies."""
 
-    mcp_servers: list[str] = field(default_factory=list)
+    mcp_servers: list[str | Dict[str, Any]] = field(default_factory=list)  # Wire format
+    credentials: list[Any] | None = None  # CredentialProtocol objects (not serialized)
     max_steps: int = 10
     stream: bool = False
     transport: Literal["http", "realtime"] = "http"
@@ -137,6 +166,8 @@ class _RunResult:
     messages: list[Message] = field(default_factory=list)  # Full conversation history
     intents: list[Dict[str, JsonValue]] | None = None
     tools_called: list[str] = field(default_factory=list)
+    mcp_results: list[MCPToolResult] = field(default_factory=list)
+    """MCP tool results from server-side tool calls."""
 
     @property
     def output(self) -> str:
@@ -168,7 +199,8 @@ class DedalusRunner:
         instructions: str | None = None,
         model: str | list[str] | DedalusModel | list[DedalusModel] | None = None,
         max_steps: int = 10,
-        mcp_servers: str | list[str] | None = None,
+        mcp_servers: MCPServersInput = None,
+        credentials: Sequence[Any] | None = None,  # TODO: Loosely typed as `Any` for now
         temperature: float | None = None,
         max_tokens: int | None = None,
         top_p: float | None = None,
@@ -207,7 +239,9 @@ class DedalusRunner:
                     if isinstance(tool, list):
                         msg = f"tools[{i}] is a list, not a callable function. Did you mean to pass tools={tool} instead of tools=[{tool}]?"
                         raise TypeError(msg)
-                    msg = f"tools[{i}] is not callable (got {type(tool).__name__}). All tools must be callable functions."
+                    msg = (
+                        f"tools[{i}] is not callable (got {type(tool).__name__}). All tools must be callable functions."
+                    )
                     raise TypeError(msg)
 
         # Parse model to extract name and config
@@ -366,11 +400,12 @@ class DedalusRunner:
             handoff_config=handoff_config,
         )
 
-        # Normalize mcp_servers to list
-        normalized_mcp_servers = [mcp_servers] if isinstance(mcp_servers, str) else (mcp_servers or [])
+        # Serialize mcp_servers to wire format
+        serialized_mcp_servers = serialize_mcp_servers(mcp_servers)
 
         exec_config = _ExecutionConfig(
-            mcp_servers=normalized_mcp_servers,
+            mcp_servers=serialized_mcp_servers,
+            credentials=list(credentials) if credentials else None,
             max_steps=max_steps,
             stream=stream,
             transport=transport,
@@ -395,7 +430,10 @@ class DedalusRunner:
             # Convert instructions to system message, optionally with user input
             if input is not None:
                 if isinstance(input, str):
-                    conversation = [{"role": "system", "content": instructions}, {"role": "user", "content": input}]
+                    conversation = [
+                        {"role": "system", "content": instructions},
+                        {"role": "user", "content": input},
+                    ]
                 else:
                     conversation = [{"role": "system", "content": instructions}] + list(input)
             else:
@@ -478,6 +516,7 @@ class DedalusRunner:
                 messages=current_messages,
                 tools=tool_handler.schemas() or None,
                 mcp_servers=policy_result["mcp_servers"],
+                credentials=exec_config.credentials,
                 **{**self._mk_kwargs(model_config), **policy_result["model_kwargs"]},
             )
 
@@ -536,11 +575,25 @@ class DedalusRunner:
                 for tc in tool_calls:
                     print(f"  - {tc.get('function', {}).get('name', '?')} (id: {tc.get('id', '?')})")
             await self._execute_tool_calls(
-                tool_calls, tool_handler, messages, tool_results, tools_called, steps, verbose=exec_config.verbose
+                tool_calls,
+                tool_handler,
+                messages,
+                tool_results,
+                tools_called,
+                steps,
+                verbose=exec_config.verbose,
             )
 
+        # Extract MCP tool executions from the last response
+        mcp_results = _extract_mcp_results(response)
+
         return _RunResult(
-            final_output=final_text, tool_results=tool_results, steps_used=steps, tools_called=tools_called, messages=messages
+            final_output=final_text,
+            tool_results=tool_results,
+            steps_used=steps,
+            tools_called=tools_called,
+            messages=messages,
+            mcp_results=mcp_results,
         )
 
     async def _execute_streaming_async(
@@ -596,6 +649,7 @@ class DedalusRunner:
                 messages=current_messages,
                 tools=tool_handler.schemas() or None,
                 mcp_servers=policy_result["mcp_servers"],
+                credentials=exec_config.credentials,
                 stream=True,
                 **{**self._mk_kwargs(model_config), **policy_result["model_kwargs"]},
             )
@@ -711,12 +765,22 @@ class DedalusRunner:
 
                             try:
                                 result = await tool_handler.exec(fn_name, fn_args)
-                                messages.append({"role": "tool", "tool_call_id": tc["id"], "content": str(result)})
+                                messages.append(
+                                    {
+                                        "role": "tool",
+                                        "tool_call_id": tc["id"],
+                                        "content": str(result),
+                                    }
+                                )
                                 if exec_config.verbose:
                                     print(f" Executed local tool {fn_name}: {str(result)[:50]}...")
                             except Exception as e:
                                 messages.append(
-                                    {"role": "tool", "tool_call_id": tc["id"], "content": f"Error: {str(e)}"}
+                                    {
+                                        "role": "tool",
+                                        "tool_call_id": tc["id"],
+                                        "content": f"Error: {str(e)}",
+                                    }
                                 )
                                 if exec_config.verbose:
                                     print(f" Error executing local tool {fn_name}: {e}")
@@ -801,6 +865,7 @@ class DedalusRunner:
                 messages=current_messages,
                 tools=tool_handler.schemas() or None,
                 mcp_servers=policy_result["mcp_servers"],
+                credentials=exec_config.credentials,
                 **{**self._mk_kwargs(model_config), **policy_result["model_kwargs"]},
             )
 
@@ -835,8 +900,16 @@ class DedalusRunner:
             tool_calls = self._extract_tool_calls(response.choices[0])
             self._execute_tool_calls_sync(tool_calls, tool_handler, messages, tool_results, tools_called, steps)
 
+        # Extract MCP tool executions from the last response
+        mcp_results = _extract_mcp_results(response)
+
         return _RunResult(
-            final_output=final_text, tool_results=tool_results, steps_used=steps, tools_called=tools_called, messages=messages
+            final_output=final_text,
+            tool_results=tool_results,
+            steps_used=steps,
+            tools_called=tools_called,
+            messages=messages,
+            mcp_results=mcp_results,
         )
 
     def _execute_streaming_sync(
@@ -902,6 +975,7 @@ class DedalusRunner:
                 messages=current_messages,
                 tools=tool_handler.schemas() or None,
                 mcp_servers=policy_result["mcp_servers"],
+                credentials=exec_config.credentials,
                 stream=True,
                 **{**self._mk_kwargs(model_config), **policy_result["model_kwargs"]},
             )
@@ -930,7 +1004,11 @@ class DedalusRunner:
                         if exec_config.verbose:
                             # Show tool calls in a more readable format
                             for tc_delta in delta.tool_calls:
-                                if hasattr(tc_delta, 'function') and hasattr(tc_delta.function, 'name') and tc_delta.function.name:
+                                if (
+                                    hasattr(tc_delta, "function")
+                                    and hasattr(tc_delta.function, "name")
+                                    and tc_delta.function.name
+                                ):
                                     print(f"-> Calling {tc_delta.function.name}")
 
                     # Check for content
@@ -1017,12 +1095,22 @@ class DedalusRunner:
 
                             try:
                                 result = tool_handler.exec_sync(fn_name, fn_args)
-                                messages.append({"role": "tool", "tool_call_id": tc["id"], "content": str(result)})
+                                messages.append(
+                                    {
+                                        "role": "tool",
+                                        "tool_call_id": tc["id"],
+                                        "content": str(result),
+                                    }
+                                )
                                 if exec_config.verbose:
                                     print(f" Executed local tool {fn_name}: {str(result)[:50]}...")
                             except Exception as e:
                                 messages.append(
-                                    {"role": "tool", "tool_call_id": tc["id"], "content": f"Error: {str(e)}"}
+                                    {
+                                        "role": "tool",
+                                        "tool_call_id": tc["id"],
+                                        "content": f"Error: {str(e)}",
+                                    }
                                 )
                                 if exec_config.verbose:
                                     print(f" Error executing local tool {fn_name}: {e}")
@@ -1050,7 +1138,11 @@ class DedalusRunner:
                 break
 
     def _apply_policy(
-        self, policy: PolicyInput, context: PolicyContext, model_config: _ModelConfig, exec_config: _ExecutionConfig
+        self,
+        policy: PolicyInput,
+        context: PolicyContext,
+        model_config: _ModelConfig,
+        exec_config: _ExecutionConfig,
     ) -> Dict[str, Any]:
         """Apply policy and return unified configuration."""
         pol = _process_policy(policy, context)
@@ -1134,7 +1226,10 @@ class DedalusRunner:
                 {
                     "id": tc_dict.get("id", ""),
                     "type": tc_dict.get("type", "function"),
-                    "function": {"name": fn_dict.get("name", ""), "arguments": fn_dict.get("arguments", "{}")},
+                    "function": {
+                        "name": fn_dict.get("name", ""),
+                        "arguments": fn_dict.get("arguments", "{}"),
+                    },
                 }
             )
         return calls
@@ -1153,15 +1248,15 @@ class DedalusRunner:
         if verbose:
             print(f" _execute_tool_calls: Processing {len(tool_calls)} tool calls")
 
+        # Record single assistant message with ALL tool calls (OpenAI format)
+        messages.append({"role": "assistant", "tool_calls": list(tool_calls)})
+
         for i, tc in enumerate(tool_calls):
             fn_name = tc["function"]["name"]
             fn_args_str = tc["function"]["arguments"]
 
             if verbose:
                 print(f" Tool {i + 1}/{len(tool_calls)}: {fn_name}")
-
-            # Always record the assistant tool_call message so subsequent tool responses are valid.
-            messages.append({"role": "assistant", "tool_calls": [tc]})
 
             try:
                 fn_args = json.loads(fn_args_str)
@@ -1179,7 +1274,13 @@ class DedalusRunner:
             except Exception as e:
                 error_result = {"error": str(e), "name": fn_name, "step": step}
                 tool_results.append(error_result)
-                messages.append({"role": "tool", "tool_call_id": tc["id"], "content": f"Error: {str(e)}"})
+                messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": tc["id"],
+                        "content": f"Error: {str(e)}",
+                    }
+                )
 
                 if verbose:
                     print(f" Tool {fn_name} failed with error: {e}")
@@ -1195,11 +1296,12 @@ class DedalusRunner:
         step: int,
     ):
         """Execute tool calls synchronously."""
+        # Record single assistant message with ALL tool calls (OpenAI format)
+        messages.append({"role": "assistant", "tool_calls": list(tool_calls)})
+
         for tc in tool_calls:
             fn_name = tc["function"]["name"]
             fn_args_str = tc["function"]["arguments"]
-
-            messages.append({"role": "assistant", "tool_calls": [tc]})
 
             try:
                 fn_args = json.loads(fn_args_str)
@@ -1214,7 +1316,13 @@ class DedalusRunner:
             except Exception as e:
                 error_result = {"error": str(e), "name": fn_name, "step": step}
                 tool_results.append(error_result)
-                messages.append({"role": "tool", "tool_call_id": tc["id"], "content": f"Error: {str(e)}"})
+                messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": tc["id"],
+                        "content": f"Error: {str(e)}",
+                    }
+                )
 
     def _accumulate_tool_calls(self, deltas, acc: list[ToolCall]) -> None:
         """Accumulate streaming tool call deltas."""
@@ -1223,7 +1331,13 @@ class DedalusRunner:
 
             # Ensure we have enough entries in acc
             while len(acc) <= index:
-                acc.append({"id": "", "type": "function", "function": {"name": "", "arguments": ""}})
+                acc.append(
+                    {
+                        "id": "",
+                        "type": "function",
+                        "function": {"name": "", "arguments": ""},
+                    }
+                )
 
             if hasattr(delta, "id") and delta.id:
                 acc[index]["id"] = delta.id
@@ -1237,8 +1351,8 @@ class DedalusRunner:
     @staticmethod
     def _mk_kwargs(mc: _ModelConfig) -> Dict[str, Any]:
         """Convert model config to kwargs for client call."""
-        from ...lib._parsing import type_to_response_format_param
         from ..._utils import is_given
+        from ...lib._parsing import type_to_response_format_param
 
         d = asdict(mc)
         d.pop("id", None)  # Remove id since it's passed separately

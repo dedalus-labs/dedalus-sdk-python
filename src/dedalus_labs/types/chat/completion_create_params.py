@@ -6,20 +6,44 @@ from typing import Dict, Union, Iterable, Optional
 from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
 from ..._types import SequenceNotStr
-from .model_id import ModelID
-from .models_param import ModelsParam
-from ..shared_params.dedalus_model import DedalusModel
+from ..shared_params import mcp_servers as _mcp_servers
+from .tool_choice_any_param import ToolChoiceAnyParam
+from .tool_choice_auto_param import ToolChoiceAutoParam
+from .tool_choice_none_param import ToolChoiceNoneParam
+from .tool_choice_tool_param import ToolChoiceToolParam
+from .prediction_content_param import PredictionContentParam
+from ..shared_params.credential import Credential
+from .chat_completion_audio_param import ChatCompletionAudioParam
+from .thinking_config_enabled_param import ThinkingConfigEnabledParam
+from ..shared_params.mcp_credentials import MCPCredentials
+from ..shared_params.mcp_server_spec import MCPServerSpec
+from .thinking_config_disabled_param import ThinkingConfigDisabledParam
+from .chat_completion_tool_message_param import ChatCompletionToolMessageParam
+from .chat_completion_user_message_param import ChatCompletionUserMessageParam
 from ..shared_params.response_format_text import ResponseFormatText
+from .chat_completion_system_message_param import ChatCompletionSystemMessageParam
+from .chat_completion_function_message_param import ChatCompletionFunctionMessageParam
+from .chat_completion_assistant_message_param import ChatCompletionAssistantMessageParam
+from .chat_completion_developer_message_param import ChatCompletionDeveloperMessageParam
 from ..shared_params.response_format_json_object import ResponseFormatJSONObject
-from ..shared_params.response_format_json_schema import ResponseFormatJSONSchema
 
 __all__ = [
     "CompletionCreateParamsBase",
     "Model",
+    "Credentials",
+    "MCPServers",
+    "Message",
     "ResponseFormat",
+    "SafetySetting",
     "Thinking",
-    "ThinkingThinkingConfigDisabled",
-    "ThinkingThinkingConfigEnabled",
+    "ToolChoice",
+    "Tool",
+    "ToolCustomToolChatCompletions",
+    "ToolCustomToolChatCompletionsCustom",
+    "ToolCustomToolChatCompletionsCustomFormat",
+    "ToolCustomToolChatCompletionsCustomFormatTextFormat",
+    "ToolCustomToolChatCompletionsCustomFormatGrammarFormat",
+    "ToolCustomToolChatCompletionsCustomFormatGrammarFormatGrammar",
     "CompletionCreateParamsNonStreaming",
     "CompletionCreateParamsStreaming",
 ]
@@ -27,47 +51,52 @@ __all__ = [
 
 class CompletionCreateParamsBase(TypedDict, total=False):
     model: Required[Model]
-    """Model(s) to use for completion.
+    """Model identifier.
 
-    Can be a single model ID, a DedalusModel object, or a list for multi-model
-    routing. Single model: 'openai/gpt-4', 'anthropic/claude-3-5-sonnet-20241022',
-    'openai/gpt-4o-mini', or a DedalusModel instance. Multi-model routing:
-    ['openai/gpt-4o-mini', 'openai/gpt-4', 'anthropic/claude-3-5-sonnet'] or list of
-    DedalusModel objects - agent will choose optimal model based on task complexity.
+    Accepts model ID strings, lists for routing, or DedalusModel objects with
+    per-model settings.
     """
 
     agent_attributes: Optional[Dict[str, float]]
-    """Attributes for the agent itself, influencing behavior and model selection.
+    """Agent attributes. Values in [0.0, 1.0]."""
 
-    Format: {'attribute': value}, where values are 0.0-1.0. Common attributes:
-    'complexity', 'accuracy', 'efficiency', 'creativity', 'friendliness'. Higher
-    values indicate stronger preference for that characteristic.
-    """
-
-    audio: Optional[Dict[str, object]]
+    audio: Optional[ChatCompletionAudioParam]
     """Parameters for audio output.
 
-    Required when requesting audio responses (for example, modalities including
-    'audio').
+    Required when audio output is requested with `modalities: ["audio"]`.
+    [Learn more](https://platform.openai.com/docs/guides/audio).
+
+    Fields:
+
+    - voice (required): VoiceIdsShared
+    - format (required): Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]
     """
 
-    auto_execute_tools: bool
+    automatic_tool_execution: bool
+    """Execute tools server-side.
+
+    If false, returns raw tool calls for manual handling.
     """
-    When False, skip server-side tool execution and return raw OpenAI-style
-    tool_calls in the response.
+
+    cached_content: Optional[str]
+    """Optional.
+
+    The name of the content [cached](https://ai.google.dev/gemini-api/docs/caching)
+    to use as context to serve the prediction. Format:
+    `cachedContents/{cachedContent}`
+    """
+
+    credentials: Optional[Credentials]
+    """Credentials for MCP server authentication.
+
+    Each credential is matched to servers by connection name.
     """
 
     deferred: Optional[bool]
-    """xAI-specific parameter.
+    """If set to `true`, the request returns a `request_id`.
 
-    If set to true, the request returns a request_id for async completion retrieval
-    via GET /v1/chat/deferred-completion/{request_id}.
-    """
-
-    disable_automatic_function_calling: Optional[bool]
-    """Google-only flag to disable the SDK's automatic function execution.
-
-    When true, the model returns function calls for the client to execute manually.
+    You can then get the deferred response by GET
+    `/v1/chat/deferred-completion/{request_id}`.
     """
 
     frequency_penalty: Optional[float]
@@ -77,134 +106,107 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     text so far, decreasing the model's likelihood to repeat the same line verbatim.
     """
 
-    function_call: Union[str, Dict[str, object], None]
-    """Deprecated in favor of 'tool_choice'.
+    function_call: Optional[str]
+    """Wrapper for union variant: function call mode."""
 
-    Controls which function is called by the model (none, auto, or specific name).
+    functions: Optional[Iterable["ChatCompletionFunctionsParam"]]
+    """Deprecated in favor of `tools`.
+
+    A list of functions the model may generate JSON inputs for.
     """
 
-    functions: Optional[Iterable[Dict[str, object]]]
-    """Deprecated in favor of 'tools'.
-
-    Legacy list of function definitions the model may generate JSON inputs for.
-    """
-
-    generation_config: Optional[Dict[str, object]]
-    """Google generationConfig object.
-
-    Merged with auto-generated config. Use for Google-specific params
-    (candidateCount, responseMimeType, etc.).
-    """
+    generation_config: Optional["JSONObjectInput"]
+    """Generation parameters wrapper (Google-specific)"""
 
     guardrails: Optional[Iterable[Dict[str, object]]]
-    """Guardrails to apply to the agent for input/output validation and safety checks.
-
-    Reserved for future use - guardrails configuration format not yet finalized.
-    """
+    """Content filtering and safety policy configuration."""
 
     handoff_config: Optional[Dict[str, object]]
-    """Configuration for multi-model handoffs and agent orchestration.
-
-    Reserved for future use - handoff configuration format not yet finalized.
-    """
-
-    input: Union[Iterable[Dict[str, object]], str, None]
-    """Convenience alias for Responses-style `input`.
-
-    Used when `messages` is omitted to provide the user prompt directly.
-    """
-
-    instructions: Union[str, Iterable[Dict[str, object]], None]
-    """Convenience alias for Responses-style `instructions`.
-
-    Takes precedence over `system` and over system-role messages when provided.
-    """
+    """Configuration for multi-model handoffs."""
 
     logit_bias: Optional[Dict[str, int]]
     """Modify the likelihood of specified tokens appearing in the completion.
 
-    Accepts a JSON object mapping token IDs (as strings) to bias values from -100
-    to 100. The bias is added to the logits before sampling; values between -1 and 1
-    nudge selection probability, while values like -100 or 100 effectively ban or
-    require a token.
+    Accepts a JSON object that maps tokens (specified by their token ID in the
+    tokenizer) to an associated bias value from -100 to 100. Mathematically, the
+    bias is added to the logits generated by the model prior to sampling. The exact
+    effect will vary per model, but values between -1 and 1 should decrease or
+    increase likelihood of selection; values like -100 or 100 should result in a ban
+    or exclusive selection of the relevant token.
     """
 
     logprobs: Optional[bool]
-    """Whether to return log probabilities of the output tokens.
+    """Whether to return log probabilities of the output tokens or not.
 
-    If true, returns the log probabilities for each token in the response content.
+    If true, returns the log probabilities of each output token returned in the
+    `content` of `message`.
     """
 
     max_completion_tokens: Optional[int]
-    """
-    An upper bound for the number of tokens that can be generated for a completion,
-    including visible output and reasoning tokens.
-    """
+    """Maximum tokens in completion (newer parameter name)"""
 
     max_tokens: Optional[int]
-    """The maximum number of tokens that can be generated in the chat completion.
-
-    This value can be used to control costs for text generated via API. This value
-    is now deprecated in favor of 'max_completion_tokens' and is not compatible with
-    o-series models.
-    """
+    """Maximum tokens in completion"""
 
     max_turns: Optional[int]
-    """Maximum number of turns for agent execution before terminating (default: 10).
+    """Maximum conversation turns."""
 
-    Each turn represents one model inference cycle. Higher values allow more complex
-    reasoning but increase cost and latency.
+    mcp_servers: Optional[MCPServers]
+    """MCP server identifiers.
+
+    Accepts marketplace slugs, URLs, or MCPServerSpec objects. MCP tools are
+    executed server-side and billed separately.
     """
 
-    mcp_servers: Union[str, SequenceNotStr[str], None]
-    """
-    MCP (Model Context Protocol) server addresses to make available for server-side
-    tool execution. Entries can be URLs (e.g., 'https://mcp.example.com'), slugs
-    (e.g., 'dedalus-labs/brave-search'), or structured objects specifying
-    slug/version/url. MCP tools are executed server-side and billed separately.
-    """
+    messages: Optional[Iterable[Message]]
+    """Conversation history (OpenAI: messages, Google: contents, Responses: input)"""
 
-    messages: Union[Iterable[Dict[str, object]], str, None]
-    """Conversation history.
+    metadata: Optional["JSONObjectInput"]
+    """Set of 16 key-value pairs that can be attached to an object.
 
-    Accepts either a list of message objects or a string, which is treated as a
-    single user message. Optional if `input` or `instructions` is provided.
-    """
-
-    metadata: Optional[Dict[str, str]]
-    """
-    Set of up to 16 key-value string pairs that can be attached to the request for
-    structured metadata.
+    This can be useful for storing additional information about the object in a
+    structured format, and querying for objects via API or the dashboard. Keys are
+    strings with a maximum length of 64 characters. Values are strings with a
+    maximum length of 512 characters.
     """
 
     modalities: Optional[SequenceNotStr[str]]
-    """Output types you would like the model to generate.
+    """Output types that you would like the model to generate.
 
-    Most models default to ['text']; some support ['text', 'audio'].
+    Most models are capable of generating text, which is the default: `["text"]` The
+    `gpt-4o-audio-preview` model can also be used to
+    [generate audio](https://platform.openai.com/docs/guides/audio). To request that
+    this model generate both text and audio responses, you can use:
+    `["text", "audio"]`
     """
 
     model_attributes: Optional[Dict[str, Dict[str, float]]]
-    """
-    Attributes for individual models used in routing decisions during multi-model
-    execution. Format: {'model_name': {'attribute': value}}, where values are
-    0.0-1.0. Common attributes: 'intelligence', 'speed', 'cost', 'creativity',
-    'accuracy'. Used by agent to select optimal model based on task requirements.
+    """Model attributes for routing.
+
+    Maps model IDs to attribute dictionaries with values in [0.0, 1.0].
     """
 
     n: Optional[int]
     """How many chat completion choices to generate for each input message.
 
-    Keep 'n' as 1 to minimize costs.
+    Note that you will be charged based on the number of generated tokens across all
+    of the choices. Keep `n` as `1` to minimize costs.
     """
 
     parallel_tool_calls: Optional[bool]
-    """Whether to enable parallel function calling during tool use."""
+    """Whether to enable parallel tool calls (Anthropic uses inverted polarity)"""
 
-    prediction: Optional[Dict[str, object]]
-    """Configuration for predicted outputs.
+    prediction: Optional[PredictionContentParam]
+    """
+    Static predicted output content, such as the content of a text file that is
+    being regenerated.
 
-    Improves response times when you already know large portions of the response
-    content.
+    Fields:
+
+    - type (required): Literal["content"]
+    - content (required): str |
+      Annotated[list[ChatCompletionRequestMessageContentPartText], MinLen(1),
+      ArrayTitle("PredictionContentArray")]
     """
 
     presence_penalty: Optional[float]
@@ -216,198 +218,319 @@ class CompletionCreateParamsBase(TypedDict, total=False):
 
     prompt_cache_key: Optional[str]
     """
-    Used by OpenAI to cache responses for similar requests and optimize cache hit
-    rates. Replaces the legacy 'user' field for caching.
+    Used by OpenAI to cache responses for similar requests to optimize your cache
+    hit rates. Replaces the `user` field.
+    [Learn more](https://platform.openai.com/docs/guides/prompt-caching).
     """
 
-    reasoning_effort: Optional[Literal["low", "medium", "high"]]
-    """Constrains effort on reasoning for supported reasoning models.
+    prompt_cache_retention: Optional[str]
+    """The retention policy for the prompt cache.
 
-    Higher values use more compute, potentially improving reasoning quality at the
-    cost of latency and tokens.
+    Set to `24h` to enable extended prompt caching, which keeps cached prefixes
+    active for longer, up to a maximum of 24 hours.
+    [Learn more](https://platform.openai.com/docs/guides/prompt-caching#prompt-cache-retention).
+    """
+
+    prompt_mode: Optional[Literal["reasoning"]]
+    """Allows toggling between the reasoning mode and no system prompt.
+
+    When set to `reasoning` the system prompt for reasoning models will be used.
+    """
+
+    reasoning_effort: Optional[str]
+    """
+    Constrains effort on reasoning for
+    [reasoning models](https://platform.openai.com/docs/guides/reasoning). Currently
+    supported values are `none`, `minimal`, `low`, `medium`, and `high`. Reducing
+    reasoning effort can result in faster responses and fewer tokens used on
+    reasoning in a response. - `gpt-5.1` defaults to `none`, which does not perform
+    reasoning. The supported reasoning values for `gpt-5.1` are `none`, `low`,
+    `medium`, and `high`. Tool calls are supported for all reasoning values in
+    gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort, and
+    do not support `none`. - The `gpt-5-pro` model defaults to (and only supports)
+    `high` reasoning effort.
     """
 
     response_format: Optional[ResponseFormat]
     """An object specifying the format that the model must output.
 
-    Use {'type': 'json_schema', 'json_schema': {...}} for structured outputs or
-    {'type': 'json_object'} for the legacy JSON mode. Currently only OpenAI-prefixed
-    models honour this field; Anthropic and Google requests will return an
-    invalid_request_error if it is supplied.
+    Setting to `{ "type": "json_schema", "json_schema": {...} }` enables Structured
+    Outputs which ensures the model will match your supplied JSON schema. Learn more
+    in the
+    [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
+    Setting to `{ "type": "json_object" }` enables the older JSON mode, which
+    ensures the message the model generates is valid JSON. Using `json_schema` is
+    preferred for models that support it.
     """
+
+    safe_prompt: Optional[bool]
+    """Whether to inject a safety prompt before all conversations."""
 
     safety_identifier: Optional[str]
     """
-    Stable identifier used to help detect users who might violate OpenAI usage
-    policies. Consider hashing end-user identifiers before sending.
+    A stable identifier used to help detect users of your application that may be
+    violating OpenAI's usage policies. The IDs should be a string that uniquely
+    identifies each user. We recommend hashing their username or email address, in
+    order to avoid sending us any identifying information.
+    [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
     """
 
-    safety_settings: Optional[Iterable[Dict[str, object]]]
-    """Google safety settings (harm categories and thresholds)."""
+    safety_settings: Optional[Iterable[SafetySetting]]
+    """Safety/content filtering settings (Google-specific)"""
 
-    search_parameters: Optional[Dict[str, object]]
-    """xAI-specific parameter for configuring web search data acquisition.
+    search_parameters: Optional["JSONObjectInput"]
+    """Set the parameters to be used for searched data.
 
     If not set, no data will be acquired by the model.
     """
 
     seed: Optional[int]
-    """If specified, system will make a best effort to sample deterministically.
+    """Random seed for deterministic output"""
 
-    Determinism is not guaranteed for the same seed across different models or API
-    versions.
-    """
+    service_tier: Optional[str]
+    """Service tier for request processing"""
 
-    service_tier: Optional[Literal["auto", "default"]]
-    """Specifies the processing tier used for the request.
-
-    'auto' uses project defaults, while 'default' forces standard pricing and
-    performance.
-    """
-
-    stop: Optional[SequenceNotStr[str]]
-    """Not supported with latest reasoning models 'o3' and 'o4-mini'.
-
-            Up to 4 sequences where the API will stop generating further tokens; the returned text will not contain the stop sequence.
-    """
+    stop: Union[SequenceNotStr[str], str, None]
+    """Sequences that stop generation"""
 
     store: Optional[bool]
     """
-    Whether to store the output of this chat completion request for OpenAI model
-    distillation or eval products. Image inputs over 8MB are dropped if storage is
-    enabled.
+    Whether or not to store the output of this chat completion request for use in
+    our [model distillation](https://platform.openai.com/docs/guides/distillation)
+    or [evals](https://platform.openai.com/docs/guides/evals) products. Supports
+    text and image inputs. Note: image inputs over 8MB will be dropped.
     """
 
-    stream_options: Optional[Dict[str, object]]
-    """Options for streaming responses.
+    stream_options: Optional["JSONObjectInput"]
+    """Options for streaming response. Only set this when you set `stream: true`."""
 
-    Only set when 'stream' is true (supports 'include_usage' and
-    'include_obfuscation').
-    """
-
-    system: Union[str, Iterable[Dict[str, object]], None]
-    """System prompt/instructions.
-
-    Anthropic: pass-through. Google: converted to systemInstruction. OpenAI:
-    extracted from messages.
-    """
+    system_instruction: Union["JSONObjectInput", str, None]
+    """System instruction/prompt"""
 
     temperature: Optional[float]
-    """What sampling temperature to use, between 0 and 2.
-
-    Higher values like 0.8 make the output more random, while lower values like 0.2
-    make it more focused and deterministic. We generally recommend altering this or
-    'top_p' but not both.
-    """
+    """Sampling temperature (0-2 for most providers)"""
 
     thinking: Optional[Thinking]
-    """Extended thinking configuration (Anthropic only).
+    """Extended thinking configuration (Anthropic-specific)"""
 
-    Enables thinking blocks showing reasoning process. Requires min 1,024 token
-    budget.
-    """
-
-    tool_choice: Union[str, Dict[str, object], None]
+    tool_choice: Optional[ToolChoice]
     """Controls which (if any) tool is called by the model.
 
-    'none' stops tool calling, 'auto' lets the model decide, and 'required' forces
-    at least one tool invocation. Specific tool payloads force that tool.
+    `none` means the model will not call any tool and instead generates a message.
+    `auto` means the model can pick between generating a message or calling one or
+    more tools. `required` means the model must call one or more tools. Specifying a
+    particular tool via `{"type": "function", "function": {"name": "my_function"}}`
+    forces the model to call that tool. `none` is the default when no tools are
+    present. `auto` is the default if tools are present.
     """
 
-    tool_config: Optional[Dict[str, object]]
-    """Google tool configuration (function calling mode, etc.)."""
+    tool_config: Optional["JSONObjectInput"]
+    """Tool calling configuration (Google-specific)"""
 
-    tools: Optional[Iterable[Dict[str, object]]]
-    """A list of tools the model may call.
-
-    Supports OpenAI function tools and custom tools; use 'mcp_servers' for
-    Dedalus-managed server-side tools.
-    """
+    tools: Optional[Iterable[Tool]]
+    """Available tools/functions for the model"""
 
     top_k: Optional[int]
-    """Top-k sampling.
-
-    Anthropic: pass-through. Google: injected into generationConfig.topK.
-    """
+    """Top-k sampling parameter"""
 
     top_logprobs: Optional[int]
     """
-    An integer between 0 and 20 specifying how many of the most likely tokens to
-    return at each position, with log probabilities. Requires 'logprobs' to be true.
+    An integer between 0 and 20 specifying the number of most likely tokens to
+    return at each token position, each with an associated log probability.
+    `logprobs` must be set to `true` if this parameter is used.
     """
 
     top_p: Optional[float]
-    """
-    An alternative to sampling with temperature, called nucleus sampling, where the
-    model considers the results of the tokens with top_p probability mass. So 0.1
-    means only the tokens comprising the top 10% probability mass are considered. We
-    generally recommend altering this or 'temperature' but not both.
-    """
+    """Nucleus sampling threshold"""
 
     user: Optional[str]
-    """Stable identifier for your end-users.
+    """This field is being replaced by `safety_identifier` and `prompt_cache_key`.
 
-    Helps OpenAI detect and prevent abuse and may boost cache hit rates. This field
-    is being replaced by 'safety_identifier' and 'prompt_cache_key'.
+    Use `prompt_cache_key` instead to maintain caching optimizations. A stable
+    identifier for your end-users. Used to boost cache hit rates by better bucketing
+    similar requests and to help OpenAI detect and prevent abuse.
+    [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
     """
 
-    verbosity: Optional[Literal["low", "medium", "high"]]
+    verbosity: Optional[str]
     """Constrains the verbosity of the model's response.
 
-    Lower values produce concise answers, higher values allow more detail.
+    Lower values will result in more concise responses, while higher values will
+    result in more verbose responses. Currently supported values are `low`,
+    `medium`, and `high`.
     """
 
-    web_search_options: Optional[Dict[str, object]]
-    """Configuration for OpenAI's web search tool.
+    web_search_options: Optional["JSONObjectInput"]
+    """This tool searches the web for relevant results to use in a response.
 
-    Learn more at
-    https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat.
+    Learn more about the
+    [web search tool](https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat).
     """
 
 
-Model: TypeAlias = Union[ModelID, DedalusModel, ModelsParam]
+Model: TypeAlias = Union[str, "DedalusModel", SequenceNotStr["DedalusModelChoice"]]
 
-ResponseFormat: TypeAlias = Union[ResponseFormatText, ResponseFormatJSONObject, ResponseFormatJSONSchema]
+Credentials: TypeAlias = Union[Credential, MCPCredentials]
+
+MCPServers: TypeAlias = Union[str, MCPServerSpec, _mcp_servers.MCPServers]
+
+Message: TypeAlias = Union[
+    ChatCompletionDeveloperMessageParam,
+    ChatCompletionSystemMessageParam,
+    ChatCompletionUserMessageParam,
+    ChatCompletionAssistantMessageParam,
+    ChatCompletionToolMessageParam,
+    ChatCompletionFunctionMessageParam,
+]
+
+ResponseFormat: TypeAlias = Union[ResponseFormatText, "ResponseFormatJSONSchema", ResponseFormatJSONObject]
 
 
-class ThinkingThinkingConfigDisabled(TypedDict, total=False):
-    type: Required[Literal["disabled"]]
+class SafetySetting(TypedDict, total=False):
+    """Safety setting, affecting the safety-blocking behavior.
 
+    Passing a safety setting for a category changes the allowed probability that
+    content is blocked.
 
-class ThinkingThinkingConfigEnabled(TypedDict, total=False):
-    budget_tokens: Required[int]
-    """Determines how many tokens Claude can use for its internal reasoning process.
-
-    Larger budgets can enable more thorough analysis for complex problems, improving
-    response quality.
-
-    Must be ≥1024 and less than `max_tokens`.
-
-    See
-    [extended thinking](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
-    for details.
+    Fields:
+    - category (required): HarmCategory
+    - threshold (required): Literal["HARM_BLOCK_THRESHOLD_UNSPECIFIED", "BLOCK_LOW_AND_ABOVE", "BLOCK_MEDIUM_AND_ABOVE", "BLOCK_ONLY_HIGH", "BLOCK_NONE", "OFF"]
     """
 
-    type: Required[Literal["enabled"]]
+    category: Required[
+        Literal[
+            "HARM_CATEGORY_UNSPECIFIED",
+            "HARM_CATEGORY_DEROGATORY",
+            "HARM_CATEGORY_TOXICITY",
+            "HARM_CATEGORY_VIOLENCE",
+            "HARM_CATEGORY_SEXUAL",
+            "HARM_CATEGORY_MEDICAL",
+            "HARM_CATEGORY_DANGEROUS",
+            "HARM_CATEGORY_HARASSMENT",
+            "HARM_CATEGORY_HATE_SPEECH",
+            "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            "HARM_CATEGORY_DANGEROUS_CONTENT",
+            "HARM_CATEGORY_CIVIC_INTEGRITY",
+        ]
+    ]
+    """Required. The category for this setting."""
+
+    threshold: Required[
+        Literal[
+            "HARM_BLOCK_THRESHOLD_UNSPECIFIED",
+            "BLOCK_LOW_AND_ABOVE",
+            "BLOCK_MEDIUM_AND_ABOVE",
+            "BLOCK_ONLY_HIGH",
+            "BLOCK_NONE",
+            "OFF",
+        ]
+    ]
+    """Required. Controls the probability threshold at which harm is blocked."""
 
 
-Thinking: TypeAlias = Union[ThinkingThinkingConfigDisabled, ThinkingThinkingConfigEnabled]
+Thinking: TypeAlias = Union[ThinkingConfigEnabledParam, ThinkingConfigDisabledParam]
+
+ToolChoice: TypeAlias = Union[ToolChoiceAutoParam, ToolChoiceAnyParam, ToolChoiceToolParam, ToolChoiceNoneParam]
+
+
+class ToolCustomToolChatCompletionsCustomFormatTextFormat(TypedDict, total=False):
+    """Unconstrained free-form text.
+
+    Fields:
+    - type (required): Literal["text"]
+    """
+
+    type: Required[Literal["text"]]
+    """Unconstrained text format. Always `text`."""
+
+
+class ToolCustomToolChatCompletionsCustomFormatGrammarFormatGrammar(TypedDict, total=False):
+    """Your chosen grammar.
+
+    Fields:
+    - definition (required): str
+    - syntax (required): Literal["lark", "regex"]
+    """
+
+    definition: Required[str]
+    """The grammar definition."""
+
+    syntax: Required[Literal["lark", "regex"]]
+    """The syntax of the grammar definition. One of `lark` or `regex`."""
+
+
+class ToolCustomToolChatCompletionsCustomFormatGrammarFormat(TypedDict, total=False):
+    """A grammar defined by the user.
+
+    Fields:
+    - type (required): Literal["grammar"]
+    - grammar (required): GrammarFormatGrammarFormat
+    """
+
+    grammar: Required[ToolCustomToolChatCompletionsCustomFormatGrammarFormatGrammar]
+    """Your chosen grammar.
+
+    Fields:
+
+    - definition (required): str
+    - syntax (required): Literal["lark", "regex"]
+    """
+
+    type: Required[Literal["grammar"]]
+    """Grammar format. Always `grammar`."""
+
+
+ToolCustomToolChatCompletionsCustomFormat: TypeAlias = Union[
+    ToolCustomToolChatCompletionsCustomFormatTextFormat, ToolCustomToolChatCompletionsCustomFormatGrammarFormat
+]
+
+
+class ToolCustomToolChatCompletionsCustom(TypedDict, total=False):
+    """Properties of the custom tool."""
+
+    name: Required[str]
+    """The name of the custom tool, used to identify it in tool calls."""
+
+    description: str
+    """Optional description of the custom tool, used to provide more context."""
+
+    format: ToolCustomToolChatCompletionsCustomFormat
+    """The input format for the custom tool. Default is unconstrained text."""
+
+
+class ToolCustomToolChatCompletions(TypedDict, total=False):
+    """A custom tool that processes input using a specified format.
+
+    Fields:
+    - type (required): Literal["custom"]
+    - custom (required): CustomToolProperties
+    """
+
+    custom: Required[ToolCustomToolChatCompletionsCustom]
+    """Properties of the custom tool."""
+
+    type: Required[Literal["custom"]]
+    """The type of the custom tool. Always `custom`."""
+
+
+Tool: TypeAlias = Union["ChatCompletionToolParam", ToolCustomToolChatCompletions]
 
 
 class CompletionCreateParamsNonStreaming(CompletionCreateParamsBase, total=False):
-    stream: Literal[False]
-    """
-    If true, the model response data is streamed to the client as it is generated
-    using Server-Sent Events.
-    """
+    stream: Optional[Literal[False]]
+    """Enable streaming response"""
 
 
 class CompletionCreateParamsStreaming(CompletionCreateParamsBase):
     stream: Required[Literal[True]]
-    """
-    If true, the model response data is streamed to the client as it is generated
-    using Server-Sent Events.
-    """
+    """Enable streaming response"""
 
 
 CompletionCreateParams = Union[CompletionCreateParamsNonStreaming, CompletionCreateParamsStreaming]
+
+from .chat_completion_tool_param import ChatCompletionToolParam
+from ..shared_params.dedalus_model import DedalusModel
+from .chat_completion_functions_param import ChatCompletionFunctionsParam
+from ..shared_params.json_object_input import JSONObjectInput
+from ..shared_params.dedalus_model_choice import DedalusModelChoice
+from ..shared_params.response_format_json_schema import ResponseFormatJSONSchema

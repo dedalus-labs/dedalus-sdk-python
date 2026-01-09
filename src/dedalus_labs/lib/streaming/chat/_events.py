@@ -6,13 +6,13 @@ from typing_extensions import Literal
 from ._types import ParsedChatCompletionSnapshot
 from ...._models import BaseModel, GenericModel
 from ..._parsing import ResponseFormatT
-from ....types.chat.stream_chunk import StreamChunk
+from ....types.chat.chat_completion_chunk import ChatCompletionChunk
 from ....types.chat.chat_completion_token_logprob import ChatCompletionTokenLogprob
 
 
 class ChunkEvent(BaseModel):
     type: Literal["chunk"]
-    chunk: StreamChunk
+    chunk: ChatCompletionChunk
     snapshot: ParsedChatCompletionSnapshot
 
 

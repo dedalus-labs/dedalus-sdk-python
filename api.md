@@ -2,37 +2,24 @@
 
 ```python
 from dedalus_labs.types import (
+    Credential,
     DedalusModel,
     DedalusModelChoice,
+    FunctionDefinition,
+    JSONObjectInput,
+    JSONValueInput,
+    MCPCredentials,
+    MCPServerSpec,
+    MCPServers,
+    MCPToolResult,
+    ModelSettings,
+    Reasoning,
     ResponseFormatJSONObject,
     ResponseFormatJSONSchema,
     ResponseFormatText,
+    ToolChoice,
 )
 ```
-
-# Root
-
-Types:
-
-```python
-from dedalus_labs.types import RootGetResponse
-```
-
-Methods:
-
-- <code title="get /">client.root.<a href="./src/dedalus_labs/resources/root.py">get</a>() -> <a href="./src/dedalus_labs/types/root_get_response.py">RootGetResponse</a></code>
-
-# Health
-
-Types:
-
-```python
-from dedalus_labs.types import HealthCheckResponse
-```
-
-Methods:
-
-- <code title="get /health">client.health.<a href="./src/dedalus_labs/resources/health.py">check</a>() -> <a href="./src/dedalus_labs/types/health_check_response.py">HealthCheckResponse</a></code>
 
 # Models
 
@@ -113,16 +100,48 @@ Types:
 
 ```python
 from dedalus_labs.types.chat import (
+    Audio,
+    ChatCompletion,
+    ChatCompletionAssistantMessageParam,
+    ChatCompletionAudioParam,
+    ChatCompletionChunk,
+    ChatCompletionContentPartFileParam,
+    ChatCompletionContentPartImageParam,
+    ChatCompletionContentPartInputAudioParam,
+    ChatCompletionContentPartRefusalParam,
+    ChatCompletionContentPartTextParam,
+    ChatCompletionCreateParams,
+    ChatCompletionDeveloperMessageParam,
+    ChatCompletionFunctionMessageParam,
+    ChatCompletionFunctions,
+    ChatCompletionMessage,
+    ChatCompletionMessageCustomToolCall,
+    ChatCompletionMessageToolCall,
+    ChatCompletionSystemMessageParam,
     ChatCompletionTokenLogprob,
-    Completion,
-    CompletionRequest,
-    ModelID,
-    Models,
-    StreamChunk,
-    TopLogprob,
+    ChatCompletionToolMessageParam,
+    ChatCompletionToolParam,
+    ChatCompletionUserMessageParam,
+    Choice,
+    ChoiceDelta,
+    ChoiceDeltaToolCall,
+    ChoiceLogprobs,
+    CompletionTokensDetails,
+    CompletionUsage,
+    InputTokenDetails,
+    PredictionContent,
+    PromptTokensDetails,
+    StreamChoice,
+    StreamChoiceLogprobs,
+    ThinkingConfigDisabled,
+    ThinkingConfigEnabled,
+    ToolChoiceAny,
+    ToolChoiceAuto,
+    ToolChoiceNone,
+    ToolChoiceTool,
 )
 ```
 
 Methods:
 
-- <code title="post /v1/chat/completions">client.chat.completions.<a href="./src/dedalus_labs/resources/chat/completions.py">create</a>(\*\*<a href="src/dedalus_labs/types/chat/completion_create_params.py">params</a>) -> <a href="./src/dedalus_labs/types/chat/completion.py">Completion</a></code>
+- <code title="post /v1/chat/completions">client.chat.completions.<a href="./src/dedalus_labs/resources/chat/completions.py">create</a>(\*\*<a href="src/dedalus_labs/types/chat/completion_create_params.py">params</a>) -> <a href="./src/dedalus_labs/types/chat/chat_completion.py">ChatCompletion</a></code>

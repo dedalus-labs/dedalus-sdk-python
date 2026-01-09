@@ -9,6 +9,15 @@ and offers both synchronous and asynchronous clients powered by [httpx](https://
 
 It is generated with [Stainless](https://www.stainless.com/).
 
+## MCP Server
+
+Use the Dedalus MCP Server to enable AI assistants to interact with this API, allowing them to explore endpoints, make test requests, and use documentation to help integrate this SDK into your application.
+
+[![Add to Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=dedalus-labs-mcp&config=eyJuYW1lIjoiZGVkYWx1cy1sYWJzLW1jcCIsInRyYW5zcG9ydCI6InNzZSIsInVybCI6Imh0dHBzOi8vZGVkYWx1cy1zZGsuc3RsbWNwLmNvbS9zc2UifQ)
+[![Install in VS Code](https://img.shields.io/badge/_-Add_to_VS_Code-blue?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHBhdGggZmlsbD0iI0VFRSIgZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMzAuMjM1IDM5Ljg4NGEyLjQ5MSAyLjQ5MSAwIDAgMS0xLjc4MS0uNzNMMTIuNyAyNC43OGwtMy40NiAyLjYyNC0zLjQwNiAyLjU4MmExLjY2NSAxLjY2NSAwIDAgMS0xLjA4Mi4zMzggMS42NjQgMS42NjQgMCAwIDEtMS4wNDYtLjQzMWwtMi4yLTJhMS42NjYgMS42NjYgMCAwIDEgMC0yLjQ2M0w3LjQ1OCAyMCA0LjY3IDE3LjQ1MyAxLjUwNyAxNC41N2ExLjY2NSAxLjY2NSAwIDAgMSAwLTIuNDYzbDIuMi0yYTEuNjY1IDEuNjY1IDAgMCAxIDIuMTMtLjA5N2w2Ljg2MyA1LjIwOUwyOC40NTIuODQ0YTIuNDg4IDIuNDg4IDAgMCAxIDEuODQxLS43MjljLjM1MS4wMDkuNjk5LjA5MSAxLjAxOS4yNDVsOC4yMzYgMy45NjFhMi41IDIuNSAwIDAgMSAxLjQxNSAyLjI1M3YuMDk5LS4wNDVWMzMuMzd2LS4wNDUuMDk1YTIuNTAxIDIuNTAxIDAgMCAxLTEuNDE2IDIuMjU3bC04LjIzNSAzLjk2MWEyLjQ5MiAyLjQ5MiAwIDAgMS0xLjA3Ny4yNDZabS43MTYtMjguOTQ3LTExLjk0OCA5LjA2MiAxMS45NTIgOS4wNjUtLjAwNC0xOC4xMjdaIi8+PC9zdmc+)](https://vscode.stainless.com/mcp/%7B%22name%22%3A%22dedalus-labs-mcp%22%2C%22type%22%3A%22sse%22%2C%22url%22%3A%22https%3A%2F%2Fdedalus-sdk.stlmcp.com%2Fsse%22%7D)
+
+> Note: You may need to set environment variables in your MCP client.
+
 ## Documentation
 
 The REST API documentation can be found on [docs.dedaluslabs.ai](https://docs.dedaluslabs.ai). The full API of this library can be found in [api.md](api.md).
@@ -34,16 +43,20 @@ client = Dedalus(
     environment="development",
 )
 
-completion = client.chat.completions.create(
+chat_completion = client.chat.completions.create(
     model="openai/gpt-5-nano",
     messages=[
         {
+            "role": "system",
+            "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+        },
+        {
             "role": "user",
             "content": "Hello, how are you today?",
-        }
+        },
     ],
 )
-print(completion.id)
+print(chat_completion.id)
 ```
 
 While you can provide an `api_key` keyword argument,
@@ -68,16 +81,20 @@ client = AsyncDedalus(
 
 
 async def main() -> None:
-    completion = await client.chat.completions.create(
+    chat_completion = await client.chat.completions.create(
         model="openai/gpt-5-nano",
         messages=[
             {
+                "role": "system",
+                "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+            },
+            {
                 "role": "user",
                 "content": "Hello, how are you today?",
-            }
+            },
         ],
     )
-    print(completion.id)
+    print(chat_completion.id)
 
 
 asyncio.run(main())
@@ -99,6 +116,7 @@ pip install dedalus_labs[aiohttp]
 Then you can enable it by instantiating the client with `http_client=DefaultAioHttpClient()`:
 
 ```python
+import os
 import asyncio
 from dedalus_labs import DefaultAioHttpClient
 from dedalus_labs import AsyncDedalus
@@ -106,19 +124,23 @@ from dedalus_labs import AsyncDedalus
 
 async def main() -> None:
     async with AsyncDedalus(
-        api_key="My API Key",
+        api_key=os.environ.get("DEDALUS_API_KEY"),  # This is the default and can be omitted
         http_client=DefaultAioHttpClient(),
     ) as client:
-        completion = await client.chat.completions.create(
+        chat_completion = await client.chat.completions.create(
             model="openai/gpt-5-nano",
             messages=[
                 {
+                    "role": "system",
+                    "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+                },
+                {
                     "role": "user",
                     "content": "Hello, how are you today?",
-                }
+                },
             ],
         )
-        print(completion.id)
+        print(chat_completion.id)
 
 
 asyncio.run(main())
@@ -147,8 +169,8 @@ stream = client.chat.completions.create(
         },
     ],
 )
-for completion in stream:
-    print(completion.id)
+for chat_completion in stream:
+    print(chat_completion.id)
 ```
 
 The async client uses the exact same interface.
@@ -172,8 +194,8 @@ stream = await client.chat.completions.create(
         },
     ],
 )
-async for completion in stream:
-    print(completion.id)
+async for chat_completion in stream:
+    print(chat_completion.id)
 ```
 
 ## Using types
@@ -184,6 +206,25 @@ Nested request parameters are [TypedDicts](https://docs.python.org/3/library/typ
 - Converting to a dictionary, `model.to_dict()`
 
 Typed requests and responses provide autocomplete and documentation within your editor. If you would like to see type errors in VS Code to help catch bugs earlier, set `python.analysis.typeCheckingMode` to `basic`.
+
+## Nested params
+
+Nested parameters are dictionaries, typed using `TypedDict`, for example:
+
+```python
+from dedalus_labs import Dedalus
+
+client = Dedalus()
+
+chat_completion = client.chat.completions.create(
+    model="openai/gpt-5",
+    audio={
+        "format": "wav",
+        "voice": "string",
+    },
+)
+print(chat_completion.audio)
+```
 
 ## File uploads
 
@@ -219,7 +260,19 @@ from dedalus_labs import Dedalus
 client = Dedalus()
 
 try:
-    client.health.check()
+    client.chat.completions.create(
+        model="openai/gpt-5-nano",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+            },
+            {
+                "role": "user",
+                "content": "Hello, how are you today?",
+            },
+        ],
+    )
 except dedalus_labs.APIConnectionError as e:
     print("The server could not be reached")
     print(e.__cause__)  # an underlying Exception, likely raised within httpx.
@@ -246,7 +299,7 @@ Error codes are as follows:
 
 ### Retries
 
-Certain errors are automatically retried 2 times by default, with a short exponential backoff.
+Certain errors are automatically retried 0 times by default, with a short exponential backoff.
 Connection errors (for example, due to a network connectivity problem), 408 Request Timeout, 409 Conflict,
 429 Rate Limit, and >=500 Internal errors are all retried by default.
 
@@ -262,7 +315,19 @@ client = Dedalus(
 )
 
 # Or, configure per-request:
-client.with_options(max_retries=5).health.check()
+client.with_options(max_retries=5).chat.completions.create(
+    model="openai/gpt-5-nano",
+    messages=[
+        {
+            "role": "system",
+            "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+        },
+        {
+            "role": "user",
+            "content": "Hello, how are you today?",
+        },
+    ],
+)
 ```
 
 ### Timeouts
@@ -285,7 +350,19 @@ client = Dedalus(
 )
 
 # Override per-request:
-client.with_options(timeout=5.0).health.check()
+client.with_options(timeout=5.0).chat.completions.create(
+    model="openai/gpt-5-nano",
+    messages=[
+        {
+            "role": "system",
+            "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+        },
+        {
+            "role": "user",
+            "content": "Hello, how are you today?",
+        },
+    ],
+)
 ```
 
 On timeout, an `APITimeoutError` is thrown.
@@ -345,11 +422,20 @@ The "raw" Response object can be accessed by prefixing `.with_raw_response.` to 
 from dedalus_labs import Dedalus
 
 client = Dedalus()
-response = client.health.with_raw_response.check()
+response = client.chat.completions.with_raw_response.create(
+    model="openai/gpt-5-nano",
+    messages=[{
+        "role": "system",
+        "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+    }, {
+        "role": "user",
+        "content": "Hello, how are you today?",
+    }],
+)
 print(response.headers.get('X-My-Header'))
 
-health = response.parse()  # get the object that `health.check()` would have returned
-print(health.status)
+completion = response.parse()  # get the object that `chat.completions.create()` would have returned
+print(completion.id)
 ```
 
 These methods return an [`APIResponse`](https://github.com/dedalus-labs/dedalus-sdk-python/tree/main/src/dedalus_labs/_response.py) object.
@@ -363,7 +449,19 @@ The above interface eagerly reads the full response body when you make the reque
 To stream the response body, use `.with_streaming_response` instead, which requires a context manager and only reads the response body once you call `.read()`, `.text()`, `.json()`, `.iter_bytes()`, `.iter_text()`, `.iter_lines()` or `.parse()`. In the async client, these are async methods.
 
 ```python
-with client.health.with_streaming_response.check() as response:
+with client.chat.completions.with_streaming_response.create(
+    model="openai/gpt-5-nano",
+    messages=[
+        {
+            "role": "system",
+            "content": "You are Stephen Dedalus. Respond in morose Joycean malaise.",
+        },
+        {
+            "role": "user",
+            "content": "Hello, how are you today?",
+        },
+    ],
+) as response:
     print(response.headers.get("X-My-Header"))
 
     for line in response.iter_lines():
