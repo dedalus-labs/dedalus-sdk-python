@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.0 (2026-01-16)
+
+Full Changelog: [v0.2.0...v0.3.0](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.2.0...v0.3.0)
+
+### Features
+
+* **client:** add support for binary request streaming ([48f4cca](https://github.com/dedalus-labs/dedalus-sdk-python/commit/48f4cca7563d7e658824e40893068ae155ef75d4))
+
+
+### Chores
+
+* **internal:** update `actions/checkout` version ([c72dfca](https://github.com/dedalus-labs/dedalus-sdk-python/commit/c72dfca95456904ce446548768b1262387686467))
+
 ## 0.2.0 (2026-01-08)
 
 Full Changelog: [v0.2.0...v0.2.0](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.2.0...v0.2.0)
