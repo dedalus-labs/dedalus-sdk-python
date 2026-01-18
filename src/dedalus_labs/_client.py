@@ -10,6 +10,7 @@ import httpx
 
 from . import _exceptions
 from ._qs import Querystring
+from .lib.oauth_handler import is_oauth_required, get_connect_url, get_poll_url, get_server_id, handle_oauth_flow, handle_oauth_flow_async
 from ._types import (
     Omit,
     Headers,
@@ -372,6 +373,46 @@ class Dedalus(SyncAPIClient):
             return _exceptions.InternalServerError(err_msg, response=response, body=body)
         return APIStatusError(err_msg, response=response, body=body)
 
+    @override
+    def request(
+        self,
+        cast_to: type,
+        options: FinalRequestOptions,
+        *,
+        stream: bool = False,
+        stream_cls: type | None = None,
+    ) -> Any:
+        """Override request to handle OAuth browser flow automatically.
+
+        When the API returns 401 with error=oauth_required, this method:
+        1. Opens the browser to the connect_url
+        2. Polls for OAuth completion
+        3. Retries the original request
+        """
+        try:
+            return super().request(cast_to, options, stream=stream, stream_cls=stream_cls)
+        except _exceptions.AuthenticationError as err:
+            # Check if this is an OAuth-required error
+            if is_oauth_required(err.body):
+                connect_url = get_connect_url(err.body)
+                if connect_url:
+                    # Extract poll info from error response
+                    poll_url = get_poll_url(err.body)
+                    server_id = get_server_id(err.body)
+                    # Pass auth headers so polling can check authenticated endpoints
+                    auth_headers = self.auth_headers
+                    # Handle OAuth flow
+                    if handle_oauth_flow(
+                        connect_url,
+                        poll_url=poll_url,
+                        server_id=server_id,
+                        auth_headers=auth_headers,
+                    ):
+                        # OAuth completed, retry the request
+                        return super().request(cast_to, options, stream=stream, stream_cls=stream_cls)
+            # Not an OAuth error or OAuth failed, re-raise
+            raise
+
 
 class AsyncDedalus(AsyncAPIClient):
     # client options
@@ -685,6 +726,46 @@ class AsyncDedalus(AsyncAPIClient):
         if response.status_code >= 500:
             return _exceptions.InternalServerError(err_msg, response=response, body=body)
         return APIStatusError(err_msg, response=response, body=body)
+
+    @override
+    async def request(
+        self,
+        cast_to: type,
+        options: FinalRequestOptions,
+        *,
+        stream: bool = False,
+        stream_cls: type | None = None,
+    ) -> Any:
+        """Override request to handle OAuth browser flow automatically.
+
+        When the API returns 401 with error=oauth_required, this method:
+        1. Opens the browser to the connect_url
+        2. Polls for OAuth completion
+        3. Retries the original request
+        """
+        try:
+            return await super().request(cast_to, options, stream=stream, stream_cls=stream_cls)
+        except _exceptions.AuthenticationError as err:
+            # Check if this is an OAuth-required error
+            if is_oauth_required(err.body):
+                connect_url = get_connect_url(err.body)
+                if connect_url:
+                    # Extract poll info from error response
+                    poll_url = get_poll_url(err.body)
+                    server_id = get_server_id(err.body)
+                    # Pass auth headers so polling can check authenticated endpoints
+                    auth_headers = self.auth_headers
+                    # Handle OAuth flow asynchronously
+                    if await handle_oauth_flow_async(
+                        connect_url,
+                        poll_url=poll_url,
+                        server_id=server_id,
+                        auth_headers=auth_headers,
+                    ):
+                        # OAuth completed, retry the request
+                        return await super().request(cast_to, options, stream=stream, stream_cls=stream_cls)
+            # Not an OAuth error or OAuth failed, re-raise
+            raise
 
 
 class DedalusWithRawResponse:
