@@ -53,7 +53,7 @@ class TestCompletions:
                 {
                     "name": "name",
                     "description": "description",
-                    "parameters": {"foo": "string"},
+                    "parameters": {"foo": "bar"},
                 }
             ],
             generation_config={"foo": "string"},
@@ -123,7 +123,7 @@ class TestCompletions:
                     "function": {
                         "name": "name",
                         "description": "description",
-                        "parameters": {"foo": "string"},
+                        "parameters": {"foo": "bar"},
                         "strict": True,
                     },
                     "type": "function",
@@ -200,7 +200,7 @@ class TestCompletions:
                 {
                     "name": "name",
                     "description": "description",
-                    "parameters": {"foo": "string"},
+                    "parameters": {"foo": "bar"},
                 }
             ],
             generation_config={"foo": "string"},
@@ -269,7 +269,7 @@ class TestCompletions:
                     "function": {
                         "name": "name",
                         "description": "description",
-                        "parameters": {"foo": "string"},
+                        "parameters": {"foo": "bar"},
                         "strict": True,
                     },
                     "type": "function",
@@ -351,7 +351,7 @@ class TestAsyncCompletions:
                 {
                     "name": "name",
                     "description": "description",
-                    "parameters": {"foo": "string"},
+                    "parameters": {"foo": "bar"},
                 }
             ],
             generation_config={"foo": "string"},
@@ -421,7 +421,7 @@ class TestAsyncCompletions:
                     "function": {
                         "name": "name",
                         "description": "description",
-                        "parameters": {"foo": "string"},
+                        "parameters": {"foo": "bar"},
                         "strict": True,
                     },
                     "type": "function",
@@ -498,7 +498,7 @@ class TestAsyncCompletions:
                 {
                     "name": "name",
                     "description": "description",
-                    "parameters": {"foo": "string"},
+                    "parameters": {"foo": "bar"},
                 }
             ],
             generation_config={"foo": "string"},
@@ -567,7 +567,7 @@ class TestAsyncCompletions:
                     "function": {
                         "name": "name",
                         "description": "description",
-                        "parameters": {"foo": "string"},
+                        "parameters": {"foo": "bar"},
                         "strict": True,
                     },
                     "type": "function",

@@ -13,11 +13,13 @@ from .tool_choice_none_param import ToolChoiceNoneParam
 from .tool_choice_tool_param import ToolChoiceToolParam
 from .prediction_content_param import PredictionContentParam
 from ..shared_params.credential import Credential
+from .chat_completion_tool_param import ChatCompletionToolParam
 from .chat_completion_audio_param import ChatCompletionAudioParam
 from .thinking_config_enabled_param import ThinkingConfigEnabledParam
 from ..shared_params.mcp_credentials import MCPCredentials
 from ..shared_params.mcp_server_spec import MCPServerSpec
 from .thinking_config_disabled_param import ThinkingConfigDisabledParam
+from .chat_completion_functions_param import ChatCompletionFunctionsParam
 from .chat_completion_tool_message_param import ChatCompletionToolMessageParam
 from .chat_completion_user_message_param import ChatCompletionUserMessageParam
 from ..shared_params.response_format_text import ResponseFormatText
@@ -26,6 +28,7 @@ from .chat_completion_function_message_param import ChatCompletionFunctionMessag
 from .chat_completion_assistant_message_param import ChatCompletionAssistantMessageParam
 from .chat_completion_developer_message_param import ChatCompletionDeveloperMessageParam
 from ..shared_params.response_format_json_object import ResponseFormatJSONObject
+from ..shared_params.response_format_json_schema import ResponseFormatJSONSchema
 
 __all__ = [
     "CompletionCreateParamsBase",
@@ -109,7 +112,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     function_call: Optional[str]
     """Wrapper for union variant: function call mode."""
 
-    functions: Optional[Iterable["ChatCompletionFunctionsParam"]]
+    functions: Optional[Iterable[ChatCompletionFunctionsParam]]
     """Deprecated in favor of `tools`.
 
     A list of functions the model may generate JSON inputs for.
@@ -383,7 +386,7 @@ Message: TypeAlias = Union[
     ChatCompletionFunctionMessageParam,
 ]
 
-ResponseFormat: TypeAlias = Union[ResponseFormatText, "ResponseFormatJSONSchema", ResponseFormatJSONObject]
+ResponseFormat: TypeAlias = Union[ResponseFormatText, ResponseFormatJSONSchema, ResponseFormatJSONObject]
 
 
 class SafetySetting(TypedDict, total=False):
@@ -513,7 +516,7 @@ class ToolCustomToolChatCompletions(TypedDict, total=False):
     """The type of the custom tool. Always `custom`."""
 
 
-Tool: TypeAlias = Union["ChatCompletionToolParam", ToolCustomToolChatCompletions]
+Tool: TypeAlias = Union[ChatCompletionToolParam, ToolCustomToolChatCompletions]
 
 
 class CompletionCreateParamsNonStreaming(CompletionCreateParamsBase, total=False):
@@ -528,9 +531,6 @@ class CompletionCreateParamsStreaming(CompletionCreateParamsBase):
 
 CompletionCreateParams = Union[CompletionCreateParamsNonStreaming, CompletionCreateParamsStreaming]
 
-from .chat_completion_tool_param import ChatCompletionToolParam
 from ..shared_params.dedalus_model import DedalusModel
-from .chat_completion_functions_param import ChatCompletionFunctionsParam
 from ..shared_params.json_object_input import JSONObjectInput
 from ..shared_params.dedalus_model_choice import DedalusModelChoice
-from ..shared_params.response_format_json_schema import ResponseFormatJSONSchema

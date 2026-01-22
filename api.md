@@ -92,6 +92,18 @@ Methods:
 - <code title="post /v1/images/edits">client.images.<a href="./src/dedalus_labs/resources/images.py">edit</a>(\*\*<a href="src/dedalus_labs/types/image_edit_params.py">params</a>) -> <a href="./src/dedalus_labs/types/images_response.py">ImagesResponse</a></code>
 - <code title="post /v1/images/generations">client.images.<a href="./src/dedalus_labs/resources/images.py">generate</a>(\*\*<a href="src/dedalus_labs/types/image_generate_params.py">params</a>) -> <a href="./src/dedalus_labs/types/images_response.py">ImagesResponse</a></code>
 
+# Ocr
+
+Types:
+
+```python
+from dedalus_labs.types import OcrDocument, OcrPage, OcrRequest, OcrResponse
+```
+
+Methods:
+
+- <code title="post /v1/ocr">client.ocr.<a href="./src/dedalus_labs/resources/ocr.py">process</a>(\*\*<a href="src/dedalus_labs/types/ocr_process_params.py">params</a>) -> <a href="./src/dedalus_labs/types/ocr_response.py">OcrResponse</a></code>
+
 # Chat
 
 ## Completions
