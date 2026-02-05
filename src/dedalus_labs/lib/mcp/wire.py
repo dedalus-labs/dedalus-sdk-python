@@ -34,6 +34,7 @@ __all__ = [
     # Helpers
     "build_connection_record",
     "collect_unique_connections",
+    "slug_to_connection_name",
 ]
 
 
@@ -324,6 +325,21 @@ def collect_unique_connections(servers: Sequence[MCPServerProtocol]) -> List[Any
                 unique.append(conn)
 
     return unique
+
+
+def slug_to_connection_name(slug: str) -> str:
+    """Derive the canonical connection name from a server slug.
+
+    Slugs use ``org/server`` format; connection names use dashes.
+
+    Args:
+        slug: Server slug, URL, or name string.
+
+    Returns:
+        Connection name with slashes replaced by dashes.
+
+    """
+    return slug.replace("/", "-")
 
 
 # ---------------------------------------------------------------------------
