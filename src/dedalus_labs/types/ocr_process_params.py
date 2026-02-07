@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from typing_extensions import Required, TypedDict
 
-from .ocr_document_param import OcrDocumentParam
+from .ocr_document_param import OCRDocumentParam
 
-__all__ = ["OcrProcessParams"]
+__all__ = ["OCRProcessParams"]
 
 
-class OcrProcessParams(TypedDict, total=False):
-    document: Required[OcrDocumentParam]
+class OCRProcessParams(TypedDict, total=False):
+    document: Required[OCRDocumentParam]
     """Document input for OCR."""
 
     model: str

@@ -16,36 +16,36 @@ from .._response import (
     async_to_streamed_response_wrapper,
 )
 from .._base_client import make_request_options
-from ..types.ocr_response import OcrResponse
-from ..types.ocr_document_param import OcrDocumentParam
+from ..types.ocr_response import OCRResponse
+from ..types.ocr_document_param import OCRDocumentParam
 
-__all__ = ["OcrResource", "AsyncOcrResource"]
+__all__ = ["OCRResource", "AsyncOCRResource"]
 
 
-class OcrResource(SyncAPIResource):
+class OCRResource(SyncAPIResource):
     @cached_property
-    def with_raw_response(self) -> OcrResourceWithRawResponse:
+    def with_raw_response(self) -> OCRResourceWithRawResponse:
         """
         This property can be used as a prefix for any HTTP method call to return
         the raw response object instead of the parsed content.
 
         For more information, see https://www.github.com/dedalus-labs/dedalus-sdk-python#accessing-raw-response-data-eg-headers
         """
-        return OcrResourceWithRawResponse(self)
+        return OCRResourceWithRawResponse(self)
 
     @cached_property
-    def with_streaming_response(self) -> OcrResourceWithStreamingResponse:
+    def with_streaming_response(self) -> OCRResourceWithStreamingResponse:
         """
         An alternative to `.with_raw_response` that doesn't eagerly read the response body.
 
         For more information, see https://www.github.com/dedalus-labs/dedalus-sdk-python#with_streaming_response
         """
-        return OcrResourceWithStreamingResponse(self)
+        return OCRResourceWithStreamingResponse(self)
 
     def process(
         self,
         *,
-        document: OcrDocumentParam,
+        document: OCRDocumentParam,
         model: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -54,7 +54,7 @@ class OcrResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
-    ) -> OcrResponse:
+    ) -> OCRResponse:
         """
         Process a document through Mistral OCR.
 
@@ -80,7 +80,7 @@ class OcrResource(SyncAPIResource):
                     "document": document,
                     "model": model,
                 },
-                ocr_process_params.OcrProcessParams,
+                ocr_process_params.OCRProcessParams,
             ),
             options=make_request_options(
                 extra_headers=extra_headers,
@@ -89,34 +89,34 @@ class OcrResource(SyncAPIResource):
                 timeout=timeout,
                 idempotency_key=idempotency_key,
             ),
-            cast_to=OcrResponse,
+            cast_to=OCRResponse,
         )
 
 
-class AsyncOcrResource(AsyncAPIResource):
+class AsyncOCRResource(AsyncAPIResource):
     @cached_property
-    def with_raw_response(self) -> AsyncOcrResourceWithRawResponse:
+    def with_raw_response(self) -> AsyncOCRResourceWithRawResponse:
         """
         This property can be used as a prefix for any HTTP method call to return
         the raw response object instead of the parsed content.
 
         For more information, see https://www.github.com/dedalus-labs/dedalus-sdk-python#accessing-raw-response-data-eg-headers
         """
-        return AsyncOcrResourceWithRawResponse(self)
+        return AsyncOCRResourceWithRawResponse(self)
 
     @cached_property
-    def with_streaming_response(self) -> AsyncOcrResourceWithStreamingResponse:
+    def with_streaming_response(self) -> AsyncOCRResourceWithStreamingResponse:
         """
         An alternative to `.with_raw_response` that doesn't eagerly read the response body.
 
         For more information, see https://www.github.com/dedalus-labs/dedalus-sdk-python#with_streaming_response
         """
-        return AsyncOcrResourceWithStreamingResponse(self)
+        return AsyncOCRResourceWithStreamingResponse(self)
 
     async def process(
         self,
         *,
-        document: OcrDocumentParam,
+        document: OCRDocumentParam,
         model: str | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -125,7 +125,7 @@ class AsyncOcrResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
         idempotency_key: str | None = None,
-    ) -> OcrResponse:
+    ) -> OCRResponse:
         """
         Process a document through Mistral OCR.
 
@@ -151,7 +151,7 @@ class AsyncOcrResource(AsyncAPIResource):
                     "document": document,
                     "model": model,
                 },
-                ocr_process_params.OcrProcessParams,
+                ocr_process_params.OCRProcessParams,
             ),
             options=make_request_options(
                 extra_headers=extra_headers,
@@ -160,12 +160,12 @@ class AsyncOcrResource(AsyncAPIResource):
                 timeout=timeout,
                 idempotency_key=idempotency_key,
             ),
-            cast_to=OcrResponse,
+            cast_to=OCRResponse,
         )
 
 
-class OcrResourceWithRawResponse:
-    def __init__(self, ocr: OcrResource) -> None:
+class OCRResourceWithRawResponse:
+    def __init__(self, ocr: OCRResource) -> None:
         self._ocr = ocr
 
         self.process = to_raw_response_wrapper(
@@ -173,8 +173,8 @@ class OcrResourceWithRawResponse:
         )
 
 
-class AsyncOcrResourceWithRawResponse:
-    def __init__(self, ocr: AsyncOcrResource) -> None:
+class AsyncOCRResourceWithRawResponse:
+    def __init__(self, ocr: AsyncOCRResource) -> None:
         self._ocr = ocr
 
         self.process = async_to_raw_response_wrapper(
@@ -182,8 +182,8 @@ class AsyncOcrResourceWithRawResponse:
         )
 
 
-class OcrResourceWithStreamingResponse:
-    def __init__(self, ocr: OcrResource) -> None:
+class OCRResourceWithStreamingResponse:
+    def __init__(self, ocr: OCRResource) -> None:
         self._ocr = ocr
 
         self.process = to_streamed_response_wrapper(
@@ -191,8 +191,8 @@ class OcrResourceWithStreamingResponse:
         )
 
 
-class AsyncOcrResourceWithStreamingResponse:
-    def __init__(self, ocr: AsyncOcrResource) -> None:
+class AsyncOCRResourceWithStreamingResponse:
+    def __init__(self, ocr: AsyncOCRResource) -> None:
         self._ocr = ocr
 
         self.process = async_to_streamed_response_wrapper(

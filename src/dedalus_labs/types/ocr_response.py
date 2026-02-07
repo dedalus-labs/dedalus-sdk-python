@@ -3,16 +3,16 @@
 from typing import Dict, List, Optional
 
 from .._models import BaseModel
-from .ocr_page import OcrPage
+from .ocr_page import OCRPage
 
-__all__ = ["OcrResponse"]
+__all__ = ["OCRResponse"]
 
 
-class OcrResponse(BaseModel):
+class OCRResponse(BaseModel):
     """OCR response schema."""
 
     model: str
 
-    pages: List[OcrPage]
+    pages: List[OCRPage]
 
     usage: Optional[Dict[str, object]] = None
