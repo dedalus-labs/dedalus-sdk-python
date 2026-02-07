@@ -1223,16 +1223,18 @@ class DedalusRunner:
             fn = tc_dict.get("function", {})
             fn_dict = vars(fn) if hasattr(fn, "__dict__") else fn
 
-            calls.append(
-                {
-                    "id": tc_dict.get("id", ""),
-                    "type": tc_dict.get("type", "function"),
-                    "function": {
-                        "name": fn_dict.get("name", ""),
-                        "arguments": fn_dict.get("arguments", "{}"),
-                    },
-                }
-            )
+            tc_out: ToolCall = {
+                "id": tc_dict.get("id", ""),
+                "type": tc_dict.get("type", "function"),
+                "function": {
+                    "name": fn_dict.get("name", ""),
+                    "arguments": fn_dict.get("arguments", "{}"),
+                },
+            }
+            thought_sig = tc_dict.get("thought_signature")
+            if thought_sig:
+                tc_out["thought_signature"] = thought_sig
+            calls.append(tc_out)
         return calls
 
     async def _execute_tool_calls(
@@ -1315,6 +1317,9 @@ class DedalusRunner:
                     acc[index]["function"]["name"] = fn.name
                 if hasattr(fn, "arguments") and fn.arguments:
                     acc[index]["function"]["arguments"] += fn.arguments
+            thought_sig = getattr(delta, "thought_signature", None)
+            if thought_sig:
+                acc[index]["thought_signature"] = thought_sig
 
     @staticmethod
     def _mk_kwargs(mc: _ModelConfig) -> Dict[str, Any]:
