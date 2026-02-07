@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import asyncio
 import inspect
-import json
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -68,6 +67,39 @@ def _extract_mcp_results(response: Any) -> list[MCPToolResult]:
     if not mcp_results:
         return []
     return [item if isinstance(item, MCPToolResult) else MCPToolResult.model_validate(item) for item in mcp_results]
+
+
+def _inject_mcp_tool_messages(
+    tool_calls: list[Dict[str, Any]],
+    mcp_results: list,
+    messages: list,
+    local_funcs: set,
+) -> None:
+    """Add tool-response messages for server-handled MCP tool calls.
+
+    Matches each MCP result to its corresponding tool call by
+    ``tool_name`` and appends a ``role='tool'`` message so the
+    conversation history is complete before local tool execution.
+    """
+    results_by_name: Dict[str, list] = {}
+    for r in mcp_results:
+        name = r["tool_name"] if isinstance(r, dict) else getattr(r, "tool_name", "")
+        results_by_name.setdefault(name, []).append(r)
+
+    for tc in tool_calls:
+        fn_name = tc["function"]["name"]
+        if fn_name not in local_funcs:
+            queue = results_by_name.get(fn_name, [])
+            if queue:
+                res = queue.pop(0)
+                content = res.get("result") if isinstance(res, dict) else getattr(res, "result", None)
+                messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": tc["id"],
+                        "content": str(content) if content is not None else "",
+                    }
+                )
 
 
 class _ToolHandler(Protocol):
@@ -770,6 +802,18 @@ class DedalusRunner:
 
                 # At least one local tool exists. Execute via the dependency aware scheduler.
                 if not all_mcp:
+                    # Record assistant message with all tool calls (OpenAI format).
+                    messages.append({"role": "assistant", "tool_calls": list(tool_calls)})
+
+                    # Inject server-side MCP tool results before local execution.
+                    if mcp_tool_results_from_server:
+                        _inject_mcp_tool_messages(
+                            tool_calls,
+                            mcp_tool_results_from_server,
+                            messages,
+                            set(getattr(tool_handler, "_funcs", {})),
+                        )
+
                     local_only = [
                         tc for tc in tool_calls if tc["function"]["name"] in getattr(tool_handler, "_funcs", {})
                     ]
@@ -1059,6 +1103,18 @@ class DedalusRunner:
 
                 # At least one local tool exists. Execute via the dependency aware scheduler.
                 if not all_mcp:
+                    # Record assistant message with all tool calls (OpenAI format).
+                    messages.append({"role": "assistant", "tool_calls": list(tool_calls)})
+
+                    # Inject server-side MCP tool results before local execution.
+                    if mcp_tool_results_from_server:
+                        _inject_mcp_tool_messages(
+                            tool_calls,
+                            mcp_tool_results_from_server,
+                            messages,
+                            set(getattr(tool_handler, "_funcs", {})),
+                        )
+
                     local_only = [
                         tc for tc in tool_calls if tc["function"]["name"] in getattr(tool_handler, "_funcs", {})
                     ]
