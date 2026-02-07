@@ -765,10 +765,10 @@ class DedalusRunner:
                     print(f" Local tools used: {local_names}")
                     print(f" Server tools used: {mcp_names}")
 
-                # When MCP tools are involved and content was streamed, we're done
-                if mcp_names and has_streamed_content:
+                # When ONLY MCP tools (no local) and content was streamed, we're done
+                if mcp_names and has_streamed_content and not local_names:
                     if exec_config.verbose:
-                        print(f" MCP tools called and content streamed - response complete, breaking loop")
+                        print(f" MCP-only tools called and content streamed - response complete, breaking loop")
                     break
 
                 if all_mcp:
@@ -1083,10 +1083,10 @@ class DedalusRunner:
                     print(f"  Local tools: {local_names}")
                     print(f"  Server tools: {mcp_names}")
 
-                # When MCP tools are involved and content was streamed, we're done
-                if mcp_names and has_streamed_content:
+                # When ONLY MCP tools (no local) and content was streamed, we're done
+                if mcp_names and has_streamed_content and not local_names:
                     if exec_config.verbose:
-                        print(f"  MCP tools called and content streamed - response complete, breaking loop")
+                        print(f"  MCP-only tools called and content streamed - response complete, breaking loop")
                     break
 
                 if all_mcp:
