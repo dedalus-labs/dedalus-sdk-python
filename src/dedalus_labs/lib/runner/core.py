@@ -6,31 +6,29 @@
 
 from __future__ import annotations
 
-import json
 import asyncio
 import inspect
 from typing import (
     TYPE_CHECKING,
     Any,
     Dict,
+    Union,
     Literal,
     Callable,
     Iterator,
     Protocol,
-    AsyncIterator,
     Sequence,
-    Union,
+    AsyncIterator,
 )
-from dataclasses import field, asdict, dataclass
+from dataclasses import field, dataclass
 
 if TYPE_CHECKING:
     from ...types.shared.dedalus_model import DedalusModel
 
-from ..._client import Dedalus, AsyncDedalus
-
+from ..mcp import MCPServerProtocol, serialize_mcp_servers
 from .types import Message, ToolCall, JsonValue, ToolResult, PolicyInput, PolicyContext
+from ..._client import Dedalus, AsyncDedalus
 from ...types.shared import MCPToolResult
-from ..mcp import serialize_mcp_servers, MCPServerProtocol
 
 # Type alias for mcp_servers parameter - accepts strings, server objects, or mixed lists
 MCPServersInput = Union[
@@ -120,22 +118,17 @@ class _FunctionToolHandler:
 
 @dataclass
 class _ModelConfig:
-    """Model configuration parameters."""
+    """Model routing info + passthrough API kwargs.
+
+    ``api_kwargs`` holds every parameter destined for the chat
+    completions API (temperature, reasoning_effort, thinking, etc.).
+    The runner doesn't interpret most of them — it just forwards
+    them to ``client.chat.completions.create(**api_kwargs)``.
+    """
 
     id: str
-    model_list: list[str] | None = None  # Store the full model list when provided
-    temperature: float | None = None
-    max_tokens: int | None = None
-    top_p: float | None = None
-    frequency_penalty: float | None = None
-    presence_penalty: float | None = None
-    logit_bias: Dict[str, int] | None = None
-    response_format: Dict[str, JsonValue] | type | None = None  # Dict or Pydantic model
-    agent_attributes: Dict[str, float] | None = None
-    model_attributes: Dict[str, Dict[str, float]] | None = None
-    tool_choice: str | Dict[str, JsonValue] | None = None
-    guardrails: list[Dict[str, JsonValue]] | None = None
-    handoff_config: Dict[str, JsonValue] | None = None
+    model_list: list[str] | None = None
+    api_kwargs: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -184,6 +177,97 @@ class _RunResult:
         return list(self.messages)
 
 
+def _collect_api_kwargs(**params: Any) -> Dict[str, Any]:
+    """Build API kwargs dict from explicit params, filtering out Nones."""
+    return {k: v for k, v in params.items() if v is not None}
+
+
+# Params that DedalusModel may carry and should be extracted.
+_MODEL_EXTRACT_PARAMS = (
+    "temperature",
+    "max_tokens",
+    "top_p",
+    "frequency_penalty",
+    "presence_penalty",
+    "logit_bias",
+    "tool_choice",
+    "reasoning_effort",
+    "thinking",
+    "n",
+    "stop",
+    "stream_options",
+    "logprobs",
+    "top_logprobs",
+    "seed",
+    "service_tier",
+    "parallel_tool_calls",
+    "user",
+    "max_completion_tokens",
+)
+
+
+def _extract_from_dedalus_model(
+    model_obj: Any,
+    api_kwargs: Dict[str, Any],
+) -> bool:
+    """Extract params from a DedalusModel into api_kwargs.
+
+    Explicit values already in api_kwargs take precedence.
+    Returns True if stream should be overridden from the model.
+    """
+    for param in _MODEL_EXTRACT_PARAMS:
+        if param not in api_kwargs:
+            val = getattr(model_obj, param, None)
+            if val is not None:
+                api_kwargs[param] = val
+
+    # Dedalus-specific: attributes → agent_attributes
+    if "agent_attributes" not in api_kwargs:
+        attrs = getattr(model_obj, "attributes", None)
+        if attrs:
+            api_kwargs["agent_attributes"] = attrs
+
+    return getattr(model_obj, "stream", False)
+
+
+def _parse_model(
+    model: Any,
+    api_kwargs: Dict[str, Any],
+    stream: bool,
+) -> tuple:
+    """Parse model param into (model_name, model_list, stream).
+
+    Handles strings, DedalusModel objects, and lists of either.
+    Extracts model-embedded params into api_kwargs.
+    """
+    if isinstance(model, list):
+        if not model:
+            raise ValueError("model list cannot be empty")
+        model_name = None
+        model_list = []
+        for m in model:
+            if hasattr(m, "name"):
+                model_list.append(m.name)
+                if model_name is None:
+                    model_name = m.name
+                    model_stream = _extract_from_dedalus_model(m, api_kwargs)
+                    if not stream:
+                        stream = model_stream
+            else:
+                model_list.append(m)
+                if model_name is None:
+                    model_name = m
+        return model_name, model_list, stream
+
+    if hasattr(model, "name"):
+        model_stream = _extract_from_dedalus_model(model, api_kwargs)
+        if not stream:
+            stream = model_stream
+        return model.name, [model.name], stream
+
+    return model, [model] if model else [], stream
+
+
 class DedalusRunner:
     """Enhanced Dedalus client with tool execution capabilities."""
 
@@ -198,32 +282,71 @@ class DedalusRunner:
         messages: list[Message] | None = None,
         instructions: str | None = None,
         model: str | list[str] | DedalusModel | list[DedalusModel] | None = None,
+        # --- Runner config ---
         max_steps: int = 10,
         mcp_servers: MCPServersInput = None,
-        credentials: Sequence[Any] | None = None,  # TODO: Loosely typed as `Any` for now
-        temperature: float | None = None,
-        max_tokens: int | None = None,
-        top_p: float | None = None,
-        frequency_penalty: float | None = None,
-        presence_penalty: float | None = None,
-        logit_bias: Dict[str, int] | None = None,
-        response_format: Dict[str, JsonValue] | type | None = None,
+        credentials: Sequence[Any] | None = None,
         stream: bool = False,
         transport: Literal["http", "realtime"] = "http",
         verbose: bool | None = None,
         debug: bool | None = None,
         on_tool_event: Callable[[Dict[str, JsonValue]], None] | None = None,
         return_intent: bool = False,
-        agent_attributes: Dict[str, float] | None = None,
-        model_attributes: Dict[str, Dict[str, float]] | None = None,
-        tool_choice: str | Dict[str, JsonValue] | None = None,
-        guardrails: list[Dict[str, JsonValue]] | None = None,
-        handoff_config: Dict[str, JsonValue] | None = None,
         policy: PolicyInput = None,
         available_models: list[str] | None = None,
         strict_models: bool = True,
+        agent_attributes: Dict[str, float] | None = None,
+        audio: Dict[str, Any] | None = None,
+        cached_content: str | None = None,
+        deferred: bool | None = None,
+        frequency_penalty: float | None = None,
+        function_call: str | None = None,
+        generation_config: Dict[str, Any] | None = None,
+        guardrails: list[Dict[str, JsonValue]] | None = None,
+        handoff_config: Dict[str, JsonValue] | None = None,
+        logit_bias: Dict[str, int] | None = None,
+        logprobs: bool | None = None,
+        max_completion_tokens: int | None = None,
+        max_tokens: int | None = None,
+        metadata: Dict[str, Any] | None = None,
+        modalities: list[str] | None = None,
+        model_attributes: Dict[str, Dict[str, float]] | None = None,
+        n: int | None = None,
+        parallel_tool_calls: bool | None = None,
+        prediction: Dict[str, Any] | None = None,
+        presence_penalty: float | None = None,
+        prompt_cache_key: str | None = None,
+        prompt_cache_retention: str | None = None,
+        prompt_mode: str | None = None,
+        reasoning_effort: str | None = None,
+        response_format: Dict[str, JsonValue] | type | None = None,
+        safe_prompt: bool | None = None,
+        safety_identifier: str | None = None,
+        safety_settings: list[Dict[str, Any]] | None = None,
+        search_parameters: Dict[str, Any] | None = None,
+        seed: int | None = None,
+        service_tier: str | None = None,
+        stop: str | list[str] | None = None,
+        store: bool | None = None,
+        stream_options: Dict[str, Any] | None = None,
+        system_instruction: str | Dict[str, Any] | None = None,
+        temperature: float | None = None,
+        thinking: Dict[str, Any] | None = None,
+        tool_choice: str | Dict[str, JsonValue] | None = None,
+        tool_config: Dict[str, Any] | None = None,
+        top_k: int | None = None,
+        top_logprobs: int | None = None,
+        top_p: float | None = None,
+        user: str | None = None,
+        verbosity: str | None = None,
+        web_search_options: Dict[str, Any] | None = None,
     ):
-        """Execute tools with unified async/sync + streaming/non-streaming logic."""
+        """Execute a tool-enabled conversation.
+
+        All parameters from the chat completions API are accepted and
+        forwarded to the server verbatim. See ``CompletionCreateParamsBase``
+        for full documentation of each parameter.
+        """
         if not model:
             raise ValueError("model must be provided")
 
@@ -233,7 +356,6 @@ class DedalusRunner:
                 msg = "tools must be a list of callable functions or None"
                 raise ValueError(msg)
 
-            # Check for nested lists (common mistake: tools=[[]] instead of tools=[])
             for i, tool in enumerate(tools):
                 if not callable(tool):
                     if isinstance(tool, list):
@@ -244,160 +366,64 @@ class DedalusRunner:
                     )
                     raise TypeError(msg)
 
-        # Parse model to extract name and config
-        model_name = None
-        model_list = []
+        # Collect all API kwargs, filtering out Nones.
+        api_kwargs = _collect_api_kwargs(
+            agent_attributes=agent_attributes,
+            audio=audio,
+            cached_content=cached_content,
+            deferred=deferred,
+            frequency_penalty=frequency_penalty,
+            function_call=function_call,
+            generation_config=generation_config,
+            guardrails=guardrails,
+            handoff_config=handoff_config,
+            logit_bias=logit_bias,
+            logprobs=logprobs,
+            max_completion_tokens=max_completion_tokens,
+            max_tokens=max_tokens,
+            metadata=metadata,
+            modalities=modalities,
+            model_attributes=model_attributes,
+            n=n,
+            parallel_tool_calls=parallel_tool_calls,
+            prediction=prediction,
+            presence_penalty=presence_penalty,
+            prompt_cache_key=prompt_cache_key,
+            prompt_cache_retention=prompt_cache_retention,
+            prompt_mode=prompt_mode,
+            reasoning_effort=reasoning_effort,
+            response_format=response_format,
+            safe_prompt=safe_prompt,
+            safety_identifier=safety_identifier,
+            safety_settings=safety_settings,
+            search_parameters=search_parameters,
+            seed=seed,
+            service_tier=service_tier,
+            stop=stop,
+            store=store,
+            stream_options=stream_options,
+            system_instruction=system_instruction,
+            temperature=temperature,
+            thinking=thinking,
+            tool_choice=tool_choice,
+            tool_config=tool_config,
+            top_k=top_k,
+            top_logprobs=top_logprobs,
+            top_p=top_p,
+            user=user,
+            verbosity=verbosity,
+            web_search_options=web_search_options,
+        )
 
-        if isinstance(model, list):
-            if not model:
-                raise ValueError("model list cannot be empty")
-            # Handle list of DedalusModel or strings
-            for m in model:
-                if hasattr(m, "name"):  # DedalusModel
-                    model_list.append(m.name)
-                    # Use config from first DedalusModel if params not explicitly set
-                    if model_name is None:
-                        model_name = m.name
-                        temperature = temperature if temperature is not None else getattr(m, "temperature", None)
-                        max_tokens = max_tokens if max_tokens is not None else getattr(m, "max_tokens", None)
-                        top_p = top_p if top_p is not None else getattr(m, "top_p", None)
-                        frequency_penalty = (
-                            frequency_penalty
-                            if frequency_penalty is not None
-                            else getattr(m, "frequency_penalty", None)
-                        )
-                        presence_penalty = (
-                            presence_penalty if presence_penalty is not None else getattr(m, "presence_penalty", None)
-                        )
-                        logit_bias = logit_bias if logit_bias is not None else getattr(m, "logit_bias", None)
-
-                        # Extract additional parameters from first DedalusModel
-                        stream = stream if stream is not False else getattr(m, "stream", False)
-                        tool_choice = tool_choice if tool_choice is not None else getattr(m, "tool_choice", None)
-
-                        # Extract Dedalus-specific extensions
-                        if hasattr(m, "attributes") and m.attributes:
-                            agent_attributes = agent_attributes if agent_attributes is not None else m.attributes
-
-                        # Check for unsupported parameters (only warn once for first model)
-                        unsupported_params = []
-                        if hasattr(m, "n") and m.n is not None:
-                            unsupported_params.append("n")
-                        if hasattr(m, "stop") and m.stop is not None:
-                            unsupported_params.append("stop")
-                        if hasattr(m, "stream_options") and m.stream_options is not None:
-                            unsupported_params.append("stream_options")
-                        if hasattr(m, "logprobs") and m.logprobs is not None:
-                            unsupported_params.append("logprobs")
-                        if hasattr(m, "top_logprobs") and m.top_logprobs is not None:
-                            unsupported_params.append("top_logprobs")
-                        if hasattr(m, "seed") and m.seed is not None:
-                            unsupported_params.append("seed")
-                        if hasattr(m, "service_tier") and m.service_tier is not None:
-                            unsupported_params.append("service_tier")
-                        if hasattr(m, "tools") and m.tools is not None:
-                            unsupported_params.append("tools")
-                        if hasattr(m, "parallel_tool_calls") and m.parallel_tool_calls is not None:
-                            unsupported_params.append("parallel_tool_calls")
-                        if hasattr(m, "user") and m.user is not None:
-                            unsupported_params.append("user")
-                        if hasattr(m, "max_completion_tokens") and m.max_completion_tokens is not None:
-                            unsupported_params.append("max_completion_tokens")
-
-                        if unsupported_params:
-                            import warnings
-
-                            warnings.warn(
-                                f"The following DedalusModel parameters are not yet supported and will be ignored: {', '.join(unsupported_params)}. "
-                                f"Support for these parameters is coming soon.",
-                                UserWarning,
-                                stacklevel=2,
-                            )
-                else:  # String
-                    model_list.append(m)
-                    if model_name is None:
-                        model_name = m
-        elif hasattr(model, "name"):  # Single DedalusModel
-            model_name = model.name
-            model_list = [model.name]
-            # Extract config from DedalusModel if params not explicitly set
-            temperature = temperature if temperature is not None else getattr(model, "temperature", None)
-            max_tokens = max_tokens if max_tokens is not None else getattr(model, "max_tokens", None)
-            top_p = top_p if top_p is not None else getattr(model, "top_p", None)
-            frequency_penalty = (
-                frequency_penalty if frequency_penalty is not None else getattr(model, "frequency_penalty", None)
-            )
-            presence_penalty = (
-                presence_penalty if presence_penalty is not None else getattr(model, "presence_penalty", None)
-            )
-            logit_bias = logit_bias if logit_bias is not None else getattr(model, "logit_bias", None)
-
-            # Extract additional supported parameters
-            stream = stream if stream is not False else getattr(model, "stream", False)
-            tool_choice = tool_choice if tool_choice is not None else getattr(model, "tool_choice", None)
-
-            # Extract Dedalus-specific extensions
-            if hasattr(model, "attributes") and model.attributes:
-                agent_attributes = agent_attributes if agent_attributes is not None else model.attributes
-            if hasattr(model, "metadata") and model.metadata:
-                # metadata is stored but not yet fully utilized
-                pass
-
-            # Log warnings for unsupported parameters
-            unsupported_params = []
-            if hasattr(model, "n") and model.n is not None:
-                unsupported_params.append("n")
-            if hasattr(model, "stop") and model.stop is not None:
-                unsupported_params.append("stop")
-            if hasattr(model, "stream_options") and model.stream_options is not None:
-                unsupported_params.append("stream_options")
-            if hasattr(model, "logprobs") and model.logprobs is not None:
-                unsupported_params.append("logprobs")
-            if hasattr(model, "top_logprobs") and model.top_logprobs is not None:
-                unsupported_params.append("top_logprobs")
-            if hasattr(model, "seed") and model.seed is not None:
-                unsupported_params.append("seed")
-            if hasattr(model, "service_tier") and model.service_tier is not None:
-                unsupported_params.append("service_tier")
-            if hasattr(model, "tools") and model.tools is not None:
-                unsupported_params.append("tools")
-            if hasattr(model, "parallel_tool_calls") and model.parallel_tool_calls is not None:
-                unsupported_params.append("parallel_tool_calls")
-            if hasattr(model, "user") and model.user is not None:
-                unsupported_params.append("user")
-            if hasattr(model, "max_completion_tokens") and model.max_completion_tokens is not None:
-                unsupported_params.append("max_completion_tokens")
-
-            if unsupported_params:
-                import warnings
-
-                warnings.warn(
-                    f"The following DedalusModel parameters are not yet supported and will be ignored: {', '.join(unsupported_params)}. "
-                    f"Support for these parameters is coming soon.",
-                    UserWarning,
-                    stacklevel=2,
-                )
-        else:  # Single string
-            model_name = model
-            model_list = [model] if model else []
+        # Parse model to extract name, list, and any model-embedded params.
+        model_name, model_list, stream = _parse_model(model, api_kwargs, stream)
 
         available_models = model_list if available_models is None else available_models
 
         model_config = _ModelConfig(
             id=str(model_name),
-            model_list=model_list,  # Pass the full model list
-            temperature=temperature,
-            max_tokens=max_tokens,
-            top_p=top_p,
-            frequency_penalty=frequency_penalty,
-            presence_penalty=presence_penalty,
-            logit_bias=logit_bias,
-            response_format=response_format,
-            agent_attributes=agent_attributes,
-            model_attributes=model_attributes,
-            tool_choice=tool_choice,
-            guardrails=guardrails,
-            handoff_config=handoff_config,
+            model_list=model_list,
+            api_kwargs=api_kwargs,
         )
 
         # Serialize mcp_servers to wire format
@@ -740,64 +766,26 @@ class DedalusRunner:
                         print(f" All tools are MCP, expecting streamed response")
                     # Don't break here - let the next iteration handle it
                 else:
-                    # We have at least one local tool
-                    # Filter to only include local tool calls in the assistant message
-                    local_only_tool_calls = [
+                    # We have at least one local tool — delegate to scheduler.
+                    local_only = [
                         tc for tc in tool_calls if tc["function"]["name"] in getattr(tool_handler, "_funcs", {})
                     ]
-                    messages.append({"role": "assistant", "tool_calls": local_only_tool_calls})
-                    if exec_config.verbose:
-                        print(
-                            f" Added assistant message with {len(local_only_tool_calls)} local tool calls (filtered from {len(tool_calls)} total)"
-                        )
+                    messages.append({"role": "assistant", "tool_calls": local_only})
 
-                    # Execute only local tools
-                    for tc in tool_calls:
-                        fn_name = tc["function"]["name"]
-                        fn_args_str = tc["function"]["arguments"]
+                    from ._scheduler import execute_local_tools_async
 
-                        if fn_name in getattr(tool_handler, "_funcs", {}):
-                            # Local tool
-                            try:
-                                fn_args = json.loads(fn_args_str)
-                            except json.JSONDecodeError:
-                                fn_args = {}
-
-                            try:
-                                result = await tool_handler.exec(fn_name, fn_args)
-                                messages.append(
-                                    {
-                                        "role": "tool",
-                                        "tool_call_id": tc["id"],
-                                        "content": str(result),
-                                    }
-                                )
-                                if exec_config.verbose:
-                                    print(f" Executed local tool {fn_name}: {str(result)[:50]}...")
-                            except Exception as e:
-                                messages.append(
-                                    {
-                                        "role": "tool",
-                                        "tool_call_id": tc["id"],
-                                        "content": f"Error: {str(e)}",
-                                    }
-                                )
-                                if exec_config.verbose:
-                                    print(f" Error executing local tool {fn_name}: {e}")
-                        else:
-                            # MCP tool - DON'T add any message
-                            # The API server should handle this
-                            if exec_config.verbose:
-                                print(f" MCP tool {fn_name} - skipping (server will handle)")
+                    await execute_local_tools_async(
+                        local_only,
+                        tool_handler,
+                        messages,
+                        [],
+                        [],
+                        steps,
+                        verbose=exec_config.verbose,
+                    )
 
                     if exec_config.verbose:
                         print(f" Messages after tool execution: {len(messages)}")
-
-                        # Only continue if we have NO MCP tools
-                        if not mcp_names:
-                            print(f" No MCP tools, continuing loop to step {steps + 1}...")
-                        else:
-                            print(f" MCP tools present, expecting response in next iteration")
 
                 # Continue loop only if we need another response
                 if exec_config.verbose:
@@ -1070,64 +1058,25 @@ class DedalusRunner:
                         print(f"  All tools are MCP, expecting streamed response")
                     # Don't break here - let the next iteration handle it
                 else:
-                    # We have at least one local tool
-                    # Filter to only include local tool calls in the assistant message
-                    local_only_tool_calls = [
+                    # We have at least one local tool — delegate to scheduler.
+                    local_only = [
                         tc for tc in tool_calls if tc["function"]["name"] in getattr(tool_handler, "_funcs", {})
                     ]
-                    messages.append({"role": "assistant", "tool_calls": local_only_tool_calls})
-                    if exec_config.verbose:
-                        print(
-                            f" Added assistant message with {len(local_only_tool_calls)} local tool calls (filtered from {len(tool_calls)} total)"
-                        )
+                    messages.append({"role": "assistant", "tool_calls": local_only})
 
-                    # Execute only local tools
-                    for tc in tool_calls:
-                        fn_name = tc["function"]["name"]
-                        fn_args_str = tc["function"]["arguments"]
+                    from ._scheduler import execute_local_tools_sync
 
-                        if fn_name in getattr(tool_handler, "_funcs", {}):
-                            # Local tool
-                            try:
-                                fn_args = json.loads(fn_args_str)
-                            except json.JSONDecodeError:
-                                fn_args = {}
-
-                            try:
-                                result = tool_handler.exec_sync(fn_name, fn_args)
-                                messages.append(
-                                    {
-                                        "role": "tool",
-                                        "tool_call_id": tc["id"],
-                                        "content": str(result),
-                                    }
-                                )
-                                if exec_config.verbose:
-                                    print(f" Executed local tool {fn_name}: {str(result)[:50]}...")
-                            except Exception as e:
-                                messages.append(
-                                    {
-                                        "role": "tool",
-                                        "tool_call_id": tc["id"],
-                                        "content": f"Error: {str(e)}",
-                                    }
-                                )
-                                if exec_config.verbose:
-                                    print(f" Error executing local tool {fn_name}: {e}")
-                        else:
-                            # MCP tool - DON'T add any message
-                            # The API server should handle this
-                            if exec_config.verbose:
-                                print(f" MCP tool {fn_name} - skipping (server will handle)")
+                    execute_local_tools_sync(
+                        local_only,
+                        tool_handler,
+                        messages,
+                        [],
+                        [],
+                        steps,
+                    )
 
                     if exec_config.verbose:
                         print(f" Messages after tool execution: {len(messages)}")
-
-                        # Only continue if we have NO MCP tools
-                        if not mcp_names:
-                            print(f" No MCP tools, continuing loop to step {steps + 1}...")
-                        else:
-                            print(f" MCP tools present, expecting response in next iteration")
 
                 # Continue loop only if we need another response
                 if exec_config.verbose:
@@ -1244,47 +1193,28 @@ class DedalusRunner:
         step: int,
         verbose: bool = False,
     ):
-        """Execute tool calls asynchronously."""
+        """Execute tool calls asynchronously with dependency-aware scheduling.
+
+        Independent tools fire concurrently. Dependent tools wait for
+        their prerequisites. Falls back to sequential on cyclic deps.
+        """
+        from ._scheduler import execute_local_tools_async
+
         if verbose:
             print(f" _execute_tool_calls: Processing {len(tool_calls)} tool calls")
 
-        # Record single assistant message with ALL tool calls (OpenAI format)
+        # Record assistant message with all tool calls (OpenAI format).
         messages.append({"role": "assistant", "tool_calls": list(tool_calls)})
 
-        for i, tc in enumerate(tool_calls):
-            fn_name = tc["function"]["name"]
-            fn_args_str = tc["function"]["arguments"]
-
-            if verbose:
-                print(f" Tool {i + 1}/{len(tool_calls)}: {fn_name}")
-
-            try:
-                fn_args = json.loads(fn_args_str)
-            except json.JSONDecodeError:
-                fn_args = {}
-
-            try:
-                result = await tool_handler.exec(fn_name, fn_args)
-                tool_results.append({"name": fn_name, "result": result, "step": step})
-                tools_called.append(fn_name)
-                messages.append({"role": "tool", "tool_call_id": tc["id"], "content": str(result)})
-
-                if verbose:
-                    print(f" Tool {fn_name} executed successfully: {str(result)[:50]}...")
-            except Exception as e:
-                error_result = {"error": str(e), "name": fn_name, "step": step}
-                tool_results.append(error_result)
-                messages.append(
-                    {
-                        "role": "tool",
-                        "tool_call_id": tc["id"],
-                        "content": f"Error: {str(e)}",
-                    }
-                )
-
-                if verbose:
-                    print(f" Tool {fn_name} failed with error: {e}")
-                    print(f" Error type: {type(e).__name__}")
+        await execute_local_tools_async(
+            tool_calls,
+            tool_handler,
+            messages,
+            tool_results,
+            tools_called,
+            step,
+            verbose=verbose,
+        )
 
     def _execute_tool_calls_sync(
         self,
@@ -1295,34 +1225,20 @@ class DedalusRunner:
         tools_called: list[str],
         step: int,
     ):
-        """Execute tool calls synchronously."""
-        # Record single assistant message with ALL tool calls (OpenAI format)
+        """Execute tool calls synchronously with dependency-aware ordering."""
+        from ._scheduler import execute_local_tools_sync
+
+        # Record assistant message with all tool calls (OpenAI format).
         messages.append({"role": "assistant", "tool_calls": list(tool_calls)})
 
-        for tc in tool_calls:
-            fn_name = tc["function"]["name"]
-            fn_args_str = tc["function"]["arguments"]
-
-            try:
-                fn_args = json.loads(fn_args_str)
-            except json.JSONDecodeError:
-                fn_args = {}
-
-            try:
-                result = tool_handler.exec_sync(fn_name, fn_args)
-                tool_results.append({"name": fn_name, "result": result, "step": step})
-                tools_called.append(fn_name)
-                messages.append({"role": "tool", "tool_call_id": tc["id"], "content": str(result)})
-            except Exception as e:
-                error_result = {"error": str(e), "name": fn_name, "step": step}
-                tool_results.append(error_result)
-                messages.append(
-                    {
-                        "role": "tool",
-                        "tool_call_id": tc["id"],
-                        "content": f"Error: {str(e)}",
-                    }
-                )
+        execute_local_tools_sync(
+            tool_calls,
+            tool_handler,
+            messages,
+            tool_results,
+            tools_called,
+            step,
+        )
 
     def _accumulate_tool_calls(self, deltas, acc: list[ToolCall]) -> None:
         """Accumulate streaming tool call deltas."""
@@ -1350,17 +1266,15 @@ class DedalusRunner:
 
     @staticmethod
     def _mk_kwargs(mc: _ModelConfig) -> Dict[str, Any]:
-        """Convert model config to kwargs for client call."""
+        """Convert model config to kwargs for the API call."""
         from ..._utils import is_given
         from ...lib._parsing import type_to_response_format_param
 
-        d = asdict(mc)
-        d.pop("id", None)  # Remove id since it's passed separately
-        d.pop("model_list", None)  # Remove model_list since it's not an API parameter
+        kwargs = dict(mc.api_kwargs)
 
-        # Convert Pydantic model to dict schema if needed
-        if "response_format" in d and d["response_format"] is not None:
-            converted = type_to_response_format_param(d["response_format"])
-            d["response_format"] = converted if is_given(converted) else None
+        # Convert Pydantic model class to dict schema if needed.
+        if "response_format" in kwargs and kwargs["response_format"] is not None:
+            converted = type_to_response_format_param(kwargs["response_format"])
+            kwargs["response_format"] = converted if is_given(converted) else None
 
-        return {k: v for k, v in d.items() if v is not None}
+        return {k: v for k, v in kwargs.items() if v is not None}
