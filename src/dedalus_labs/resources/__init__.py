@@ -1,12 +1,12 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
 from .ocr import (
-    OcrResource,
-    AsyncOcrResource,
-    OcrResourceWithRawResponse,
-    AsyncOcrResourceWithRawResponse,
-    OcrResourceWithStreamingResponse,
-    AsyncOcrResourceWithStreamingResponse,
+    OCRResource,
+    AsyncOCRResource,
+    OCRResourceWithRawResponse,
+    AsyncOCRResourceWithRawResponse,
+    OCRResourceWithStreamingResponse,
+    AsyncOCRResourceWithStreamingResponse,
 )
 from .chat import (
     ChatResource,
@@ -74,12 +74,12 @@ __all__ = [
     "AsyncImagesResourceWithRawResponse",
     "ImagesResourceWithStreamingResponse",
     "AsyncImagesResourceWithStreamingResponse",
-    "OcrResource",
-    "AsyncOcrResource",
-    "OcrResourceWithRawResponse",
-    "AsyncOcrResourceWithRawResponse",
-    "OcrResourceWithStreamingResponse",
-    "AsyncOcrResourceWithStreamingResponse",
+    "OCRResource",
+    "AsyncOCRResource",
+    "OCRResourceWithRawResponse",
+    "AsyncOCRResourceWithRawResponse",
+    "OCRResourceWithStreamingResponse",
+    "AsyncOCRResourceWithStreamingResponse",
     "ChatResource",
     "AsyncChatResource",
     "ChatResourceWithRawResponse",

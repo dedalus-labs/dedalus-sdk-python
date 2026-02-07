@@ -9,12 +9,12 @@ import pytest
 
 from tests.utils import assert_matches_type
 from dedalus_labs import Dedalus, AsyncDedalus
-from dedalus_labs.types import OcrResponse
+from dedalus_labs.types import OCRResponse
 
 base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 
 
-class TestOcr:
+class TestOCR:
     parametrize = pytest.mark.parametrize("client", [False, True], indirect=True, ids=["loose", "strict"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
@@ -23,7 +23,7 @@ class TestOcr:
         ocr = client.ocr.process(
             document={"document_url": "document_url"},
         )
-        assert_matches_type(OcrResponse, ocr, path=["response"])
+        assert_matches_type(OCRResponse, ocr, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -35,7 +35,7 @@ class TestOcr:
             },
             model="model",
         )
-        assert_matches_type(OcrResponse, ocr, path=["response"])
+        assert_matches_type(OCRResponse, ocr, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -47,7 +47,7 @@ class TestOcr:
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
         ocr = response.parse()
-        assert_matches_type(OcrResponse, ocr, path=["response"])
+        assert_matches_type(OCRResponse, ocr, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -59,12 +59,12 @@ class TestOcr:
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
             ocr = response.parse()
-            assert_matches_type(OcrResponse, ocr, path=["response"])
+            assert_matches_type(OCRResponse, ocr, path=["response"])
 
         assert cast(Any, response.is_closed) is True
 
 
-class TestAsyncOcr:
+class TestAsyncOCR:
     parametrize = pytest.mark.parametrize(
         "async_client", [False, True, {"http_client": "aiohttp"}], indirect=True, ids=["loose", "strict", "aiohttp"]
     )
@@ -75,7 +75,7 @@ class TestAsyncOcr:
         ocr = await async_client.ocr.process(
             document={"document_url": "document_url"},
         )
-        assert_matches_type(OcrResponse, ocr, path=["response"])
+        assert_matches_type(OCRResponse, ocr, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -87,7 +87,7 @@ class TestAsyncOcr:
             },
             model="model",
         )
-        assert_matches_type(OcrResponse, ocr, path=["response"])
+        assert_matches_type(OCRResponse, ocr, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -99,7 +99,7 @@ class TestAsyncOcr:
         assert response.is_closed is True
         assert response.http_request.headers.get("X-Stainless-Lang") == "python"
         ocr = await response.parse()
-        assert_matches_type(OcrResponse, ocr, path=["response"])
+        assert_matches_type(OCRResponse, ocr, path=["response"])
 
     @pytest.mark.skip(reason="Prism tests are disabled")
     @parametrize
@@ -111,6 +111,6 @@ class TestAsyncOcr:
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
 
             ocr = await response.parse()
-            assert_matches_type(OcrResponse, ocr, path=["response"])
+            assert_matches_type(OCRResponse, ocr, path=["response"])
 
         assert cast(Any, response.is_closed) is True

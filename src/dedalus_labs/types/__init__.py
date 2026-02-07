@@ -24,12 +24,12 @@ from .shared import (
     ResponseFormatJSONObject as ResponseFormatJSONObject,
     ResponseFormatJSONSchema as ResponseFormatJSONSchema,
 )
-from .ocr_page import OcrPage as OcrPage
-from .ocr_response import OcrResponse as OcrResponse
+from .ocr_page import OCRPage as OCRPage
+from .ocr_response import OCRResponse as OCRResponse
 from .images_response import ImagesResponse as ImagesResponse
 from .image_edit_params import ImageEditParams as ImageEditParams
-from .ocr_document_param import OcrDocumentParam as OcrDocumentParam
-from .ocr_process_params import OcrProcessParams as OcrProcessParams
+from .ocr_document_param import OCRDocumentParam as OCRDocumentParam
+from .ocr_process_params import OCRProcessParams as OCRProcessParams
 from .list_models_response import ListModelsResponse as ListModelsResponse
 from .image_generate_params import ImageGenerateParams as ImageGenerateParams
 from .embedding_create_params import EmbeddingCreateParams as EmbeddingCreateParams

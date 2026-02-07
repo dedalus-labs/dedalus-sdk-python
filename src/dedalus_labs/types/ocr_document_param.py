@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing_extensions import Required, TypedDict
 
-__all__ = ["OcrDocumentParam"]
+__all__ = ["OCRDocumentParam"]
 
 
-class OcrDocumentParam(TypedDict, total=False):
+class OCRDocumentParam(TypedDict, total=False):
     """Document input for OCR."""
 
     document_url: Required[str]

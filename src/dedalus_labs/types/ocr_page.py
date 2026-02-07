@@ -2,10 +2,10 @@
 
 from .._models import BaseModel
 
-__all__ = ["OcrPage"]
+__all__ = ["OCRPage"]
 
 
-class OcrPage(BaseModel):
+class OCRPage(BaseModel):
     """Single page OCR result."""
 
     index: int
