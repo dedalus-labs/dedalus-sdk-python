@@ -259,6 +259,7 @@ class Dedalus(SyncAPIClient):
             "X-SDK-Version": "1.0.0",
             "X-Provider": self.provider if self.provider is not None else Omit(),
             "X-Provider-Key": self.provider_key if self.provider_key is not None else Omit(),
+            "X-Provider-Model": self.provider_model if self.provider_model is not None else Omit(),
             **self._custom_headers,
         }
 
@@ -573,6 +574,7 @@ class AsyncDedalus(AsyncAPIClient):
             "X-SDK-Version": "1.0.0",
             "X-Provider": self.provider if self.provider is not None else Omit(),
             "X-Provider-Key": self.provider_key if self.provider_key is not None else Omit(),
+            "X-Provider-Model": self.provider_model if self.provider_model is not None else Omit(),
             **self._custom_headers,
         }
 
