@@ -762,39 +762,14 @@ class DedalusRunner:
                     print(f" Local tools used: {local_names}")
                     print(f" Server tools used: {mcp_names}")
 
-                # When ONLY MCP tools (no local) and content was streamed, we're done
-                if mcp_names and has_streamed_content and not local_names:
+                # All tools are server side and results have already been streamed.
+                if all_mcp and has_streamed_content:
                     if exec_config.verbose:
-                        print(f" MCP-only tools called and content streamed - response complete, breaking loop")
+                        print(f" All tools are MCP and content streamed, breaking loop")
                     break
 
-                if all_mcp:
-                    # All tools are MCP - the response should be streamed
-                    if exec_config.verbose:
-                        print(f" All tools are MCP, expecting streamed response")
-                    # Don't break here - let the next iteration handle it
-                else:
-                    # Mixed local + server tools. Include ALL tool calls
-                    # in the assistant message so the model sees the
-                    # complete conversation on the next turn.
-                    messages.append({"role": "assistant", "tool_calls": tool_calls})
-
-                    # Inject server (MCP) tool results as tool messages
-                    for tc in tool_calls:
-                        tc_name = tc["function"]["name"]
-                        if tc_name not in getattr(tool_handler, "_funcs", {}):
-                            call_id = tc["id"]
-                            result_data = next(
-                                (r for r in mcp_tool_results_from_server if r.get("call_id") == call_id),
-                                None,
-                            )
-                            if result_data:
-                                content = json.dumps(result_data["result"]) if result_data.get("result") is not None else ""
-                                messages.append({"role": "tool", "tool_call_id": call_id, "content": content})
-                            elif exec_config.verbose:
-                                print(f"  Warning: no server result for MCP tool {tc_name} ({call_id[:8]}...)")
-
-                    # Execute only local tools
+                # At least one local tool exists. Execute via the dependency aware scheduler.
+                if not all_mcp:
                     local_only = [
                         tc for tc in tool_calls if tc["function"]["name"] in getattr(tool_handler, "_funcs", {})
                     ]
@@ -813,10 +788,6 @@ class DedalusRunner:
 
                     if exec_config.verbose:
                         print(f" Messages after tool execution: {len(messages)}")
-
-                # Continue loop only if we need another response
-                if exec_config.verbose:
-                    print(f" Tool processing complete")
             else:
                 if exec_config.verbose:
                     print(f" No tool calls found, breaking out of loop")
@@ -1080,35 +1051,14 @@ class DedalusRunner:
                     print(f"  Local tools: {local_names}")
                     print(f"  Server tools: {mcp_names}")
 
-                # When ONLY MCP tools (no local) and content was streamed, we're done
-                if mcp_names and has_streamed_content and not local_names:
+                # All tools are server side and results have already been streamed.
+                if all_mcp and has_streamed_content:
                     if exec_config.verbose:
-                        print(f"  MCP-only tools called and content streamed - response complete, breaking loop")
+                        print(f"  All tools are MCP and content streamed, breaking loop")
                     break
 
-                if all_mcp:
-                    # All tools are MCP - the response should be streamed
-                    if exec_config.verbose:
-                        print(f"  All tools are MCP, expecting streamed response")
-                    # Don't break here - let the next iteration handle it
-                else:
-                    # Mixed local + server tools. Include ALL tool calls.
-                    messages.append({"role": "assistant", "tool_calls": tool_calls})
-
-                    # Inject server (MCP) tool results as tool messages
-                    for tc in tool_calls:
-                        tc_name = tc["function"]["name"]
-                        if tc_name not in getattr(tool_handler, "_funcs", {}):
-                            call_id = tc["id"]
-                            result_data = next(
-                                (r for r in mcp_tool_results_from_server if r.get("call_id") == call_id),
-                                None,
-                            )
-                            if result_data:
-                                content = json.dumps(result_data["result"]) if result_data.get("result") is not None else ""
-                                messages.append({"role": "tool", "tool_call_id": call_id, "content": content})
-
-                    # Execute only local tools
+                # At least one local tool exists. Execute via the dependency aware scheduler.
+                if not all_mcp:
                     local_only = [
                         tc for tc in tool_calls if tc["function"]["name"] in getattr(tool_handler, "_funcs", {})
                     ]
@@ -1125,11 +1075,7 @@ class DedalusRunner:
                     )
 
                     if exec_config.verbose:
-                        print(f" Messages after tool execution: {len(messages)}")
-
-                # Continue loop only if we need another response
-                if exec_config.verbose:
-                    print(f" Tool processing complete")
+                        print(f"  Messages after tool execution: {len(messages)}")
             else:
                 if exec_config.verbose:
                     print(f" No tool calls found, breaking out of loop")

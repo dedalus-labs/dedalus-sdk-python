@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Dict, Optional
 from typing_extensions import Literal, Required, TypedDict
 
 __all__ = ["ResponseFormatJSONSchema", "JSONSchema"]
@@ -24,7 +24,7 @@ class JSONSchema(TypedDict, total=False):
     how to respond in the format.
     """
 
-    schema: "JSONObjectInput"
+    schema: Dict[str, object]
     """
     The schema for the response format, described as a JSON Schema object. Learn how
     to build JSON schemas [here](https://json-schema.org/).
@@ -56,6 +56,3 @@ class ResponseFormatJSONSchema(TypedDict, total=False):
 
     type: Required[Literal["json_schema"]]
     """The type of response format being defined. Always `json_schema`."""
-
-
-from .json_object_input import JSONObjectInput

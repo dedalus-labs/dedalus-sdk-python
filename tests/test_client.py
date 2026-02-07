@@ -8,10 +8,11 @@ import sys
 import json
 import asyncio
 import inspect
+import dataclasses
 import tracemalloc
-from typing import Any, Union, cast
+from typing import Any, Union, TypeVar, Callable, Iterable, Iterator, Optional, Coroutine, cast
 from unittest import mock
-from typing_extensions import Literal
+from typing_extensions import Literal, AsyncIterator, override
 
 import httpx
 import pytest
@@ -37,6 +38,7 @@ from dedalus_labs._base_client import (
 
 from .utils import update_env
 
+T = TypeVar("T")
 base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 api_key = "My API Key"
 
@@ -49,6 +51,57 @@ def _get_params(client: BaseClient[Any, Any]) -> dict[str, str]:
 
 def _low_retry_timeout(*_args: Any, **_kwargs: Any) -> float:
     return 0.1
+
+
+def mirror_request_content(request: httpx.Request) -> httpx.Response:
+    return httpx.Response(200, content=request.content)
+
+
+# note: we can't use the httpx.MockTransport class as it consumes the request
+#       body itself, which means we can't test that the body is read lazily
+class MockTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
+    def __init__(
+        self,
+        handler: Callable[[httpx.Request], httpx.Response]
+        | Callable[[httpx.Request], Coroutine[Any, Any, httpx.Response]],
+    ) -> None:
+        self.handler = handler
+
+    @override
+    def handle_request(
+        self,
+        request: httpx.Request,
+    ) -> httpx.Response:
+        assert not inspect.iscoroutinefunction(self.handler), "handler must not be a coroutine function"
+        assert inspect.isfunction(self.handler), "handler must be a function"
+        return self.handler(request)
+
+    @override
+    async def handle_async_request(
+        self,
+        request: httpx.Request,
+    ) -> httpx.Response:
+        assert inspect.iscoroutinefunction(self.handler), "handler must be a coroutine function"
+        return await self.handler(request)
+
+
+@dataclasses.dataclass
+class Counter:
+    value: int = 0
+
+
+def _make_sync_iterator(iterable: Iterable[T], counter: Optional[Counter] = None) -> Iterator[T]:
+    for item in iterable:
+        if counter:
+            counter.value += 1
+        yield item
+
+
+async def _make_async_iterator(iterable: Iterable[T], counter: Optional[Counter] = None) -> AsyncIterator[T]:
+    for item in iterable:
+        if counter:
+            counter.value += 1
+        yield item
 
 
 def _get_open_connections(client: Dedalus | AsyncDedalus) -> int:
@@ -92,7 +145,7 @@ class TestDedalus:
         # options that have a default are overridden correctly
         copied = client.copy(max_retries=7)
         assert copied.max_retries == 7
-        assert client.max_retries == 0
+        assert client.max_retries == 2
 
         copied2 = copied.copy(max_retries=6)
         assert copied2.max_retries == 6
@@ -511,6 +564,70 @@ class TestDedalus:
         ]
 
     @pytest.mark.respx(base_url=base_url)
+    def test_binary_content_upload(self, respx_mock: MockRouter, client: Dedalus) -> None:
+        respx_mock.post("/upload").mock(side_effect=mirror_request_content)
+
+        file_content = b"Hello, this is a test file."
+
+        response = client.post(
+            "/upload",
+            content=file_content,
+            cast_to=httpx.Response,
+            options={"headers": {"Content-Type": "application/octet-stream"}},
+        )
+
+        assert response.status_code == 200
+        assert response.request.headers["Content-Type"] == "application/octet-stream"
+        assert response.content == file_content
+
+    def test_binary_content_upload_with_iterator(self) -> None:
+        file_content = b"Hello, this is a test file."
+        counter = Counter()
+        iterator = _make_sync_iterator([file_content], counter=counter)
+
+        def mock_handler(request: httpx.Request) -> httpx.Response:
+            assert counter.value == 0, "the request body should not have been read"
+            return httpx.Response(200, content=request.read())
+
+        with Dedalus(
+            base_url=base_url,
+            api_key=api_key,
+            _strict_response_validation=True,
+            http_client=httpx.Client(transport=MockTransport(handler=mock_handler)),
+        ) as client:
+            response = client.post(
+                "/upload",
+                content=iterator,
+                cast_to=httpx.Response,
+                options={"headers": {"Content-Type": "application/octet-stream"}},
+            )
+
+            assert response.status_code == 200
+            assert response.request.headers["Content-Type"] == "application/octet-stream"
+            assert response.content == file_content
+            assert counter.value == 1
+
+    @pytest.mark.respx(base_url=base_url)
+    def test_binary_content_upload_with_body_is_deprecated(self, respx_mock: MockRouter, client: Dedalus) -> None:
+        respx_mock.post("/upload").mock(side_effect=mirror_request_content)
+
+        file_content = b"Hello, this is a test file."
+
+        with pytest.deprecated_call(
+            match="Passing raw bytes as `body` is deprecated and will be removed in a future version. Please pass raw bytes via the `content` parameter instead."
+        ):
+            response = client.post(
+                "/upload",
+                body=file_content,
+                cast_to=httpx.Response,
+                options={"headers": {"Content-Type": "application/octet-stream"}},
+            )
+
+        assert response.status_code == 200
+        assert response.request.headers["Content-Type"] == "application/octet-stream"
+        assert response.content == file_content
+
+    @pytest.mark.respx(base_url=base_url)
     def test_basic_union_response(self, respx_mock: MockRouter, client: Dedalus) -> None:
         class Model1(BaseModel):
             name: str
@@ -765,21 +882,21 @@ class TestDedalus:
         "remaining_retries,retry_after,timeout",
         [
             [3, "20", 20],
-            [3, "0", 0.1],
-            [3, "-10", 0.1],
+            [3, "0", 0.5],
+            [3, "-10", 0.5],
             [3, "60", 60],
-            [3, "61", 0.1],
+            [3, "61", 0.5],
             [3, "Fri, 29 Sep 2023 16:26:57 GMT", 20],
-            [3, "Fri, 29 Sep 2023 16:26:37 GMT", 0.1],
-            [3, "Fri, 29 Sep 2023 16:26:27 GMT", 0.1],
+            [3, "Fri, 29 Sep 2023 16:26:37 GMT", 0.5],
+            [3, "Fri, 29 Sep 2023 16:26:27 GMT", 0.5],
             [3, "Fri, 29 Sep 2023 16:27:37 GMT", 60],
-            [3, "Fri, 29 Sep 2023 16:27:38 GMT", 0.1],
-            [3, "99999999999999999999999999999999999", 0.1],
-            [3, "Zun, 29 Sep 2023 16:26:27 GMT", 0.1],
-            [3, "", 0.1],
-            [2, "", 0.1 * 2.0],
-            [1, "", 0.1 * 4.0],
-            [-1100, "", 3],  # test large number potentially overflowing
+            [3, "Fri, 29 Sep 2023 16:27:38 GMT", 0.5],
+            [3, "99999999999999999999999999999999999", 0.5],
+            [3, "Zun, 29 Sep 2023 16:26:27 GMT", 0.5],
+            [3, "", 0.5],
+            [2, "", 0.5 * 2.0],
+            [1, "", 0.5 * 4.0],
+            [-1100, "", 8],  # test large number potentially overflowing
         ],
     )
     @mock.patch("time.time", mock.MagicMock(return_value=1696004797))
@@ -789,7 +906,7 @@ class TestDedalus:
         headers = httpx.Headers({"retry-after": retry_after})
         options = FinalRequestOptions(method="get", url="/foo", max_retries=3)
         calculated = client._calculate_retry_timeout(remaining_retries, options, headers)
-        assert calculated == pytest.approx(timeout, 0.1 * 0.875)  # pyright: ignore[reportUnknownMemberType]
+        assert calculated == pytest.approx(timeout, 0.5 * 0.875)  # pyright: ignore[reportUnknownMemberType]
 
     @mock.patch("dedalus_labs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
@@ -972,7 +1089,7 @@ class TestAsyncDedalus:
         # options that have a default are overridden correctly
         copied = async_client.copy(max_retries=7)
         assert copied.max_retries == 7
-        assert async_client.max_retries == 0
+        assert async_client.max_retries == 2
 
         copied2 = copied.copy(max_retries=6)
         assert copied2.max_retries == 6
@@ -1395,6 +1512,72 @@ class TestAsyncDedalus:
         ]
 
     @pytest.mark.respx(base_url=base_url)
+    async def test_binary_content_upload(self, respx_mock: MockRouter, async_client: AsyncDedalus) -> None:
+        respx_mock.post("/upload").mock(side_effect=mirror_request_content)
+
+        file_content = b"Hello, this is a test file."
+
+        response = await async_client.post(
+            "/upload",
+            content=file_content,
+            cast_to=httpx.Response,
+            options={"headers": {"Content-Type": "application/octet-stream"}},
+        )
+
+        assert response.status_code == 200
+        assert response.request.headers["Content-Type"] == "application/octet-stream"
+        assert response.content == file_content
+
+    async def test_binary_content_upload_with_asynciterator(self) -> None:
+        file_content = b"Hello, this is a test file."
+        counter = Counter()
+        iterator = _make_async_iterator([file_content], counter=counter)
+
+        async def mock_handler(request: httpx.Request) -> httpx.Response:
+            assert counter.value == 0, "the request body should not have been read"
+            return httpx.Response(200, content=await request.aread())
+
+        async with AsyncDedalus(
+            base_url=base_url,
+            api_key=api_key,
+            _strict_response_validation=True,
+            http_client=httpx.AsyncClient(transport=MockTransport(handler=mock_handler)),
+        ) as client:
+            response = await client.post(
+                "/upload",
+                content=iterator,
+                cast_to=httpx.Response,
+                options={"headers": {"Content-Type": "application/octet-stream"}},
+            )
+
+            assert response.status_code == 200
+            assert response.request.headers["Content-Type"] == "application/octet-stream"
+            assert response.content == file_content
+            assert counter.value == 1
+
+    @pytest.mark.respx(base_url=base_url)
+    async def test_binary_content_upload_with_body_is_deprecated(
+        self, respx_mock: MockRouter, async_client: AsyncDedalus
+    ) -> None:
+        respx_mock.post("/upload").mock(side_effect=mirror_request_content)
+
+        file_content = b"Hello, this is a test file."
+
+        with pytest.deprecated_call(
+            match="Passing raw bytes as `body` is deprecated and will be removed in a future version. Please pass raw bytes via the `content` parameter instead."
+        ):
+            response = await async_client.post(
+                "/upload",
+                body=file_content,
+                cast_to=httpx.Response,
+                options={"headers": {"Content-Type": "application/octet-stream"}},
+            )
+
+        assert response.status_code == 200
+        assert response.request.headers["Content-Type"] == "application/octet-stream"
+        assert response.content == file_content
+
+    @pytest.mark.respx(base_url=base_url)
     async def test_basic_union_response(self, respx_mock: MockRouter, async_client: AsyncDedalus) -> None:
         class Model1(BaseModel):
             name: str
@@ -1664,21 +1847,21 @@ class TestAsyncDedalus:
         "remaining_retries,retry_after,timeout",
         [
             [3, "20", 20],
-            [3, "0", 0.1],
-            [3, "-10", 0.1],
+            [3, "0", 0.5],
+            [3, "-10", 0.5],
             [3, "60", 60],
-            [3, "61", 0.1],
+            [3, "61", 0.5],
             [3, "Fri, 29 Sep 2023 16:26:57 GMT", 20],
-            [3, "Fri, 29 Sep 2023 16:26:37 GMT", 0.1],
-            [3, "Fri, 29 Sep 2023 16:26:27 GMT", 0.1],
+            [3, "Fri, 29 Sep 2023 16:26:37 GMT", 0.5],
+            [3, "Fri, 29 Sep 2023 16:26:27 GMT", 0.5],
             [3, "Fri, 29 Sep 2023 16:27:37 GMT", 60],
-            [3, "Fri, 29 Sep 2023 16:27:38 GMT", 0.1],
-            [3, "99999999999999999999999999999999999", 0.1],
-            [3, "Zun, 29 Sep 2023 16:26:27 GMT", 0.1],
-            [3, "", 0.1],
-            [2, "", 0.1 * 2.0],
-            [1, "", 0.1 * 4.0],
-            [-1100, "", 3],  # test large number potentially overflowing
+            [3, "Fri, 29 Sep 2023 16:27:38 GMT", 0.5],
+            [3, "99999999999999999999999999999999999", 0.5],
+            [3, "Zun, 29 Sep 2023 16:26:27 GMT", 0.5],
+            [3, "", 0.5],
+            [2, "", 0.5 * 2.0],
+            [1, "", 0.5 * 4.0],
+            [-1100, "", 8],  # test large number potentially overflowing
         ],
     )
     @mock.patch("time.time", mock.MagicMock(return_value=1696004797))
@@ -1688,7 +1871,7 @@ class TestAsyncDedalus:
         headers = httpx.Headers({"retry-after": retry_after})
         options = FinalRequestOptions(method="get", url="/foo", max_retries=3)
         calculated = async_client._calculate_retry_timeout(remaining_retries, options, headers)
-        assert calculated == pytest.approx(timeout, 0.1 * 0.875)  # pyright: ignore[reportUnknownMemberType]
+        assert calculated == pytest.approx(timeout, 0.5 * 0.875)  # pyright: ignore[reportUnknownMemberType]
 
     @mock.patch("dedalus_labs._base_client.BaseClient._calculate_retry_timeout", _low_retry_timeout)
     @pytest.mark.respx(base_url=base_url)
