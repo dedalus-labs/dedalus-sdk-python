@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.3.0 (2026-02-07)
+
+Full Changelog: [v0.2.0...v0.3.0](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.2.0...v0.3.0)
+
+### Features
+
+* **client:** add support for binary request streaming ([48f4cca](https://github.com/dedalus-labs/dedalus-sdk-python/commit/48f4cca7563d7e658824e40893068ae155ef75d4))
+* **runner:** dependency-aware parallel tool execution ([7e6716f](https://github.com/dedalus-labs/dedalus-sdk-python/commit/7e6716f61769038e7beb91eabed6d240c3443a9e))
+* **runner:** dependency-aware parallel tool execution ([#44](https://github.com/dedalus-labs/dedalus-sdk-python/issues/44)) ([a72f70f](https://github.com/dedalus-labs/dedalus-sdk-python/commit/a72f70f930c7f016e06ab3c0a3e82ffdb689f83e))
+
+
+### Bug Fixes
+
+* **api:** default auth server ([38c637a](https://github.com/dedalus-labs/dedalus-sdk-python/commit/38c637af8275faec50a08cd9c7cd7ebd5f47e78d))
+* **docs:** fix mcp installation instructions for remote servers ([e4e3619](https://github.com/dedalus-labs/dedalus-sdk-python/commit/e4e3619990099b43df78e88415e3627daf8c7425))
+* **runner:** allow local tool execution in mixed MCP+local scenarios ([5d0ce6d](https://github.com/dedalus-labs/dedalus-sdk-python/commit/5d0ce6d829684e54dcbccbd6c006373fd0fd855b))
+* **runner:** inject server tool results into conversation for mixed tool calls ([288b70e](https://github.com/dedalus-labs/dedalus-sdk-python/commit/288b70e22ee6e9af0593dc45ddac11ae6de78eb8))
+* **runner:** preserve thought_signature in tool call accumulation and extraction ([77e5958](https://github.com/dedalus-labs/dedalus-sdk-python/commit/77e5958beb3699e3fd08f8f2fd0b6ecb2932d010))
+* **runner:** server tool results, mixed-tool execution, thought_signature passthrough ([#45](https://github.com/dedalus-labs/dedalus-sdk-python/issues/45)) ([637d9b8](https://github.com/dedalus-labs/dedalus-sdk-python/commit/637d9b846fe197110e6685e61dfaa514857fd46f))
+* **runner:** skip early break when local tools need execution alongside MCP ([ad7379b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/ad7379b033a1eb8216147f823d30c71fdbf815c4))
+
+
+### Chores
+
+* **ci:** upgrade `actions/github-script` ([cf53a9e](https://github.com/dedalus-labs/dedalus-sdk-python/commit/cf53a9e097577c01785d09ee45e6df4a3745cdec))
+* **internal:** update `actions/checkout` version ([c72dfca](https://github.com/dedalus-labs/dedalus-sdk-python/commit/c72dfca95456904ce446548768b1262387686467))
+* **runner:** strip commented-out production version and banner comments from core.py ([59350e3](https://github.com/dedalus-labs/dedalus-sdk-python/commit/59350e37cdd0b825addb7c40c2be7887ed83586f))
+
 ## 0.2.0 (2026-01-08)
 
 Full Changelog: [v0.2.0...v0.2.0](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.2.0...v0.2.0)
