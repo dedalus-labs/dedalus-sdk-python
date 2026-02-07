@@ -1107,6 +1107,8 @@ class DedalusRunner:
                             if result_data:
                                 content = json.dumps(result_data["result"]) if result_data.get("result") is not None else ""
                                 messages.append({"role": "tool", "tool_call_id": call_id, "content": content})
+                            elif exec_config.verbose:
+                                print(f"  Warning: no server result for MCP tool {tc_name} ({call_id[:8]}...)")
 
                     # Execute only local tools
                     local_only = [
