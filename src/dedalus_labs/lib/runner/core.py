@@ -754,19 +754,14 @@ class DedalusRunner:
                     print(f" Local tools used: {local_names}")
                     print(f" Server tools used: {mcp_names}")
 
-                # When MCP tools are involved and content was streamed, we're done
-                if mcp_names and has_streamed_content:
+                # All tools are server side and results have already been streamed.
+                if all_mcp and has_streamed_content:
                     if exec_config.verbose:
-                        print(f" MCP tools called and content streamed - response complete, breaking loop")
+                        print(f" All tools are MCP and content streamed, breaking loop")
                     break
 
-                if all_mcp:
-                    # All tools are MCP - the response should be streamed
-                    if exec_config.verbose:
-                        print(f" All tools are MCP, expecting streamed response")
-                    # Don't break here - let the next iteration handle it
-                else:
-                    # We have at least one local tool — delegate to scheduler.
+                # At least one local tool exists. Execute via the dependency aware scheduler.
+                if not all_mcp:
                     local_only = [
                         tc for tc in tool_calls if tc["function"]["name"] in getattr(tool_handler, "_funcs", {})
                     ]
@@ -786,10 +781,6 @@ class DedalusRunner:
 
                     if exec_config.verbose:
                         print(f" Messages after tool execution: {len(messages)}")
-
-                # Continue loop only if we need another response
-                if exec_config.verbose:
-                    print(f" Tool processing complete")
             else:
                 if exec_config.verbose:
                     print(f" No tool calls found, breaking out of loop")
@@ -1046,19 +1037,14 @@ class DedalusRunner:
                     print(f"  Local tools: {local_names}")
                     print(f"  Server tools: {mcp_names}")
 
-                # When MCP tools are involved and content was streamed, we're done
-                if mcp_names and has_streamed_content:
+                # All tools are server side and results have already been streamed.
+                if all_mcp and has_streamed_content:
                     if exec_config.verbose:
-                        print(f"  MCP tools called and content streamed - response complete, breaking loop")
+                        print(f"  All tools are MCP and content streamed, breaking loop")
                     break
 
-                if all_mcp:
-                    # All tools are MCP - the response should be streamed
-                    if exec_config.verbose:
-                        print(f"  All tools are MCP, expecting streamed response")
-                    # Don't break here - let the next iteration handle it
-                else:
-                    # We have at least one local tool — delegate to scheduler.
+                # At least one local tool exists. Execute via the dependency aware scheduler.
+                if not all_mcp:
                     local_only = [
                         tc for tc in tool_calls if tc["function"]["name"] in getattr(tool_handler, "_funcs", {})
                     ]
@@ -1076,11 +1062,7 @@ class DedalusRunner:
                     )
 
                     if exec_config.verbose:
-                        print(f" Messages after tool execution: {len(messages)}")
-
-                # Continue loop only if we need another response
-                if exec_config.verbose:
-                    print(f" Tool processing complete")
+                        print(f"  Messages after tool execution: {len(messages)}")
             else:
                 if exec_config.verbose:
                     print(f" No tool calls found, breaking out of loop")
