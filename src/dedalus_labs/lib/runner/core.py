@@ -508,6 +508,7 @@ class DedalusRunner:
         final_text = ""
         tool_results: list[ToolResult] = []
         tools_called: list[str] = []
+        response = None
 
         while steps < exec_config.max_steps:
             steps += 1
@@ -809,6 +810,7 @@ class DedalusRunner:
         final_text = ""
         tool_results: list[ToolResult] = []
         tools_called: list[str] = []
+        response = None
 
         while steps < exec_config.max_steps:
             steps += 1
