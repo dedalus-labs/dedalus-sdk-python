@@ -30,6 +30,7 @@ from ..mcp import MCPServerProtocol, serialize_mcp_servers
 from .types import Message, ToolCall, JsonValue, ToolResult, PolicyInput, PolicyContext
 from ..._client import Dedalus, AsyncDedalus
 from ...types.shared import MCPToolResult
+from ..utils._stream import accumulate_tool_call
 
 # Type alias for mcp_servers parameter - accepts strings, server objects, or mixed lists
 MCPServersInput = Union[
@@ -1240,29 +1241,7 @@ class DedalusRunner:
     def _accumulate_tool_calls(self, deltas, acc: list[ToolCall]) -> None:
         """Accumulate streaming tool call deltas."""
         for delta in deltas:
-            index = getattr(delta, "index", 0)
-
-            # Ensure we have enough entries in acc
-            while len(acc) <= index:
-                acc.append(
-                    {
-                        "id": "",
-                        "type": "function",
-                        "function": {"name": "", "arguments": ""},
-                    }
-                )
-
-            if hasattr(delta, "id") and delta.id:
-                acc[index]["id"] = delta.id
-            if hasattr(delta, "function"):
-                fn = delta.function
-                if hasattr(fn, "name") and fn.name:
-                    acc[index]["function"]["name"] = fn.name
-                if hasattr(fn, "arguments") and fn.arguments:
-                    acc[index]["function"]["arguments"] += fn.arguments
-            thought_sig = getattr(delta, "thought_signature", None)
-            if thought_sig:
-                acc[index]["thought_signature"] = thought_sig
+            accumulate_tool_call(acc, delta)
 
     @staticmethod
     def _mk_kwargs(mc: _ModelConfig) -> Dict[str, Any]:
