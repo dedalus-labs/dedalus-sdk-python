@@ -9,32 +9,7 @@ from .choice import Choice
 from ..._models import BaseModel
 from .completion_usage import CompletionUsage
 
-__all__ = ["ChatCompletion", "Deferred", "MCPServerErrors", "PendingTool"]
-
-
-class Deferred(BaseModel):
-    """Server-side call blocked until pending client calls complete.
-
-    Carries full spec for stateless resumption on subsequent turns.
-    """
-
-    id: str
-    """Unique identifier for this deferred call."""
-
-    name: str
-    """Name of the tool."""
-
-    arguments: Optional["JSONObjectInput"] = None
-    """Input arguments for the tool call."""
-
-    blocked_by: Optional[List[str]] = None
-    """IDs of pending client calls blocking this call."""
-
-    dependencies: Optional[List[str]] = None
-    """IDs of calls this depends on."""
-
-    venue: Optional[str] = None
-    """Execution venue (server or client)."""
+__all__ = ["ChatCompletion", "MCPServerErrors", "PendingTool"]
 
 
 class MCPServerErrors(BaseModel):
@@ -98,7 +73,7 @@ class ChatCompletion(BaseModel):
     Echo this on the next request to resume server-side execution.
     """
 
-    deferred: Optional[List[Deferred]] = None
+    deferred: Optional[List["DeferredCallResponse"]] = None
     """Server tools blocked on client results."""
 
     mcp_server_errors: Optional[Dict[str, MCPServerErrors]] = None
@@ -160,6 +135,7 @@ class ChatCompletion(BaseModel):
     """Usage statistics for the completion request."""
 
 
+from .deferred_call_response import DeferredCallResponse
 from ..shared.mcp_tool_result import MCPToolResult
 from ..shared.json_value_input import JSONValueInput
 from ..shared.json_object_input import JSONObjectInput

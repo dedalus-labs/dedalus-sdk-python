@@ -102,7 +102,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     `/v1/chat/deferred-completion/{request_id}`.
     """
 
-    deferred_calls: Optional[Iterable[Dict[str, object]]]
+    deferred_calls: Optional[Iterable["DeferredCallResponseParam"]]
     """Tier 2 stateless resumption.
 
     Deferred tool specs from a previous handoff response, sent back verbatim so the
@@ -477,7 +477,7 @@ class ThinkingThinkingConfigAdaptive(TypedDict, total=False):
 
 Thinking: TypeAlias = Union[ThinkingConfigEnabledParam, ThinkingConfigDisabledParam, ThinkingThinkingConfigAdaptive]
 
-ToolChoice: TypeAlias = Union[ToolChoiceAutoParam, ToolChoiceAnyParam, ToolChoiceToolParam, ToolChoiceNoneParam]
+ToolChoice: TypeAlias = Union[str, ToolChoiceAutoParam, ToolChoiceAnyParam, ToolChoiceToolParam, ToolChoiceNoneParam]
 
 
 class CompletionCreateParamsNonStreaming(CompletionCreateParamsBase, total=False):
@@ -493,5 +493,6 @@ class CompletionCreateParamsStreaming(CompletionCreateParamsBase):
 CompletionCreateParams = Union[CompletionCreateParamsNonStreaming, CompletionCreateParamsStreaming]
 
 from ..shared_params.dedalus_model import DedalusModel
+from .deferred_call_response_param import DeferredCallResponseParam
 from ..shared_params.json_object_input import JSONObjectInput
 from ..shared_params.dedalus_model_choice import DedalusModelChoice

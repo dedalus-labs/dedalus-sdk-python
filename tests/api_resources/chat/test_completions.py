@@ -48,7 +48,16 @@ class TestCompletions:
                 "values": {"api_key": "sk-..."},
             },
             deferred=True,
-            deferred_calls=[{"foo": "bar"}],
+            deferred_calls=[
+                {
+                    "id": "id",
+                    "name": "name",
+                    "arguments": {"foo": "string"},
+                    "blocked_by": ["string"],
+                    "dependencies": ["string"],
+                    "venue": "venue",
+                }
+            ],
             frequency_penalty=-2,
             function_call="function_call",
             functions=[
@@ -119,10 +128,7 @@ class TestCompletions:
                 "budget_tokens": 1024,
                 "type": "enabled",
             },
-            tool_choice={
-                "type": "auto",
-                "disable_parallel_tool_use": True,
-            },
+            tool_choice="string",
             tool_config={"foo": "string"},
             tools=[
                 {
@@ -196,7 +202,16 @@ class TestCompletions:
                 "values": {"api_key": "sk-..."},
             },
             deferred=True,
-            deferred_calls=[{"foo": "bar"}],
+            deferred_calls=[
+                {
+                    "id": "id",
+                    "name": "name",
+                    "arguments": {"foo": "string"},
+                    "blocked_by": ["string"],
+                    "dependencies": ["string"],
+                    "venue": "venue",
+                }
+            ],
             frequency_penalty=-2,
             function_call="function_call",
             functions=[
@@ -266,10 +281,7 @@ class TestCompletions:
                 "budget_tokens": 1024,
                 "type": "enabled",
             },
-            tool_choice={
-                "type": "auto",
-                "disable_parallel_tool_use": True,
-            },
+            tool_choice="string",
             tool_config={"foo": "string"},
             tools=[
                 {
@@ -348,7 +360,16 @@ class TestAsyncCompletions:
                 "values": {"api_key": "sk-..."},
             },
             deferred=True,
-            deferred_calls=[{"foo": "bar"}],
+            deferred_calls=[
+                {
+                    "id": "id",
+                    "name": "name",
+                    "arguments": {"foo": "string"},
+                    "blocked_by": ["string"],
+                    "dependencies": ["string"],
+                    "venue": "venue",
+                }
+            ],
             frequency_penalty=-2,
             function_call="function_call",
             functions=[
@@ -419,10 +440,7 @@ class TestAsyncCompletions:
                 "budget_tokens": 1024,
                 "type": "enabled",
             },
-            tool_choice={
-                "type": "auto",
-                "disable_parallel_tool_use": True,
-            },
+            tool_choice="string",
             tool_config={"foo": "string"},
             tools=[
                 {
@@ -496,7 +514,16 @@ class TestAsyncCompletions:
                 "values": {"api_key": "sk-..."},
             },
             deferred=True,
-            deferred_calls=[{"foo": "bar"}],
+            deferred_calls=[
+                {
+                    "id": "id",
+                    "name": "name",
+                    "arguments": {"foo": "string"},
+                    "blocked_by": ["string"],
+                    "dependencies": ["string"],
+                    "venue": "venue",
+                }
+            ],
             frequency_penalty=-2,
             function_call="function_call",
             functions=[
@@ -566,10 +593,7 @@ class TestAsyncCompletions:
                 "budget_tokens": 1024,
                 "type": "enabled",
             },
-            tool_choice={
-                "type": "auto",
-                "disable_parallel_tool_use": True,
-            },
+            tool_choice="string",
             tool_config={"foo": "string"},
             tools=[
                 {

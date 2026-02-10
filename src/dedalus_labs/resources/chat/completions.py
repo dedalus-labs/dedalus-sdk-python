@@ -26,6 +26,7 @@ from ...types.chat.prediction_content_param import PredictionContentParam
 from ...types.chat.chat_completion_tool_param import ChatCompletionToolParam
 from ...types.shared_params.json_object_input import JSONObjectInput
 from ...types.chat.chat_completion_audio_param import ChatCompletionAudioParam
+from ...types.chat.deferred_call_response_param import DeferredCallResponseParam
 from ...types.chat.chat_completion_functions_param import ChatCompletionFunctionsParam
 
 __all__ = ["CompletionsResource", "AsyncCompletionsResource"]
@@ -63,7 +64,7 @@ class CompletionsResource(SyncAPIResource):
         correlation_id: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
-        deferred_calls: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        deferred_calls: Optional[Iterable[DeferredCallResponseParam]] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
         functions: Optional[Iterable[ChatCompletionFunctionsParam]] | Omit = omit,
@@ -419,7 +420,7 @@ class CompletionsResource(SyncAPIResource):
         correlation_id: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
-        deferred_calls: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        deferred_calls: Optional[Iterable[DeferredCallResponseParam]] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
         functions: Optional[Iterable[ChatCompletionFunctionsParam]] | Omit = omit,
@@ -774,7 +775,7 @@ class CompletionsResource(SyncAPIResource):
         correlation_id: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
-        deferred_calls: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        deferred_calls: Optional[Iterable[DeferredCallResponseParam]] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
         functions: Optional[Iterable[ChatCompletionFunctionsParam]] | Omit = omit,
@@ -1128,7 +1129,7 @@ class CompletionsResource(SyncAPIResource):
         correlation_id: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
-        deferred_calls: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        deferred_calls: Optional[Iterable[DeferredCallResponseParam]] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
         functions: Optional[Iterable[ChatCompletionFunctionsParam]] | Omit = omit,
@@ -1302,7 +1303,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         correlation_id: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
-        deferred_calls: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        deferred_calls: Optional[Iterable[DeferredCallResponseParam]] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
         functions: Optional[Iterable[ChatCompletionFunctionsParam]] | Omit = omit,
@@ -1658,7 +1659,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         correlation_id: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
-        deferred_calls: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        deferred_calls: Optional[Iterable[DeferredCallResponseParam]] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
         functions: Optional[Iterable[ChatCompletionFunctionsParam]] | Omit = omit,
@@ -2013,7 +2014,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         correlation_id: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
-        deferred_calls: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        deferred_calls: Optional[Iterable[DeferredCallResponseParam]] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
         functions: Optional[Iterable[ChatCompletionFunctionsParam]] | Omit = omit,
@@ -2367,7 +2368,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         correlation_id: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
-        deferred_calls: Optional[Iterable[Dict[str, object]]] | Omit = omit,
+        deferred_calls: Optional[Iterable[DeferredCallResponseParam]] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
         functions: Optional[Iterable[ChatCompletionFunctionsParam]] | Omit = omit,

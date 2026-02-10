@@ -153,6 +153,7 @@ from dedalus_labs.types.chat import (
     ChoiceLogprobs,
     CompletionTokensDetails,
     CompletionUsage,
+    DeferredCallResponse,
     InputTokenDetails,
     PredictionContent,
     PromptTokensDetails,
