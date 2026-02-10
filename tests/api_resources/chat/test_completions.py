@@ -42,11 +42,13 @@ class TestCompletions:
             },
             automatic_tool_execution=True,
             cached_content="cached_content",
+            correlation_id="correlation_id",
             credentials={
                 "connection_name": "external-service",
                 "values": {"api_key": "sk-..."},
             },
             deferred=True,
+            deferred_calls=[{"foo": "bar"}],
             frequency_penalty=-2,
             function_call="function_call",
             functions=[
@@ -59,6 +61,8 @@ class TestCompletions:
             generation_config={"foo": "string"},
             guardrails=[{"foo": "bar"}],
             handoff_config={"foo": "bar"},
+            handoff_mode=True,
+            inference_geo="inference_geo",
             logit_bias={"foo": 0},
             logprobs=True,
             max_completion_tokens=0,
@@ -81,6 +85,7 @@ class TestCompletions:
                 }
             },
             n=1,
+            output_config={"foo": "string"},
             parallel_tool_calls=True,
             prediction={
                 "content": "string",
@@ -103,6 +108,7 @@ class TestCompletions:
             search_parameters={"foo": "string"},
             seed=0,
             service_tier="service_tier",
+            speed="standard",
             stop=["string"],
             store=True,
             stream=False,
@@ -120,12 +126,7 @@ class TestCompletions:
             tool_config={"foo": "string"},
             tools=[
                 {
-                    "function": {
-                        "name": "name",
-                        "description": "description",
-                        "parameters": {"foo": "bar"},
-                        "strict": True,
-                    },
+                    "function": {"name": "name"},
                     "type": "function",
                 }
             ],
@@ -189,11 +190,13 @@ class TestCompletions:
             },
             automatic_tool_execution=True,
             cached_content="cached_content",
+            correlation_id="correlation_id",
             credentials={
                 "connection_name": "external-service",
                 "values": {"api_key": "sk-..."},
             },
             deferred=True,
+            deferred_calls=[{"foo": "bar"}],
             frequency_penalty=-2,
             function_call="function_call",
             functions=[
@@ -206,6 +209,8 @@ class TestCompletions:
             generation_config={"foo": "string"},
             guardrails=[{"foo": "bar"}],
             handoff_config={"foo": "bar"},
+            handoff_mode=True,
+            inference_geo="inference_geo",
             logit_bias={"foo": 0},
             logprobs=True,
             max_completion_tokens=0,
@@ -228,6 +233,7 @@ class TestCompletions:
                 }
             },
             n=1,
+            output_config={"foo": "string"},
             parallel_tool_calls=True,
             prediction={
                 "content": "string",
@@ -250,6 +256,7 @@ class TestCompletions:
             search_parameters={"foo": "string"},
             seed=0,
             service_tier="service_tier",
+            speed="standard",
             stop=["string"],
             store=True,
             stream_options={"foo": "string"},
@@ -266,12 +273,7 @@ class TestCompletions:
             tool_config={"foo": "string"},
             tools=[
                 {
-                    "function": {
-                        "name": "name",
-                        "description": "description",
-                        "parameters": {"foo": "bar"},
-                        "strict": True,
-                    },
+                    "function": {"name": "name"},
                     "type": "function",
                 }
             ],
@@ -340,11 +342,13 @@ class TestAsyncCompletions:
             },
             automatic_tool_execution=True,
             cached_content="cached_content",
+            correlation_id="correlation_id",
             credentials={
                 "connection_name": "external-service",
                 "values": {"api_key": "sk-..."},
             },
             deferred=True,
+            deferred_calls=[{"foo": "bar"}],
             frequency_penalty=-2,
             function_call="function_call",
             functions=[
@@ -357,6 +361,8 @@ class TestAsyncCompletions:
             generation_config={"foo": "string"},
             guardrails=[{"foo": "bar"}],
             handoff_config={"foo": "bar"},
+            handoff_mode=True,
+            inference_geo="inference_geo",
             logit_bias={"foo": 0},
             logprobs=True,
             max_completion_tokens=0,
@@ -379,6 +385,7 @@ class TestAsyncCompletions:
                 }
             },
             n=1,
+            output_config={"foo": "string"},
             parallel_tool_calls=True,
             prediction={
                 "content": "string",
@@ -401,6 +408,7 @@ class TestAsyncCompletions:
             search_parameters={"foo": "string"},
             seed=0,
             service_tier="service_tier",
+            speed="standard",
             stop=["string"],
             store=True,
             stream=False,
@@ -418,12 +426,7 @@ class TestAsyncCompletions:
             tool_config={"foo": "string"},
             tools=[
                 {
-                    "function": {
-                        "name": "name",
-                        "description": "description",
-                        "parameters": {"foo": "bar"},
-                        "strict": True,
-                    },
+                    "function": {"name": "name"},
                     "type": "function",
                 }
             ],
@@ -487,11 +490,13 @@ class TestAsyncCompletions:
             },
             automatic_tool_execution=True,
             cached_content="cached_content",
+            correlation_id="correlation_id",
             credentials={
                 "connection_name": "external-service",
                 "values": {"api_key": "sk-..."},
             },
             deferred=True,
+            deferred_calls=[{"foo": "bar"}],
             frequency_penalty=-2,
             function_call="function_call",
             functions=[
@@ -504,6 +509,8 @@ class TestAsyncCompletions:
             generation_config={"foo": "string"},
             guardrails=[{"foo": "bar"}],
             handoff_config={"foo": "bar"},
+            handoff_mode=True,
+            inference_geo="inference_geo",
             logit_bias={"foo": 0},
             logprobs=True,
             max_completion_tokens=0,
@@ -526,6 +533,7 @@ class TestAsyncCompletions:
                 }
             },
             n=1,
+            output_config={"foo": "string"},
             parallel_tool_calls=True,
             prediction={
                 "content": "string",
@@ -548,6 +556,7 @@ class TestAsyncCompletions:
             search_parameters={"foo": "string"},
             seed=0,
             service_tier="service_tier",
+            speed="standard",
             stop=["string"],
             store=True,
             stream_options={"foo": "string"},
@@ -564,12 +573,7 @@ class TestAsyncCompletions:
             tool_config={"foo": "string"},
             tools=[
                 {
-                    "function": {
-                        "name": "name",
-                        "description": "description",
-                        "parameters": {"foo": "bar"},
-                        "strict": True,
-                    },
+                    "function": {"name": "name"},
                     "type": "function",
                 }
             ],

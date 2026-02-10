@@ -51,10 +51,8 @@ class SpeechResource(SyncAPIResource):
         self,
         *,
         input: str,
-        model: Union[str, Literal["tts-1", "tts-1-hd", "gpt-4o-mini-tts"]],
-        voice: Union[
-            str, Literal["alloy", "ash", "ballad", "coral", "echo", "sage", "shimmer", "verse", "marin", "cedar"]
-        ],
+        model: Union[str, Literal["tts-1", "tts-1-hd", "gpt-4o-mini-tts", "gpt-4o-mini-tts-2025-12-15"]],
+        voice: speech_create_params.Voice,
         instructions: str | Omit = omit,
         response_format: Literal["mp3", "opus", "aac", "flac", "wav", "pcm"] | Omit = omit,
         speed: float | Omit = omit,
@@ -79,14 +77,15 @@ class SpeechResource(SyncAPIResource):
         Args:
           input: The text to generate audio for. The maximum length is 4096 characters.
 
-          model:
-              One of the available [TTS models](https://platform.openai.com/docs/models#tts):
-              `tts-1`, `tts-1-hd` or `gpt-4o-mini-tts`.
+          model: One of the available [TTS models](/docs/models#tts): `tts-1`, `tts-1-hd`,
+              `gpt-4o-mini-tts`, or `gpt-4o-mini-tts-2025-12-15`.
 
-          voice: The voice to use when generating the audio. Supported voices are `alloy`, `ash`,
-              `ballad`, `coral`, `echo`, `fable`, `onyx`, `nova`, `sage`, `shimmer`, and
-              `verse`. Previews of the voices are available in the
-              [Text to speech guide](https://platform.openai.com/docs/guides/text-to-speech#voice-options).
+          voice: The voice to use when generating the audio. Supported built-in voices are
+              `alloy`, `ash`, `ballad`, `coral`, `echo`, `fable`, `onyx`, `nova`, `sage`,
+              `shimmer`, `verse`, `marin`, and `cedar`. You may also provide a custom voice
+              object with an `id`, for example `{ "id": "voice_1234" }`. Previews of the
+              voices are available in the
+              [Text to speech guide](/docs/guides/text-to-speech#voice-options).
 
           instructions: Control the voice of your generated audio with additional instructions. Does not
               work with `tts-1` or `tts-1-hd`.
@@ -160,10 +159,8 @@ class AsyncSpeechResource(AsyncAPIResource):
         self,
         *,
         input: str,
-        model: Union[str, Literal["tts-1", "tts-1-hd", "gpt-4o-mini-tts"]],
-        voice: Union[
-            str, Literal["alloy", "ash", "ballad", "coral", "echo", "sage", "shimmer", "verse", "marin", "cedar"]
-        ],
+        model: Union[str, Literal["tts-1", "tts-1-hd", "gpt-4o-mini-tts", "gpt-4o-mini-tts-2025-12-15"]],
+        voice: speech_create_params.Voice,
         instructions: str | Omit = omit,
         response_format: Literal["mp3", "opus", "aac", "flac", "wav", "pcm"] | Omit = omit,
         speed: float | Omit = omit,
@@ -188,14 +185,15 @@ class AsyncSpeechResource(AsyncAPIResource):
         Args:
           input: The text to generate audio for. The maximum length is 4096 characters.
 
-          model:
-              One of the available [TTS models](https://platform.openai.com/docs/models#tts):
-              `tts-1`, `tts-1-hd` or `gpt-4o-mini-tts`.
+          model: One of the available [TTS models](/docs/models#tts): `tts-1`, `tts-1-hd`,
+              `gpt-4o-mini-tts`, or `gpt-4o-mini-tts-2025-12-15`.
 
-          voice: The voice to use when generating the audio. Supported voices are `alloy`, `ash`,
-              `ballad`, `coral`, `echo`, `fable`, `onyx`, `nova`, `sage`, `shimmer`, and
-              `verse`. Previews of the voices are available in the
-              [Text to speech guide](https://platform.openai.com/docs/guides/text-to-speech#voice-options).
+          voice: The voice to use when generating the audio. Supported built-in voices are
+              `alloy`, `ash`, `ballad`, `coral`, `echo`, `fable`, `onyx`, `nova`, `sage`,
+              `shimmer`, `verse`, `marin`, and `cedar`. You may also provide a custom voice
+              object with an `id`, for example `{ "id": "voice_1234" }`. Previews of the
+              voices are available in the
+              [Text to speech guide](/docs/guides/text-to-speech#voice-options).
 
           instructions: Control the voice of your generated audio with additional instructions. Does not
               work with `tts-1` or `tts-1-hd`.

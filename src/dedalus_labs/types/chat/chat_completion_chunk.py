@@ -14,7 +14,7 @@ class ChatCompletionChunk(BaseModel):
     """
     Represents a streamed chunk of a chat completion response returned
     by the model, based on the provided input.
-    [Learn more](https://platform.openai.com/docs/guides/streaming-responses).
+    [Learn more](/docs/guides/streaming-responses).
 
     Fields:
     - id (required): str
@@ -57,7 +57,7 @@ class ChatCompletionChunk(BaseModel):
       will use 'default'.
     - If set to 'default', then the request will be processed with the standard
       pricing and performance for the selected model.
-    - If set to '[flex](https://platform.openai.com/docs/guides/flex-processing)' or
+    - If set to '[flex](/docs/guides/flex-processing)' or
       '[priority](https://openai.com/api-priority-processing/)', then the request
       will be processed with the corresponding service tier.
     - When not set, the default behavior is 'auto'.
