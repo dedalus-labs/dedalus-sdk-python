@@ -18,6 +18,7 @@ from dedalus_labs.types import (
     ResponseFormatJSONSchema,
     ResponseFormatText,
     ToolChoice,
+    VoiceIDsOrCustomVoice,
 )
 ```
 
@@ -103,6 +104,18 @@ from dedalus_labs.types import OCRDocument, OCRPage, OCRRequest, OCRResponse
 Methods:
 
 - <code title="post /v1/ocr">client.ocr.<a href="./src/dedalus_labs/resources/ocr.py">process</a>(\*\*<a href="src/dedalus_labs/types/ocr_process_params.py">params</a>) -> <a href="./src/dedalus_labs/types/ocr_response.py">OCRResponse</a></code>
+
+# Responses
+
+Types:
+
+```python
+from dedalus_labs.types import Response, ResponseCreateParams
+```
+
+Methods:
+
+- <code title="post /v1/responses">client.responses.<a href="./src/dedalus_labs/resources/responses.py">create</a>(\*\*<a href="src/dedalus_labs/types/response_create_params.py">params</a>) -> <a href="./src/dedalus_labs/types/response.py">Response</a></code>
 
 # Chat
 

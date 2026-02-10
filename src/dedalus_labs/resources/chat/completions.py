@@ -23,6 +23,7 @@ from ..._base_client import make_request_options
 from ...types.chat.chat_completion import ChatCompletion
 from ...types.chat.chat_completion_chunk import ChatCompletionChunk
 from ...types.chat.prediction_content_param import PredictionContentParam
+from ...types.chat.chat_completion_tool_param import ChatCompletionToolParam
 from ...types.shared_params.json_object_input import JSONObjectInput
 from ...types.chat.chat_completion_audio_param import ChatCompletionAudioParam
 from ...types.chat.chat_completion_functions_param import ChatCompletionFunctionsParam
@@ -59,14 +60,18 @@ class CompletionsResource(SyncAPIResource):
         audio: Optional[ChatCompletionAudioParam] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
+        correlation_id: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
+        deferred_calls: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
         functions: Optional[Iterable[ChatCompletionFunctionsParam]] | Omit = omit,
         generation_config: Optional[JSONObjectInput] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
+        handoff_mode: Optional[bool] | Omit = omit,
+        inference_geo: Optional[str] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
@@ -78,6 +83,7 @@ class CompletionsResource(SyncAPIResource):
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
         n: Optional[int] | Omit = omit,
+        output_config: Optional[JSONObjectInput] | Omit = omit,
         parallel_tool_calls: Optional[bool] | Omit = omit,
         prediction: Optional[PredictionContentParam] | Omit = omit,
         presence_penalty: Optional[float] | Omit = omit,
@@ -92,6 +98,7 @@ class CompletionsResource(SyncAPIResource):
         search_parameters: Optional[JSONObjectInput] | Omit = omit,
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[str] | Omit = omit,
+        speed: Optional[Literal["standard", "fast"]] | Omit = omit,
         stop: Union[SequenceNotStr[str], str, None] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream: Optional[Literal[False]] | Omit = omit,
@@ -101,7 +108,7 @@ class CompletionsResource(SyncAPIResource):
         thinking: Optional[completion_create_params.Thinking] | Omit = omit,
         tool_choice: Optional[completion_create_params.ToolChoice] | Omit = omit,
         tool_config: Optional[JSONObjectInput] | Omit = omit,
-        tools: Optional[Iterable[completion_create_params.Tool]] | Omit = omit,
+        tools: Optional[Iterable[ChatCompletionToolParam]] | Omit = omit,
         top_k: Optional[int] | Omit = omit,
         top_logprobs: Optional[int] | Omit = omit,
         top_p: Optional[float] | Omit = omit,
@@ -125,7 +132,8 @@ class CompletionsResource(SyncAPIResource):
         Headers:
 
         - Authorization: bearer key for the calling account.
-        - Optional BYOK or provider headers if applicable.
+        - X-Provider / X-Provider-Key: optional headers for using your own provider API
+          key.
 
         Behavior:
 
@@ -176,12 +184,11 @@ class CompletionsResource(SyncAPIResource):
           agent_attributes: Agent attributes. Values in [0.0, 1.0].
 
           audio: Parameters for audio output. Required when audio output is requested with
-              `modalities: ["audio"]`.
-              [Learn more](https://platform.openai.com/docs/guides/audio).
+              `modalities: ["audio"]`. [Learn more](/docs/guides/audio).
 
               Fields:
 
-              - voice (required): VoiceIdsShared
+              - voice (required): VoiceIdsOrCustomVoice
               - format (required): Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]
 
           automatic_tool_execution: Execute tools server-side. If false, returns raw tool calls for manual handling.
@@ -190,17 +197,29 @@ class CompletionsResource(SyncAPIResource):
               [cached](https://ai.google.dev/gemini-api/docs/caching) to use as context to
               serve the prediction. Format: `cachedContents/{cachedContent}`
 
+          correlation_id: Stable session ID for resuming a previous handoff. Returned by the server on
+              handoff; echo it on the next request to resume.
+
           credentials: Credentials for MCP server authentication. Each credential is matched to servers
               by connection name.
 
           deferred: If set to `true`, the request returns a `request_id`. You can then get the
               deferred response by GET `/v1/chat/deferred-completion/{request_id}`.
 
+          deferred_calls: Tier 2 stateless resumption. Deferred tool specs from a previous handoff
+              response, sent back verbatim so the server can resume without Redis.
+
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing the model's likelihood to
               repeat the same line verbatim.
 
-          function_call: Wrapper for union variant: function call mode.
+          function_call: Deprecated in favor of `tool_choice`. Controls which (if any) function is called
+              by the model. `none` means the model will not call a function and instead
+              generates a message. `auto` means the model can pick between generating a
+              message or calling a function. Specifying a particular function via
+              `{"name": "my_function"}` forces the model to call that function. `none` is the
+              default when no functions are present. `auto` is the default if functions are
+              present.
 
           functions: Deprecated in favor of `tools`. A list of functions the model may generate JSON
               inputs for.
@@ -210,6 +229,12 @@ class CompletionsResource(SyncAPIResource):
           guardrails: Content filtering and safety policy configuration.
 
           handoff_config: Configuration for multi-model handoffs.
+
+          handoff_mode: Handoff control. None or omitted: auto-detect. true: structured handoff (SDK).
+              false: drop-in (LLM re-run for mixed turns).
+
+          inference_geo: Specifies the geographic region for inference processing. If not specified, the
+              workspace's `default_inference_geo` is used.
 
           logit_bias: Modify the likelihood of specified tokens appearing in the completion. Accepts a
               JSON object that maps tokens (specified by their token ID in the tokenizer) to
@@ -242,8 +267,7 @@ class CompletionsResource(SyncAPIResource):
 
           modalities: Output types that you would like the model to generate. Most models are capable
               of generating text, which is the default: `["text"]` The `gpt-4o-audio-preview`
-              model can also be used to
-              [generate audio](https://platform.openai.com/docs/guides/audio). To request that
+              model can also be used to [generate audio](/docs/guides/audio). To request that
               this model generate both text and audio responses, you can use:
               `["text", "audio"]`
 
@@ -254,7 +278,7 @@ class CompletionsResource(SyncAPIResource):
               you will be charged based on the number of generated tokens across all of the
               choices. Keep `n` as `1` to minimize costs.
 
-          parallel_tool_calls: Whether to enable parallel tool calls (Anthropic uses inverted polarity)
+          parallel_tool_calls: Whether to enable parallel tool calls (Anthropic uses inverted polarity).
 
           prediction: Static predicted output content, such as the content of a text file that is
               being regenerated.
@@ -271,35 +295,34 @@ class CompletionsResource(SyncAPIResource):
               talk about new topics.
 
           prompt_cache_key: Used by OpenAI to cache responses for similar requests to optimize your cache
-              hit rates. Replaces the `user` field.
-              [Learn more](https://platform.openai.com/docs/guides/prompt-caching).
+              hit rates. Replaces the `user` field. [Learn more](/docs/guides/prompt-caching).
 
           prompt_cache_retention: The retention policy for the prompt cache. Set to `24h` to enable extended
               prompt caching, which keeps cached prefixes active for longer, up to a maximum
-              of 24 hours.
-              [Learn more](https://platform.openai.com/docs/guides/prompt-caching#prompt-cache-retention).
+              of 24 hours. [Learn more](/docs/guides/prompt-caching#prompt-cache-retention).
 
           prompt_mode: Allows toggling between the reasoning mode and no system prompt. When set to
               `reasoning` the system prompt for reasoning models will be used.
 
           reasoning_effort: Constrains effort on reasoning for
               [reasoning models](https://platform.openai.com/docs/guides/reasoning). Currently
-              supported values are `none`, `minimal`, `low`, `medium`, and `high`. Reducing
-              reasoning effort can result in faster responses and fewer tokens used on
-              reasoning in a response. - `gpt-5.1` defaults to `none`, which does not perform
-              reasoning. The supported reasoning values for `gpt-5.1` are `none`, `low`,
-              `medium`, and `high`. Tool calls are supported for all reasoning values in
-              gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort, and
-              do not support `none`. - The `gpt-5-pro` model defaults to (and only supports)
-              `high` reasoning effort.
+              supported values are `none`, `minimal`, `low`, `medium`, `high`, and `xhigh`.
+              Reducing reasoning effort can result in faster responses and fewer tokens used
+              on reasoning in a response. - `gpt-5.1` defaults to `none`, which does not
+              perform reasoning. The supported reasoning values for `gpt-5.1` are `none`,
+              `low`, `medium`, and `high`. Tool calls are supported for all reasoning values
+              in gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort,
+              and do not support `none`. - The `gpt-5-pro` model defaults to (and only
+              supports) `high` reasoning effort. - `xhigh` is supported for all models after
+              `gpt-5.1-codex-max`.
 
           response_format: An object specifying the format that the model must output. Setting to
               `{ "type": "json_schema", "json_schema": {...} }` enables Structured Outputs
               which ensures the model will match your supplied JSON schema. Learn more in the
-              [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
-              Setting to `{ "type": "json_object" }` enables the older JSON mode, which
-              ensures the message the model generates is valid JSON. Using `json_schema` is
-              preferred for models that support it.
+              [Structured Outputs guide](/docs/guides/structured-outputs). Setting to
+              `{ "type": "json_object" }` enables the older JSON mode, which ensures the
+              message the model generates is valid JSON. Using `json_schema` is preferred for
+              models that support it.
 
           safe_prompt: Whether to inject a safety prompt before all conversations.
 
@@ -307,7 +330,7 @@ class CompletionsResource(SyncAPIResource):
               violating OpenAI's usage policies. The IDs should be a string that uniquely
               identifies each user. We recommend hashing their username or email address, in
               order to avoid sending us any identifying information.
-              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
+              [Learn more](/docs/guides/safety-best-practices#safety-identifiers).
 
           safety_settings: Safety/content filtering settings (Google-specific)
 
@@ -318,12 +341,15 @@ class CompletionsResource(SyncAPIResource):
 
           service_tier: Service tier for request processing
 
+          speed: The inference speed mode for this request. `"fast"` enables high
+              output-tokens-per-second inference.
+
           stop: Sequences that stop generation
 
           store: Whether or not to store the output of this chat completion request for use in
-              our [model distillation](https://platform.openai.com/docs/guides/distillation)
-              or [evals](https://platform.openai.com/docs/guides/evals) products. Supports
-              text and image inputs. Note: image inputs over 8MB will be dropped.
+              our [model distillation](/docs/guides/distillation) or
+              [evals](/docs/guides/evals) products. Supports text and image inputs. Note:
+              image inputs over 8MB will be dropped.
 
           stream: Enable streaming response
 
@@ -359,15 +385,14 @@ class CompletionsResource(SyncAPIResource):
               `prompt_cache_key` instead to maintain caching optimizations. A stable
               identifier for your end-users. Used to boost cache hit rates by better bucketing
               similar requests and to help OpenAI detect and prevent abuse.
-              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
+              [Learn more](/docs/guides/safety-best-practices#safety-identifiers).
 
           verbosity: Constrains the verbosity of the model's response. Lower values will result in
               more concise responses, while higher values will result in more verbose
               responses. Currently supported values are `low`, `medium`, and `high`.
 
           web_search_options: This tool searches the web for relevant results to use in a response. Learn more
-              about the
-              [web search tool](https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat).
+              about the [web search tool](/docs/guides/tools-web-search?api-mode=chat).
 
           extra_headers: Send extra headers
 
@@ -391,14 +416,18 @@ class CompletionsResource(SyncAPIResource):
         audio: Optional[ChatCompletionAudioParam] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
+        correlation_id: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
+        deferred_calls: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
         functions: Optional[Iterable[ChatCompletionFunctionsParam]] | Omit = omit,
         generation_config: Optional[JSONObjectInput] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
+        handoff_mode: Optional[bool] | Omit = omit,
+        inference_geo: Optional[str] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
@@ -410,6 +439,7 @@ class CompletionsResource(SyncAPIResource):
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
         n: Optional[int] | Omit = omit,
+        output_config: Optional[JSONObjectInput] | Omit = omit,
         parallel_tool_calls: Optional[bool] | Omit = omit,
         prediction: Optional[PredictionContentParam] | Omit = omit,
         presence_penalty: Optional[float] | Omit = omit,
@@ -424,6 +454,7 @@ class CompletionsResource(SyncAPIResource):
         search_parameters: Optional[JSONObjectInput] | Omit = omit,
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[str] | Omit = omit,
+        speed: Optional[Literal["standard", "fast"]] | Omit = omit,
         stop: Union[SequenceNotStr[str], str, None] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream_options: Optional[JSONObjectInput] | Omit = omit,
@@ -432,7 +463,7 @@ class CompletionsResource(SyncAPIResource):
         thinking: Optional[completion_create_params.Thinking] | Omit = omit,
         tool_choice: Optional[completion_create_params.ToolChoice] | Omit = omit,
         tool_config: Optional[JSONObjectInput] | Omit = omit,
-        tools: Optional[Iterable[completion_create_params.Tool]] | Omit = omit,
+        tools: Optional[Iterable[ChatCompletionToolParam]] | Omit = omit,
         top_k: Optional[int] | Omit = omit,
         top_logprobs: Optional[int] | Omit = omit,
         top_p: Optional[float] | Omit = omit,
@@ -456,7 +487,8 @@ class CompletionsResource(SyncAPIResource):
         Headers:
 
         - Authorization: bearer key for the calling account.
-        - Optional BYOK or provider headers if applicable.
+        - X-Provider / X-Provider-Key: optional headers for using your own provider API
+          key.
 
         Behavior:
 
@@ -509,12 +541,11 @@ class CompletionsResource(SyncAPIResource):
           agent_attributes: Agent attributes. Values in [0.0, 1.0].
 
           audio: Parameters for audio output. Required when audio output is requested with
-              `modalities: ["audio"]`.
-              [Learn more](https://platform.openai.com/docs/guides/audio).
+              `modalities: ["audio"]`. [Learn more](/docs/guides/audio).
 
               Fields:
 
-              - voice (required): VoiceIdsShared
+              - voice (required): VoiceIdsOrCustomVoice
               - format (required): Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]
 
           automatic_tool_execution: Execute tools server-side. If false, returns raw tool calls for manual handling.
@@ -523,17 +554,29 @@ class CompletionsResource(SyncAPIResource):
               [cached](https://ai.google.dev/gemini-api/docs/caching) to use as context to
               serve the prediction. Format: `cachedContents/{cachedContent}`
 
+          correlation_id: Stable session ID for resuming a previous handoff. Returned by the server on
+              handoff; echo it on the next request to resume.
+
           credentials: Credentials for MCP server authentication. Each credential is matched to servers
               by connection name.
 
           deferred: If set to `true`, the request returns a `request_id`. You can then get the
               deferred response by GET `/v1/chat/deferred-completion/{request_id}`.
 
+          deferred_calls: Tier 2 stateless resumption. Deferred tool specs from a previous handoff
+              response, sent back verbatim so the server can resume without Redis.
+
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing the model's likelihood to
               repeat the same line verbatim.
 
-          function_call: Wrapper for union variant: function call mode.
+          function_call: Deprecated in favor of `tool_choice`. Controls which (if any) function is called
+              by the model. `none` means the model will not call a function and instead
+              generates a message. `auto` means the model can pick between generating a
+              message or calling a function. Specifying a particular function via
+              `{"name": "my_function"}` forces the model to call that function. `none` is the
+              default when no functions are present. `auto` is the default if functions are
+              present.
 
           functions: Deprecated in favor of `tools`. A list of functions the model may generate JSON
               inputs for.
@@ -543,6 +586,12 @@ class CompletionsResource(SyncAPIResource):
           guardrails: Content filtering and safety policy configuration.
 
           handoff_config: Configuration for multi-model handoffs.
+
+          handoff_mode: Handoff control. None or omitted: auto-detect. true: structured handoff (SDK).
+              false: drop-in (LLM re-run for mixed turns).
+
+          inference_geo: Specifies the geographic region for inference processing. If not specified, the
+              workspace's `default_inference_geo` is used.
 
           logit_bias: Modify the likelihood of specified tokens appearing in the completion. Accepts a
               JSON object that maps tokens (specified by their token ID in the tokenizer) to
@@ -575,8 +624,7 @@ class CompletionsResource(SyncAPIResource):
 
           modalities: Output types that you would like the model to generate. Most models are capable
               of generating text, which is the default: `["text"]` The `gpt-4o-audio-preview`
-              model can also be used to
-              [generate audio](https://platform.openai.com/docs/guides/audio). To request that
+              model can also be used to [generate audio](/docs/guides/audio). To request that
               this model generate both text and audio responses, you can use:
               `["text", "audio"]`
 
@@ -587,7 +635,7 @@ class CompletionsResource(SyncAPIResource):
               you will be charged based on the number of generated tokens across all of the
               choices. Keep `n` as `1` to minimize costs.
 
-          parallel_tool_calls: Whether to enable parallel tool calls (Anthropic uses inverted polarity)
+          parallel_tool_calls: Whether to enable parallel tool calls (Anthropic uses inverted polarity).
 
           prediction: Static predicted output content, such as the content of a text file that is
               being regenerated.
@@ -604,35 +652,34 @@ class CompletionsResource(SyncAPIResource):
               talk about new topics.
 
           prompt_cache_key: Used by OpenAI to cache responses for similar requests to optimize your cache
-              hit rates. Replaces the `user` field.
-              [Learn more](https://platform.openai.com/docs/guides/prompt-caching).
+              hit rates. Replaces the `user` field. [Learn more](/docs/guides/prompt-caching).
 
           prompt_cache_retention: The retention policy for the prompt cache. Set to `24h` to enable extended
               prompt caching, which keeps cached prefixes active for longer, up to a maximum
-              of 24 hours.
-              [Learn more](https://platform.openai.com/docs/guides/prompt-caching#prompt-cache-retention).
+              of 24 hours. [Learn more](/docs/guides/prompt-caching#prompt-cache-retention).
 
           prompt_mode: Allows toggling between the reasoning mode and no system prompt. When set to
               `reasoning` the system prompt for reasoning models will be used.
 
           reasoning_effort: Constrains effort on reasoning for
               [reasoning models](https://platform.openai.com/docs/guides/reasoning). Currently
-              supported values are `none`, `minimal`, `low`, `medium`, and `high`. Reducing
-              reasoning effort can result in faster responses and fewer tokens used on
-              reasoning in a response. - `gpt-5.1` defaults to `none`, which does not perform
-              reasoning. The supported reasoning values for `gpt-5.1` are `none`, `low`,
-              `medium`, and `high`. Tool calls are supported for all reasoning values in
-              gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort, and
-              do not support `none`. - The `gpt-5-pro` model defaults to (and only supports)
-              `high` reasoning effort.
+              supported values are `none`, `minimal`, `low`, `medium`, `high`, and `xhigh`.
+              Reducing reasoning effort can result in faster responses and fewer tokens used
+              on reasoning in a response. - `gpt-5.1` defaults to `none`, which does not
+              perform reasoning. The supported reasoning values for `gpt-5.1` are `none`,
+              `low`, `medium`, and `high`. Tool calls are supported for all reasoning values
+              in gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort,
+              and do not support `none`. - The `gpt-5-pro` model defaults to (and only
+              supports) `high` reasoning effort. - `xhigh` is supported for all models after
+              `gpt-5.1-codex-max`.
 
           response_format: An object specifying the format that the model must output. Setting to
               `{ "type": "json_schema", "json_schema": {...} }` enables Structured Outputs
               which ensures the model will match your supplied JSON schema. Learn more in the
-              [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
-              Setting to `{ "type": "json_object" }` enables the older JSON mode, which
-              ensures the message the model generates is valid JSON. Using `json_schema` is
-              preferred for models that support it.
+              [Structured Outputs guide](/docs/guides/structured-outputs). Setting to
+              `{ "type": "json_object" }` enables the older JSON mode, which ensures the
+              message the model generates is valid JSON. Using `json_schema` is preferred for
+              models that support it.
 
           safe_prompt: Whether to inject a safety prompt before all conversations.
 
@@ -640,7 +687,7 @@ class CompletionsResource(SyncAPIResource):
               violating OpenAI's usage policies. The IDs should be a string that uniquely
               identifies each user. We recommend hashing their username or email address, in
               order to avoid sending us any identifying information.
-              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
+              [Learn more](/docs/guides/safety-best-practices#safety-identifiers).
 
           safety_settings: Safety/content filtering settings (Google-specific)
 
@@ -651,12 +698,15 @@ class CompletionsResource(SyncAPIResource):
 
           service_tier: Service tier for request processing
 
+          speed: The inference speed mode for this request. `"fast"` enables high
+              output-tokens-per-second inference.
+
           stop: Sequences that stop generation
 
           store: Whether or not to store the output of this chat completion request for use in
-              our [model distillation](https://platform.openai.com/docs/guides/distillation)
-              or [evals](https://platform.openai.com/docs/guides/evals) products. Supports
-              text and image inputs. Note: image inputs over 8MB will be dropped.
+              our [model distillation](/docs/guides/distillation) or
+              [evals](/docs/guides/evals) products. Supports text and image inputs. Note:
+              image inputs over 8MB will be dropped.
 
           stream_options: Options for streaming response. Only set this when you set `stream: true`.
 
@@ -690,15 +740,14 @@ class CompletionsResource(SyncAPIResource):
               `prompt_cache_key` instead to maintain caching optimizations. A stable
               identifier for your end-users. Used to boost cache hit rates by better bucketing
               similar requests and to help OpenAI detect and prevent abuse.
-              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
+              [Learn more](/docs/guides/safety-best-practices#safety-identifiers).
 
           verbosity: Constrains the verbosity of the model's response. Lower values will result in
               more concise responses, while higher values will result in more verbose
               responses. Currently supported values are `low`, `medium`, and `high`.
 
           web_search_options: This tool searches the web for relevant results to use in a response. Learn more
-              about the
-              [web search tool](https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat).
+              about the [web search tool](/docs/guides/tools-web-search?api-mode=chat).
 
           extra_headers: Send extra headers
 
@@ -722,14 +771,18 @@ class CompletionsResource(SyncAPIResource):
         audio: Optional[ChatCompletionAudioParam] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
+        correlation_id: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
+        deferred_calls: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
         functions: Optional[Iterable[ChatCompletionFunctionsParam]] | Omit = omit,
         generation_config: Optional[JSONObjectInput] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
+        handoff_mode: Optional[bool] | Omit = omit,
+        inference_geo: Optional[str] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
@@ -741,6 +794,7 @@ class CompletionsResource(SyncAPIResource):
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
         n: Optional[int] | Omit = omit,
+        output_config: Optional[JSONObjectInput] | Omit = omit,
         parallel_tool_calls: Optional[bool] | Omit = omit,
         prediction: Optional[PredictionContentParam] | Omit = omit,
         presence_penalty: Optional[float] | Omit = omit,
@@ -755,6 +809,7 @@ class CompletionsResource(SyncAPIResource):
         search_parameters: Optional[JSONObjectInput] | Omit = omit,
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[str] | Omit = omit,
+        speed: Optional[Literal["standard", "fast"]] | Omit = omit,
         stop: Union[SequenceNotStr[str], str, None] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream_options: Optional[JSONObjectInput] | Omit = omit,
@@ -763,7 +818,7 @@ class CompletionsResource(SyncAPIResource):
         thinking: Optional[completion_create_params.Thinking] | Omit = omit,
         tool_choice: Optional[completion_create_params.ToolChoice] | Omit = omit,
         tool_config: Optional[JSONObjectInput] | Omit = omit,
-        tools: Optional[Iterable[completion_create_params.Tool]] | Omit = omit,
+        tools: Optional[Iterable[ChatCompletionToolParam]] | Omit = omit,
         top_k: Optional[int] | Omit = omit,
         top_logprobs: Optional[int] | Omit = omit,
         top_p: Optional[float] | Omit = omit,
@@ -787,7 +842,8 @@ class CompletionsResource(SyncAPIResource):
         Headers:
 
         - Authorization: bearer key for the calling account.
-        - Optional BYOK or provider headers if applicable.
+        - X-Provider / X-Provider-Key: optional headers for using your own provider API
+          key.
 
         Behavior:
 
@@ -840,12 +896,11 @@ class CompletionsResource(SyncAPIResource):
           agent_attributes: Agent attributes. Values in [0.0, 1.0].
 
           audio: Parameters for audio output. Required when audio output is requested with
-              `modalities: ["audio"]`.
-              [Learn more](https://platform.openai.com/docs/guides/audio).
+              `modalities: ["audio"]`. [Learn more](/docs/guides/audio).
 
               Fields:
 
-              - voice (required): VoiceIdsShared
+              - voice (required): VoiceIdsOrCustomVoice
               - format (required): Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]
 
           automatic_tool_execution: Execute tools server-side. If false, returns raw tool calls for manual handling.
@@ -854,17 +909,29 @@ class CompletionsResource(SyncAPIResource):
               [cached](https://ai.google.dev/gemini-api/docs/caching) to use as context to
               serve the prediction. Format: `cachedContents/{cachedContent}`
 
+          correlation_id: Stable session ID for resuming a previous handoff. Returned by the server on
+              handoff; echo it on the next request to resume.
+
           credentials: Credentials for MCP server authentication. Each credential is matched to servers
               by connection name.
 
           deferred: If set to `true`, the request returns a `request_id`. You can then get the
               deferred response by GET `/v1/chat/deferred-completion/{request_id}`.
 
+          deferred_calls: Tier 2 stateless resumption. Deferred tool specs from a previous handoff
+              response, sent back verbatim so the server can resume without Redis.
+
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing the model's likelihood to
               repeat the same line verbatim.
 
-          function_call: Wrapper for union variant: function call mode.
+          function_call: Deprecated in favor of `tool_choice`. Controls which (if any) function is called
+              by the model. `none` means the model will not call a function and instead
+              generates a message. `auto` means the model can pick between generating a
+              message or calling a function. Specifying a particular function via
+              `{"name": "my_function"}` forces the model to call that function. `none` is the
+              default when no functions are present. `auto` is the default if functions are
+              present.
 
           functions: Deprecated in favor of `tools`. A list of functions the model may generate JSON
               inputs for.
@@ -874,6 +941,12 @@ class CompletionsResource(SyncAPIResource):
           guardrails: Content filtering and safety policy configuration.
 
           handoff_config: Configuration for multi-model handoffs.
+
+          handoff_mode: Handoff control. None or omitted: auto-detect. true: structured handoff (SDK).
+              false: drop-in (LLM re-run for mixed turns).
+
+          inference_geo: Specifies the geographic region for inference processing. If not specified, the
+              workspace's `default_inference_geo` is used.
 
           logit_bias: Modify the likelihood of specified tokens appearing in the completion. Accepts a
               JSON object that maps tokens (specified by their token ID in the tokenizer) to
@@ -906,8 +979,7 @@ class CompletionsResource(SyncAPIResource):
 
           modalities: Output types that you would like the model to generate. Most models are capable
               of generating text, which is the default: `["text"]` The `gpt-4o-audio-preview`
-              model can also be used to
-              [generate audio](https://platform.openai.com/docs/guides/audio). To request that
+              model can also be used to [generate audio](/docs/guides/audio). To request that
               this model generate both text and audio responses, you can use:
               `["text", "audio"]`
 
@@ -918,7 +990,7 @@ class CompletionsResource(SyncAPIResource):
               you will be charged based on the number of generated tokens across all of the
               choices. Keep `n` as `1` to minimize costs.
 
-          parallel_tool_calls: Whether to enable parallel tool calls (Anthropic uses inverted polarity)
+          parallel_tool_calls: Whether to enable parallel tool calls (Anthropic uses inverted polarity).
 
           prediction: Static predicted output content, such as the content of a text file that is
               being regenerated.
@@ -935,35 +1007,34 @@ class CompletionsResource(SyncAPIResource):
               talk about new topics.
 
           prompt_cache_key: Used by OpenAI to cache responses for similar requests to optimize your cache
-              hit rates. Replaces the `user` field.
-              [Learn more](https://platform.openai.com/docs/guides/prompt-caching).
+              hit rates. Replaces the `user` field. [Learn more](/docs/guides/prompt-caching).
 
           prompt_cache_retention: The retention policy for the prompt cache. Set to `24h` to enable extended
               prompt caching, which keeps cached prefixes active for longer, up to a maximum
-              of 24 hours.
-              [Learn more](https://platform.openai.com/docs/guides/prompt-caching#prompt-cache-retention).
+              of 24 hours. [Learn more](/docs/guides/prompt-caching#prompt-cache-retention).
 
           prompt_mode: Allows toggling between the reasoning mode and no system prompt. When set to
               `reasoning` the system prompt for reasoning models will be used.
 
           reasoning_effort: Constrains effort on reasoning for
               [reasoning models](https://platform.openai.com/docs/guides/reasoning). Currently
-              supported values are `none`, `minimal`, `low`, `medium`, and `high`. Reducing
-              reasoning effort can result in faster responses and fewer tokens used on
-              reasoning in a response. - `gpt-5.1` defaults to `none`, which does not perform
-              reasoning. The supported reasoning values for `gpt-5.1` are `none`, `low`,
-              `medium`, and `high`. Tool calls are supported for all reasoning values in
-              gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort, and
-              do not support `none`. - The `gpt-5-pro` model defaults to (and only supports)
-              `high` reasoning effort.
+              supported values are `none`, `minimal`, `low`, `medium`, `high`, and `xhigh`.
+              Reducing reasoning effort can result in faster responses and fewer tokens used
+              on reasoning in a response. - `gpt-5.1` defaults to `none`, which does not
+              perform reasoning. The supported reasoning values for `gpt-5.1` are `none`,
+              `low`, `medium`, and `high`. Tool calls are supported for all reasoning values
+              in gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort,
+              and do not support `none`. - The `gpt-5-pro` model defaults to (and only
+              supports) `high` reasoning effort. - `xhigh` is supported for all models after
+              `gpt-5.1-codex-max`.
 
           response_format: An object specifying the format that the model must output. Setting to
               `{ "type": "json_schema", "json_schema": {...} }` enables Structured Outputs
               which ensures the model will match your supplied JSON schema. Learn more in the
-              [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
-              Setting to `{ "type": "json_object" }` enables the older JSON mode, which
-              ensures the message the model generates is valid JSON. Using `json_schema` is
-              preferred for models that support it.
+              [Structured Outputs guide](/docs/guides/structured-outputs). Setting to
+              `{ "type": "json_object" }` enables the older JSON mode, which ensures the
+              message the model generates is valid JSON. Using `json_schema` is preferred for
+              models that support it.
 
           safe_prompt: Whether to inject a safety prompt before all conversations.
 
@@ -971,7 +1042,7 @@ class CompletionsResource(SyncAPIResource):
               violating OpenAI's usage policies. The IDs should be a string that uniquely
               identifies each user. We recommend hashing their username or email address, in
               order to avoid sending us any identifying information.
-              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
+              [Learn more](/docs/guides/safety-best-practices#safety-identifiers).
 
           safety_settings: Safety/content filtering settings (Google-specific)
 
@@ -982,12 +1053,15 @@ class CompletionsResource(SyncAPIResource):
 
           service_tier: Service tier for request processing
 
+          speed: The inference speed mode for this request. `"fast"` enables high
+              output-tokens-per-second inference.
+
           stop: Sequences that stop generation
 
           store: Whether or not to store the output of this chat completion request for use in
-              our [model distillation](https://platform.openai.com/docs/guides/distillation)
-              or [evals](https://platform.openai.com/docs/guides/evals) products. Supports
-              text and image inputs. Note: image inputs over 8MB will be dropped.
+              our [model distillation](/docs/guides/distillation) or
+              [evals](/docs/guides/evals) products. Supports text and image inputs. Note:
+              image inputs over 8MB will be dropped.
 
           stream_options: Options for streaming response. Only set this when you set `stream: true`.
 
@@ -1021,15 +1095,14 @@ class CompletionsResource(SyncAPIResource):
               `prompt_cache_key` instead to maintain caching optimizations. A stable
               identifier for your end-users. Used to boost cache hit rates by better bucketing
               similar requests and to help OpenAI detect and prevent abuse.
-              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
+              [Learn more](/docs/guides/safety-best-practices#safety-identifiers).
 
           verbosity: Constrains the verbosity of the model's response. Lower values will result in
               more concise responses, while higher values will result in more verbose
               responses. Currently supported values are `low`, `medium`, and `high`.
 
           web_search_options: This tool searches the web for relevant results to use in a response. Learn more
-              about the
-              [web search tool](https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat).
+              about the [web search tool](/docs/guides/tools-web-search?api-mode=chat).
 
           extra_headers: Send extra headers
 
@@ -1052,14 +1125,18 @@ class CompletionsResource(SyncAPIResource):
         audio: Optional[ChatCompletionAudioParam] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
+        correlation_id: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
+        deferred_calls: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
         functions: Optional[Iterable[ChatCompletionFunctionsParam]] | Omit = omit,
         generation_config: Optional[JSONObjectInput] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
+        handoff_mode: Optional[bool] | Omit = omit,
+        inference_geo: Optional[str] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
@@ -1071,6 +1148,7 @@ class CompletionsResource(SyncAPIResource):
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
         n: Optional[int] | Omit = omit,
+        output_config: Optional[JSONObjectInput] | Omit = omit,
         parallel_tool_calls: Optional[bool] | Omit = omit,
         prediction: Optional[PredictionContentParam] | Omit = omit,
         presence_penalty: Optional[float] | Omit = omit,
@@ -1085,6 +1163,7 @@ class CompletionsResource(SyncAPIResource):
         search_parameters: Optional[JSONObjectInput] | Omit = omit,
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[str] | Omit = omit,
+        speed: Optional[Literal["standard", "fast"]] | Omit = omit,
         stop: Union[SequenceNotStr[str], str, None] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream: Optional[Literal[False]] | Literal[True] | Omit = omit,
@@ -1094,7 +1173,7 @@ class CompletionsResource(SyncAPIResource):
         thinking: Optional[completion_create_params.Thinking] | Omit = omit,
         tool_choice: Optional[completion_create_params.ToolChoice] | Omit = omit,
         tool_config: Optional[JSONObjectInput] | Omit = omit,
-        tools: Optional[Iterable[completion_create_params.Tool]] | Omit = omit,
+        tools: Optional[Iterable[ChatCompletionToolParam]] | Omit = omit,
         top_k: Optional[int] | Omit = omit,
         top_logprobs: Optional[int] | Omit = omit,
         top_p: Optional[float] | Omit = omit,
@@ -1118,14 +1197,18 @@ class CompletionsResource(SyncAPIResource):
                     "audio": audio,
                     "automatic_tool_execution": automatic_tool_execution,
                     "cached_content": cached_content,
+                    "correlation_id": correlation_id,
                     "credentials": credentials,
                     "deferred": deferred,
+                    "deferred_calls": deferred_calls,
                     "frequency_penalty": frequency_penalty,
                     "function_call": function_call,
                     "functions": functions,
                     "generation_config": generation_config,
                     "guardrails": guardrails,
                     "handoff_config": handoff_config,
+                    "handoff_mode": handoff_mode,
+                    "inference_geo": inference_geo,
                     "logit_bias": logit_bias,
                     "logprobs": logprobs,
                     "max_completion_tokens": max_completion_tokens,
@@ -1137,6 +1220,7 @@ class CompletionsResource(SyncAPIResource):
                     "modalities": modalities,
                     "model_attributes": model_attributes,
                     "n": n,
+                    "output_config": output_config,
                     "parallel_tool_calls": parallel_tool_calls,
                     "prediction": prediction,
                     "presence_penalty": presence_penalty,
@@ -1151,6 +1235,7 @@ class CompletionsResource(SyncAPIResource):
                     "search_parameters": search_parameters,
                     "seed": seed,
                     "service_tier": service_tier,
+                    "speed": speed,
                     "stop": stop,
                     "store": store,
                     "stream": stream,
@@ -1214,14 +1299,18 @@ class AsyncCompletionsResource(AsyncAPIResource):
         audio: Optional[ChatCompletionAudioParam] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
+        correlation_id: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
+        deferred_calls: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
         functions: Optional[Iterable[ChatCompletionFunctionsParam]] | Omit = omit,
         generation_config: Optional[JSONObjectInput] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
+        handoff_mode: Optional[bool] | Omit = omit,
+        inference_geo: Optional[str] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
@@ -1233,6 +1322,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
         n: Optional[int] | Omit = omit,
+        output_config: Optional[JSONObjectInput] | Omit = omit,
         parallel_tool_calls: Optional[bool] | Omit = omit,
         prediction: Optional[PredictionContentParam] | Omit = omit,
         presence_penalty: Optional[float] | Omit = omit,
@@ -1247,6 +1337,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         search_parameters: Optional[JSONObjectInput] | Omit = omit,
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[str] | Omit = omit,
+        speed: Optional[Literal["standard", "fast"]] | Omit = omit,
         stop: Union[SequenceNotStr[str], str, None] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream: Optional[Literal[False]] | Omit = omit,
@@ -1256,7 +1347,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         thinking: Optional[completion_create_params.Thinking] | Omit = omit,
         tool_choice: Optional[completion_create_params.ToolChoice] | Omit = omit,
         tool_config: Optional[JSONObjectInput] | Omit = omit,
-        tools: Optional[Iterable[completion_create_params.Tool]] | Omit = omit,
+        tools: Optional[Iterable[ChatCompletionToolParam]] | Omit = omit,
         top_k: Optional[int] | Omit = omit,
         top_logprobs: Optional[int] | Omit = omit,
         top_p: Optional[float] | Omit = omit,
@@ -1280,7 +1371,8 @@ class AsyncCompletionsResource(AsyncAPIResource):
         Headers:
 
         - Authorization: bearer key for the calling account.
-        - Optional BYOK or provider headers if applicable.
+        - X-Provider / X-Provider-Key: optional headers for using your own provider API
+          key.
 
         Behavior:
 
@@ -1331,12 +1423,11 @@ class AsyncCompletionsResource(AsyncAPIResource):
           agent_attributes: Agent attributes. Values in [0.0, 1.0].
 
           audio: Parameters for audio output. Required when audio output is requested with
-              `modalities: ["audio"]`.
-              [Learn more](https://platform.openai.com/docs/guides/audio).
+              `modalities: ["audio"]`. [Learn more](/docs/guides/audio).
 
               Fields:
 
-              - voice (required): VoiceIdsShared
+              - voice (required): VoiceIdsOrCustomVoice
               - format (required): Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]
 
           automatic_tool_execution: Execute tools server-side. If false, returns raw tool calls for manual handling.
@@ -1345,17 +1436,29 @@ class AsyncCompletionsResource(AsyncAPIResource):
               [cached](https://ai.google.dev/gemini-api/docs/caching) to use as context to
               serve the prediction. Format: `cachedContents/{cachedContent}`
 
+          correlation_id: Stable session ID for resuming a previous handoff. Returned by the server on
+              handoff; echo it on the next request to resume.
+
           credentials: Credentials for MCP server authentication. Each credential is matched to servers
               by connection name.
 
           deferred: If set to `true`, the request returns a `request_id`. You can then get the
               deferred response by GET `/v1/chat/deferred-completion/{request_id}`.
 
+          deferred_calls: Tier 2 stateless resumption. Deferred tool specs from a previous handoff
+              response, sent back verbatim so the server can resume without Redis.
+
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing the model's likelihood to
               repeat the same line verbatim.
 
-          function_call: Wrapper for union variant: function call mode.
+          function_call: Deprecated in favor of `tool_choice`. Controls which (if any) function is called
+              by the model. `none` means the model will not call a function and instead
+              generates a message. `auto` means the model can pick between generating a
+              message or calling a function. Specifying a particular function via
+              `{"name": "my_function"}` forces the model to call that function. `none` is the
+              default when no functions are present. `auto` is the default if functions are
+              present.
 
           functions: Deprecated in favor of `tools`. A list of functions the model may generate JSON
               inputs for.
@@ -1365,6 +1468,12 @@ class AsyncCompletionsResource(AsyncAPIResource):
           guardrails: Content filtering and safety policy configuration.
 
           handoff_config: Configuration for multi-model handoffs.
+
+          handoff_mode: Handoff control. None or omitted: auto-detect. true: structured handoff (SDK).
+              false: drop-in (LLM re-run for mixed turns).
+
+          inference_geo: Specifies the geographic region for inference processing. If not specified, the
+              workspace's `default_inference_geo` is used.
 
           logit_bias: Modify the likelihood of specified tokens appearing in the completion. Accepts a
               JSON object that maps tokens (specified by their token ID in the tokenizer) to
@@ -1397,8 +1506,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           modalities: Output types that you would like the model to generate. Most models are capable
               of generating text, which is the default: `["text"]` The `gpt-4o-audio-preview`
-              model can also be used to
-              [generate audio](https://platform.openai.com/docs/guides/audio). To request that
+              model can also be used to [generate audio](/docs/guides/audio). To request that
               this model generate both text and audio responses, you can use:
               `["text", "audio"]`
 
@@ -1409,7 +1517,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
               you will be charged based on the number of generated tokens across all of the
               choices. Keep `n` as `1` to minimize costs.
 
-          parallel_tool_calls: Whether to enable parallel tool calls (Anthropic uses inverted polarity)
+          parallel_tool_calls: Whether to enable parallel tool calls (Anthropic uses inverted polarity).
 
           prediction: Static predicted output content, such as the content of a text file that is
               being regenerated.
@@ -1426,35 +1534,34 @@ class AsyncCompletionsResource(AsyncAPIResource):
               talk about new topics.
 
           prompt_cache_key: Used by OpenAI to cache responses for similar requests to optimize your cache
-              hit rates. Replaces the `user` field.
-              [Learn more](https://platform.openai.com/docs/guides/prompt-caching).
+              hit rates. Replaces the `user` field. [Learn more](/docs/guides/prompt-caching).
 
           prompt_cache_retention: The retention policy for the prompt cache. Set to `24h` to enable extended
               prompt caching, which keeps cached prefixes active for longer, up to a maximum
-              of 24 hours.
-              [Learn more](https://platform.openai.com/docs/guides/prompt-caching#prompt-cache-retention).
+              of 24 hours. [Learn more](/docs/guides/prompt-caching#prompt-cache-retention).
 
           prompt_mode: Allows toggling between the reasoning mode and no system prompt. When set to
               `reasoning` the system prompt for reasoning models will be used.
 
           reasoning_effort: Constrains effort on reasoning for
               [reasoning models](https://platform.openai.com/docs/guides/reasoning). Currently
-              supported values are `none`, `minimal`, `low`, `medium`, and `high`. Reducing
-              reasoning effort can result in faster responses and fewer tokens used on
-              reasoning in a response. - `gpt-5.1` defaults to `none`, which does not perform
-              reasoning. The supported reasoning values for `gpt-5.1` are `none`, `low`,
-              `medium`, and `high`. Tool calls are supported for all reasoning values in
-              gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort, and
-              do not support `none`. - The `gpt-5-pro` model defaults to (and only supports)
-              `high` reasoning effort.
+              supported values are `none`, `minimal`, `low`, `medium`, `high`, and `xhigh`.
+              Reducing reasoning effort can result in faster responses and fewer tokens used
+              on reasoning in a response. - `gpt-5.1` defaults to `none`, which does not
+              perform reasoning. The supported reasoning values for `gpt-5.1` are `none`,
+              `low`, `medium`, and `high`. Tool calls are supported for all reasoning values
+              in gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort,
+              and do not support `none`. - The `gpt-5-pro` model defaults to (and only
+              supports) `high` reasoning effort. - `xhigh` is supported for all models after
+              `gpt-5.1-codex-max`.
 
           response_format: An object specifying the format that the model must output. Setting to
               `{ "type": "json_schema", "json_schema": {...} }` enables Structured Outputs
               which ensures the model will match your supplied JSON schema. Learn more in the
-              [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
-              Setting to `{ "type": "json_object" }` enables the older JSON mode, which
-              ensures the message the model generates is valid JSON. Using `json_schema` is
-              preferred for models that support it.
+              [Structured Outputs guide](/docs/guides/structured-outputs). Setting to
+              `{ "type": "json_object" }` enables the older JSON mode, which ensures the
+              message the model generates is valid JSON. Using `json_schema` is preferred for
+              models that support it.
 
           safe_prompt: Whether to inject a safety prompt before all conversations.
 
@@ -1462,7 +1569,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
               violating OpenAI's usage policies. The IDs should be a string that uniquely
               identifies each user. We recommend hashing their username or email address, in
               order to avoid sending us any identifying information.
-              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
+              [Learn more](/docs/guides/safety-best-practices#safety-identifiers).
 
           safety_settings: Safety/content filtering settings (Google-specific)
 
@@ -1473,12 +1580,15 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           service_tier: Service tier for request processing
 
+          speed: The inference speed mode for this request. `"fast"` enables high
+              output-tokens-per-second inference.
+
           stop: Sequences that stop generation
 
           store: Whether or not to store the output of this chat completion request for use in
-              our [model distillation](https://platform.openai.com/docs/guides/distillation)
-              or [evals](https://platform.openai.com/docs/guides/evals) products. Supports
-              text and image inputs. Note: image inputs over 8MB will be dropped.
+              our [model distillation](/docs/guides/distillation) or
+              [evals](/docs/guides/evals) products. Supports text and image inputs. Note:
+              image inputs over 8MB will be dropped.
 
           stream: Enable streaming response
 
@@ -1514,15 +1624,14 @@ class AsyncCompletionsResource(AsyncAPIResource):
               `prompt_cache_key` instead to maintain caching optimizations. A stable
               identifier for your end-users. Used to boost cache hit rates by better bucketing
               similar requests and to help OpenAI detect and prevent abuse.
-              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
+              [Learn more](/docs/guides/safety-best-practices#safety-identifiers).
 
           verbosity: Constrains the verbosity of the model's response. Lower values will result in
               more concise responses, while higher values will result in more verbose
               responses. Currently supported values are `low`, `medium`, and `high`.
 
           web_search_options: This tool searches the web for relevant results to use in a response. Learn more
-              about the
-              [web search tool](https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat).
+              about the [web search tool](/docs/guides/tools-web-search?api-mode=chat).
 
           extra_headers: Send extra headers
 
@@ -1546,14 +1655,18 @@ class AsyncCompletionsResource(AsyncAPIResource):
         audio: Optional[ChatCompletionAudioParam] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
+        correlation_id: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
+        deferred_calls: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
         functions: Optional[Iterable[ChatCompletionFunctionsParam]] | Omit = omit,
         generation_config: Optional[JSONObjectInput] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
+        handoff_mode: Optional[bool] | Omit = omit,
+        inference_geo: Optional[str] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
@@ -1565,6 +1678,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
         n: Optional[int] | Omit = omit,
+        output_config: Optional[JSONObjectInput] | Omit = omit,
         parallel_tool_calls: Optional[bool] | Omit = omit,
         prediction: Optional[PredictionContentParam] | Omit = omit,
         presence_penalty: Optional[float] | Omit = omit,
@@ -1579,6 +1693,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         search_parameters: Optional[JSONObjectInput] | Omit = omit,
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[str] | Omit = omit,
+        speed: Optional[Literal["standard", "fast"]] | Omit = omit,
         stop: Union[SequenceNotStr[str], str, None] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream_options: Optional[JSONObjectInput] | Omit = omit,
@@ -1587,7 +1702,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         thinking: Optional[completion_create_params.Thinking] | Omit = omit,
         tool_choice: Optional[completion_create_params.ToolChoice] | Omit = omit,
         tool_config: Optional[JSONObjectInput] | Omit = omit,
-        tools: Optional[Iterable[completion_create_params.Tool]] | Omit = omit,
+        tools: Optional[Iterable[ChatCompletionToolParam]] | Omit = omit,
         top_k: Optional[int] | Omit = omit,
         top_logprobs: Optional[int] | Omit = omit,
         top_p: Optional[float] | Omit = omit,
@@ -1611,7 +1726,8 @@ class AsyncCompletionsResource(AsyncAPIResource):
         Headers:
 
         - Authorization: bearer key for the calling account.
-        - Optional BYOK or provider headers if applicable.
+        - X-Provider / X-Provider-Key: optional headers for using your own provider API
+          key.
 
         Behavior:
 
@@ -1664,12 +1780,11 @@ class AsyncCompletionsResource(AsyncAPIResource):
           agent_attributes: Agent attributes. Values in [0.0, 1.0].
 
           audio: Parameters for audio output. Required when audio output is requested with
-              `modalities: ["audio"]`.
-              [Learn more](https://platform.openai.com/docs/guides/audio).
+              `modalities: ["audio"]`. [Learn more](/docs/guides/audio).
 
               Fields:
 
-              - voice (required): VoiceIdsShared
+              - voice (required): VoiceIdsOrCustomVoice
               - format (required): Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]
 
           automatic_tool_execution: Execute tools server-side. If false, returns raw tool calls for manual handling.
@@ -1678,17 +1793,29 @@ class AsyncCompletionsResource(AsyncAPIResource):
               [cached](https://ai.google.dev/gemini-api/docs/caching) to use as context to
               serve the prediction. Format: `cachedContents/{cachedContent}`
 
+          correlation_id: Stable session ID for resuming a previous handoff. Returned by the server on
+              handoff; echo it on the next request to resume.
+
           credentials: Credentials for MCP server authentication. Each credential is matched to servers
               by connection name.
 
           deferred: If set to `true`, the request returns a `request_id`. You can then get the
               deferred response by GET `/v1/chat/deferred-completion/{request_id}`.
 
+          deferred_calls: Tier 2 stateless resumption. Deferred tool specs from a previous handoff
+              response, sent back verbatim so the server can resume without Redis.
+
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing the model's likelihood to
               repeat the same line verbatim.
 
-          function_call: Wrapper for union variant: function call mode.
+          function_call: Deprecated in favor of `tool_choice`. Controls which (if any) function is called
+              by the model. `none` means the model will not call a function and instead
+              generates a message. `auto` means the model can pick between generating a
+              message or calling a function. Specifying a particular function via
+              `{"name": "my_function"}` forces the model to call that function. `none` is the
+              default when no functions are present. `auto` is the default if functions are
+              present.
 
           functions: Deprecated in favor of `tools`. A list of functions the model may generate JSON
               inputs for.
@@ -1698,6 +1825,12 @@ class AsyncCompletionsResource(AsyncAPIResource):
           guardrails: Content filtering and safety policy configuration.
 
           handoff_config: Configuration for multi-model handoffs.
+
+          handoff_mode: Handoff control. None or omitted: auto-detect. true: structured handoff (SDK).
+              false: drop-in (LLM re-run for mixed turns).
+
+          inference_geo: Specifies the geographic region for inference processing. If not specified, the
+              workspace's `default_inference_geo` is used.
 
           logit_bias: Modify the likelihood of specified tokens appearing in the completion. Accepts a
               JSON object that maps tokens (specified by their token ID in the tokenizer) to
@@ -1730,8 +1863,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           modalities: Output types that you would like the model to generate. Most models are capable
               of generating text, which is the default: `["text"]` The `gpt-4o-audio-preview`
-              model can also be used to
-              [generate audio](https://platform.openai.com/docs/guides/audio). To request that
+              model can also be used to [generate audio](/docs/guides/audio). To request that
               this model generate both text and audio responses, you can use:
               `["text", "audio"]`
 
@@ -1742,7 +1874,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
               you will be charged based on the number of generated tokens across all of the
               choices. Keep `n` as `1` to minimize costs.
 
-          parallel_tool_calls: Whether to enable parallel tool calls (Anthropic uses inverted polarity)
+          parallel_tool_calls: Whether to enable parallel tool calls (Anthropic uses inverted polarity).
 
           prediction: Static predicted output content, such as the content of a text file that is
               being regenerated.
@@ -1759,35 +1891,34 @@ class AsyncCompletionsResource(AsyncAPIResource):
               talk about new topics.
 
           prompt_cache_key: Used by OpenAI to cache responses for similar requests to optimize your cache
-              hit rates. Replaces the `user` field.
-              [Learn more](https://platform.openai.com/docs/guides/prompt-caching).
+              hit rates. Replaces the `user` field. [Learn more](/docs/guides/prompt-caching).
 
           prompt_cache_retention: The retention policy for the prompt cache. Set to `24h` to enable extended
               prompt caching, which keeps cached prefixes active for longer, up to a maximum
-              of 24 hours.
-              [Learn more](https://platform.openai.com/docs/guides/prompt-caching#prompt-cache-retention).
+              of 24 hours. [Learn more](/docs/guides/prompt-caching#prompt-cache-retention).
 
           prompt_mode: Allows toggling between the reasoning mode and no system prompt. When set to
               `reasoning` the system prompt for reasoning models will be used.
 
           reasoning_effort: Constrains effort on reasoning for
               [reasoning models](https://platform.openai.com/docs/guides/reasoning). Currently
-              supported values are `none`, `minimal`, `low`, `medium`, and `high`. Reducing
-              reasoning effort can result in faster responses and fewer tokens used on
-              reasoning in a response. - `gpt-5.1` defaults to `none`, which does not perform
-              reasoning. The supported reasoning values for `gpt-5.1` are `none`, `low`,
-              `medium`, and `high`. Tool calls are supported for all reasoning values in
-              gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort, and
-              do not support `none`. - The `gpt-5-pro` model defaults to (and only supports)
-              `high` reasoning effort.
+              supported values are `none`, `minimal`, `low`, `medium`, `high`, and `xhigh`.
+              Reducing reasoning effort can result in faster responses and fewer tokens used
+              on reasoning in a response. - `gpt-5.1` defaults to `none`, which does not
+              perform reasoning. The supported reasoning values for `gpt-5.1` are `none`,
+              `low`, `medium`, and `high`. Tool calls are supported for all reasoning values
+              in gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort,
+              and do not support `none`. - The `gpt-5-pro` model defaults to (and only
+              supports) `high` reasoning effort. - `xhigh` is supported for all models after
+              `gpt-5.1-codex-max`.
 
           response_format: An object specifying the format that the model must output. Setting to
               `{ "type": "json_schema", "json_schema": {...} }` enables Structured Outputs
               which ensures the model will match your supplied JSON schema. Learn more in the
-              [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
-              Setting to `{ "type": "json_object" }` enables the older JSON mode, which
-              ensures the message the model generates is valid JSON. Using `json_schema` is
-              preferred for models that support it.
+              [Structured Outputs guide](/docs/guides/structured-outputs). Setting to
+              `{ "type": "json_object" }` enables the older JSON mode, which ensures the
+              message the model generates is valid JSON. Using `json_schema` is preferred for
+              models that support it.
 
           safe_prompt: Whether to inject a safety prompt before all conversations.
 
@@ -1795,7 +1926,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
               violating OpenAI's usage policies. The IDs should be a string that uniquely
               identifies each user. We recommend hashing their username or email address, in
               order to avoid sending us any identifying information.
-              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
+              [Learn more](/docs/guides/safety-best-practices#safety-identifiers).
 
           safety_settings: Safety/content filtering settings (Google-specific)
 
@@ -1806,12 +1937,15 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           service_tier: Service tier for request processing
 
+          speed: The inference speed mode for this request. `"fast"` enables high
+              output-tokens-per-second inference.
+
           stop: Sequences that stop generation
 
           store: Whether or not to store the output of this chat completion request for use in
-              our [model distillation](https://platform.openai.com/docs/guides/distillation)
-              or [evals](https://platform.openai.com/docs/guides/evals) products. Supports
-              text and image inputs. Note: image inputs over 8MB will be dropped.
+              our [model distillation](/docs/guides/distillation) or
+              [evals](/docs/guides/evals) products. Supports text and image inputs. Note:
+              image inputs over 8MB will be dropped.
 
           stream_options: Options for streaming response. Only set this when you set `stream: true`.
 
@@ -1845,15 +1979,14 @@ class AsyncCompletionsResource(AsyncAPIResource):
               `prompt_cache_key` instead to maintain caching optimizations. A stable
               identifier for your end-users. Used to boost cache hit rates by better bucketing
               similar requests and to help OpenAI detect and prevent abuse.
-              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
+              [Learn more](/docs/guides/safety-best-practices#safety-identifiers).
 
           verbosity: Constrains the verbosity of the model's response. Lower values will result in
               more concise responses, while higher values will result in more verbose
               responses. Currently supported values are `low`, `medium`, and `high`.
 
           web_search_options: This tool searches the web for relevant results to use in a response. Learn more
-              about the
-              [web search tool](https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat).
+              about the [web search tool](/docs/guides/tools-web-search?api-mode=chat).
 
           extra_headers: Send extra headers
 
@@ -1877,14 +2010,18 @@ class AsyncCompletionsResource(AsyncAPIResource):
         audio: Optional[ChatCompletionAudioParam] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
+        correlation_id: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
+        deferred_calls: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
         functions: Optional[Iterable[ChatCompletionFunctionsParam]] | Omit = omit,
         generation_config: Optional[JSONObjectInput] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
+        handoff_mode: Optional[bool] | Omit = omit,
+        inference_geo: Optional[str] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
@@ -1896,6 +2033,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
         n: Optional[int] | Omit = omit,
+        output_config: Optional[JSONObjectInput] | Omit = omit,
         parallel_tool_calls: Optional[bool] | Omit = omit,
         prediction: Optional[PredictionContentParam] | Omit = omit,
         presence_penalty: Optional[float] | Omit = omit,
@@ -1910,6 +2048,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         search_parameters: Optional[JSONObjectInput] | Omit = omit,
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[str] | Omit = omit,
+        speed: Optional[Literal["standard", "fast"]] | Omit = omit,
         stop: Union[SequenceNotStr[str], str, None] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream_options: Optional[JSONObjectInput] | Omit = omit,
@@ -1918,7 +2057,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         thinking: Optional[completion_create_params.Thinking] | Omit = omit,
         tool_choice: Optional[completion_create_params.ToolChoice] | Omit = omit,
         tool_config: Optional[JSONObjectInput] | Omit = omit,
-        tools: Optional[Iterable[completion_create_params.Tool]] | Omit = omit,
+        tools: Optional[Iterable[ChatCompletionToolParam]] | Omit = omit,
         top_k: Optional[int] | Omit = omit,
         top_logprobs: Optional[int] | Omit = omit,
         top_p: Optional[float] | Omit = omit,
@@ -1942,7 +2081,8 @@ class AsyncCompletionsResource(AsyncAPIResource):
         Headers:
 
         - Authorization: bearer key for the calling account.
-        - Optional BYOK or provider headers if applicable.
+        - X-Provider / X-Provider-Key: optional headers for using your own provider API
+          key.
 
         Behavior:
 
@@ -1995,12 +2135,11 @@ class AsyncCompletionsResource(AsyncAPIResource):
           agent_attributes: Agent attributes. Values in [0.0, 1.0].
 
           audio: Parameters for audio output. Required when audio output is requested with
-              `modalities: ["audio"]`.
-              [Learn more](https://platform.openai.com/docs/guides/audio).
+              `modalities: ["audio"]`. [Learn more](/docs/guides/audio).
 
               Fields:
 
-              - voice (required): VoiceIdsShared
+              - voice (required): VoiceIdsOrCustomVoice
               - format (required): Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]
 
           automatic_tool_execution: Execute tools server-side. If false, returns raw tool calls for manual handling.
@@ -2009,17 +2148,29 @@ class AsyncCompletionsResource(AsyncAPIResource):
               [cached](https://ai.google.dev/gemini-api/docs/caching) to use as context to
               serve the prediction. Format: `cachedContents/{cachedContent}`
 
+          correlation_id: Stable session ID for resuming a previous handoff. Returned by the server on
+              handoff; echo it on the next request to resume.
+
           credentials: Credentials for MCP server authentication. Each credential is matched to servers
               by connection name.
 
           deferred: If set to `true`, the request returns a `request_id`. You can then get the
               deferred response by GET `/v1/chat/deferred-completion/{request_id}`.
 
+          deferred_calls: Tier 2 stateless resumption. Deferred tool specs from a previous handoff
+              response, sent back verbatim so the server can resume without Redis.
+
           frequency_penalty: Number between -2.0 and 2.0. Positive values penalize new tokens based on their
               existing frequency in the text so far, decreasing the model's likelihood to
               repeat the same line verbatim.
 
-          function_call: Wrapper for union variant: function call mode.
+          function_call: Deprecated in favor of `tool_choice`. Controls which (if any) function is called
+              by the model. `none` means the model will not call a function and instead
+              generates a message. `auto` means the model can pick between generating a
+              message or calling a function. Specifying a particular function via
+              `{"name": "my_function"}` forces the model to call that function. `none` is the
+              default when no functions are present. `auto` is the default if functions are
+              present.
 
           functions: Deprecated in favor of `tools`. A list of functions the model may generate JSON
               inputs for.
@@ -2029,6 +2180,12 @@ class AsyncCompletionsResource(AsyncAPIResource):
           guardrails: Content filtering and safety policy configuration.
 
           handoff_config: Configuration for multi-model handoffs.
+
+          handoff_mode: Handoff control. None or omitted: auto-detect. true: structured handoff (SDK).
+              false: drop-in (LLM re-run for mixed turns).
+
+          inference_geo: Specifies the geographic region for inference processing. If not specified, the
+              workspace's `default_inference_geo` is used.
 
           logit_bias: Modify the likelihood of specified tokens appearing in the completion. Accepts a
               JSON object that maps tokens (specified by their token ID in the tokenizer) to
@@ -2061,8 +2218,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           modalities: Output types that you would like the model to generate. Most models are capable
               of generating text, which is the default: `["text"]` The `gpt-4o-audio-preview`
-              model can also be used to
-              [generate audio](https://platform.openai.com/docs/guides/audio). To request that
+              model can also be used to [generate audio](/docs/guides/audio). To request that
               this model generate both text and audio responses, you can use:
               `["text", "audio"]`
 
@@ -2073,7 +2229,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
               you will be charged based on the number of generated tokens across all of the
               choices. Keep `n` as `1` to minimize costs.
 
-          parallel_tool_calls: Whether to enable parallel tool calls (Anthropic uses inverted polarity)
+          parallel_tool_calls: Whether to enable parallel tool calls (Anthropic uses inverted polarity).
 
           prediction: Static predicted output content, such as the content of a text file that is
               being regenerated.
@@ -2090,35 +2246,34 @@ class AsyncCompletionsResource(AsyncAPIResource):
               talk about new topics.
 
           prompt_cache_key: Used by OpenAI to cache responses for similar requests to optimize your cache
-              hit rates. Replaces the `user` field.
-              [Learn more](https://platform.openai.com/docs/guides/prompt-caching).
+              hit rates. Replaces the `user` field. [Learn more](/docs/guides/prompt-caching).
 
           prompt_cache_retention: The retention policy for the prompt cache. Set to `24h` to enable extended
               prompt caching, which keeps cached prefixes active for longer, up to a maximum
-              of 24 hours.
-              [Learn more](https://platform.openai.com/docs/guides/prompt-caching#prompt-cache-retention).
+              of 24 hours. [Learn more](/docs/guides/prompt-caching#prompt-cache-retention).
 
           prompt_mode: Allows toggling between the reasoning mode and no system prompt. When set to
               `reasoning` the system prompt for reasoning models will be used.
 
           reasoning_effort: Constrains effort on reasoning for
               [reasoning models](https://platform.openai.com/docs/guides/reasoning). Currently
-              supported values are `none`, `minimal`, `low`, `medium`, and `high`. Reducing
-              reasoning effort can result in faster responses and fewer tokens used on
-              reasoning in a response. - `gpt-5.1` defaults to `none`, which does not perform
-              reasoning. The supported reasoning values for `gpt-5.1` are `none`, `low`,
-              `medium`, and `high`. Tool calls are supported for all reasoning values in
-              gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort, and
-              do not support `none`. - The `gpt-5-pro` model defaults to (and only supports)
-              `high` reasoning effort.
+              supported values are `none`, `minimal`, `low`, `medium`, `high`, and `xhigh`.
+              Reducing reasoning effort can result in faster responses and fewer tokens used
+              on reasoning in a response. - `gpt-5.1` defaults to `none`, which does not
+              perform reasoning. The supported reasoning values for `gpt-5.1` are `none`,
+              `low`, `medium`, and `high`. Tool calls are supported for all reasoning values
+              in gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort,
+              and do not support `none`. - The `gpt-5-pro` model defaults to (and only
+              supports) `high` reasoning effort. - `xhigh` is supported for all models after
+              `gpt-5.1-codex-max`.
 
           response_format: An object specifying the format that the model must output. Setting to
               `{ "type": "json_schema", "json_schema": {...} }` enables Structured Outputs
               which ensures the model will match your supplied JSON schema. Learn more in the
-              [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
-              Setting to `{ "type": "json_object" }` enables the older JSON mode, which
-              ensures the message the model generates is valid JSON. Using `json_schema` is
-              preferred for models that support it.
+              [Structured Outputs guide](/docs/guides/structured-outputs). Setting to
+              `{ "type": "json_object" }` enables the older JSON mode, which ensures the
+              message the model generates is valid JSON. Using `json_schema` is preferred for
+              models that support it.
 
           safe_prompt: Whether to inject a safety prompt before all conversations.
 
@@ -2126,7 +2281,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
               violating OpenAI's usage policies. The IDs should be a string that uniquely
               identifies each user. We recommend hashing their username or email address, in
               order to avoid sending us any identifying information.
-              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
+              [Learn more](/docs/guides/safety-best-practices#safety-identifiers).
 
           safety_settings: Safety/content filtering settings (Google-specific)
 
@@ -2137,12 +2292,15 @@ class AsyncCompletionsResource(AsyncAPIResource):
 
           service_tier: Service tier for request processing
 
+          speed: The inference speed mode for this request. `"fast"` enables high
+              output-tokens-per-second inference.
+
           stop: Sequences that stop generation
 
           store: Whether or not to store the output of this chat completion request for use in
-              our [model distillation](https://platform.openai.com/docs/guides/distillation)
-              or [evals](https://platform.openai.com/docs/guides/evals) products. Supports
-              text and image inputs. Note: image inputs over 8MB will be dropped.
+              our [model distillation](/docs/guides/distillation) or
+              [evals](/docs/guides/evals) products. Supports text and image inputs. Note:
+              image inputs over 8MB will be dropped.
 
           stream_options: Options for streaming response. Only set this when you set `stream: true`.
 
@@ -2176,15 +2334,14 @@ class AsyncCompletionsResource(AsyncAPIResource):
               `prompt_cache_key` instead to maintain caching optimizations. A stable
               identifier for your end-users. Used to boost cache hit rates by better bucketing
               similar requests and to help OpenAI detect and prevent abuse.
-              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
+              [Learn more](/docs/guides/safety-best-practices#safety-identifiers).
 
           verbosity: Constrains the verbosity of the model's response. Lower values will result in
               more concise responses, while higher values will result in more verbose
               responses. Currently supported values are `low`, `medium`, and `high`.
 
           web_search_options: This tool searches the web for relevant results to use in a response. Learn more
-              about the
-              [web search tool](https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat).
+              about the [web search tool](/docs/guides/tools-web-search?api-mode=chat).
 
           extra_headers: Send extra headers
 
@@ -2207,14 +2364,18 @@ class AsyncCompletionsResource(AsyncAPIResource):
         audio: Optional[ChatCompletionAudioParam] | Omit = omit,
         automatic_tool_execution: bool | Omit = omit,
         cached_content: Optional[str] | Omit = omit,
+        correlation_id: Optional[str] | Omit = omit,
         credentials: Optional[completion_create_params.Credentials] | Omit = omit,
         deferred: Optional[bool] | Omit = omit,
+        deferred_calls: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         frequency_penalty: Optional[float] | Omit = omit,
         function_call: Optional[str] | Omit = omit,
         functions: Optional[Iterable[ChatCompletionFunctionsParam]] | Omit = omit,
         generation_config: Optional[JSONObjectInput] | Omit = omit,
         guardrails: Optional[Iterable[Dict[str, object]]] | Omit = omit,
         handoff_config: Optional[Dict[str, object]] | Omit = omit,
+        handoff_mode: Optional[bool] | Omit = omit,
+        inference_geo: Optional[str] | Omit = omit,
         logit_bias: Optional[Dict[str, int]] | Omit = omit,
         logprobs: Optional[bool] | Omit = omit,
         max_completion_tokens: Optional[int] | Omit = omit,
@@ -2226,6 +2387,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         modalities: Optional[SequenceNotStr[str]] | Omit = omit,
         model_attributes: Optional[Dict[str, Dict[str, float]]] | Omit = omit,
         n: Optional[int] | Omit = omit,
+        output_config: Optional[JSONObjectInput] | Omit = omit,
         parallel_tool_calls: Optional[bool] | Omit = omit,
         prediction: Optional[PredictionContentParam] | Omit = omit,
         presence_penalty: Optional[float] | Omit = omit,
@@ -2240,6 +2402,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         search_parameters: Optional[JSONObjectInput] | Omit = omit,
         seed: Optional[int] | Omit = omit,
         service_tier: Optional[str] | Omit = omit,
+        speed: Optional[Literal["standard", "fast"]] | Omit = omit,
         stop: Union[SequenceNotStr[str], str, None] | Omit = omit,
         store: Optional[bool] | Omit = omit,
         stream: Optional[Literal[False]] | Literal[True] | Omit = omit,
@@ -2249,7 +2412,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
         thinking: Optional[completion_create_params.Thinking] | Omit = omit,
         tool_choice: Optional[completion_create_params.ToolChoice] | Omit = omit,
         tool_config: Optional[JSONObjectInput] | Omit = omit,
-        tools: Optional[Iterable[completion_create_params.Tool]] | Omit = omit,
+        tools: Optional[Iterable[ChatCompletionToolParam]] | Omit = omit,
         top_k: Optional[int] | Omit = omit,
         top_logprobs: Optional[int] | Omit = omit,
         top_p: Optional[float] | Omit = omit,
@@ -2273,14 +2436,18 @@ class AsyncCompletionsResource(AsyncAPIResource):
                     "audio": audio,
                     "automatic_tool_execution": automatic_tool_execution,
                     "cached_content": cached_content,
+                    "correlation_id": correlation_id,
                     "credentials": credentials,
                     "deferred": deferred,
+                    "deferred_calls": deferred_calls,
                     "frequency_penalty": frequency_penalty,
                     "function_call": function_call,
                     "functions": functions,
                     "generation_config": generation_config,
                     "guardrails": guardrails,
                     "handoff_config": handoff_config,
+                    "handoff_mode": handoff_mode,
+                    "inference_geo": inference_geo,
                     "logit_bias": logit_bias,
                     "logprobs": logprobs,
                     "max_completion_tokens": max_completion_tokens,
@@ -2292,6 +2459,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
                     "modalities": modalities,
                     "model_attributes": model_attributes,
                     "n": n,
+                    "output_config": output_config,
                     "parallel_tool_calls": parallel_tool_calls,
                     "prediction": prediction,
                     "presence_penalty": presence_penalty,
@@ -2306,6 +2474,7 @@ class AsyncCompletionsResource(AsyncAPIResource):
                     "search_parameters": search_parameters,
                     "seed": seed,
                     "service_tier": service_tier,
+                    "speed": speed,
                     "stop": stop,
                     "store": store,
                     "stream": stream,

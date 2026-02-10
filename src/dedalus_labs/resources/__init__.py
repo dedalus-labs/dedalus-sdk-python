@@ -40,6 +40,14 @@ from .models import (
     ModelsResourceWithStreamingResponse,
     AsyncModelsResourceWithStreamingResponse,
 )
+from .responses import (
+    ResponsesResource,
+    AsyncResponsesResource,
+    ResponsesResourceWithRawResponse,
+    AsyncResponsesResourceWithRawResponse,
+    ResponsesResourceWithStreamingResponse,
+    AsyncResponsesResourceWithStreamingResponse,
+)
 from .embeddings import (
     EmbeddingsResource,
     AsyncEmbeddingsResource,
@@ -80,6 +88,12 @@ __all__ = [
     "AsyncOCRResourceWithRawResponse",
     "OCRResourceWithStreamingResponse",
     "AsyncOCRResourceWithStreamingResponse",
+    "ResponsesResource",
+    "AsyncResponsesResource",
+    "ResponsesResourceWithRawResponse",
+    "AsyncResponsesResourceWithRawResponse",
+    "ResponsesResourceWithStreamingResponse",
+    "AsyncResponsesResourceWithStreamingResponse",
     "ChatResource",
     "AsyncChatResource",
     "ChatResourceWithRawResponse",

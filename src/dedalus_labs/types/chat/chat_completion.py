@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import builtins
 from typing import Dict, List, Optional
 from typing_extensions import Literal
 
@@ -10,7 +9,61 @@ from .choice import Choice
 from ..._models import BaseModel
 from .completion_usage import CompletionUsage
 
-__all__ = ["ChatCompletion"]
+__all__ = ["ChatCompletion", "Deferred", "MCPServerErrors", "PendingTool"]
+
+
+class Deferred(BaseModel):
+    """Server-side call blocked until pending client calls complete.
+
+    Carries full spec for stateless resumption on subsequent turns.
+    """
+
+    id: str
+    """Unique identifier for this deferred call."""
+
+    name: str
+    """Name of the tool."""
+
+    arguments: Optional["JSONObjectInput"] = None
+    """Input arguments for the tool call."""
+
+    blocked_by: Optional[List[str]] = None
+    """IDs of pending client calls blocking this call."""
+
+    dependencies: Optional[List[str]] = None
+    """IDs of calls this depends on."""
+
+    venue: Optional[str] = None
+    """Execution venue (server or client)."""
+
+
+class MCPServerErrors(BaseModel):
+    """Error details for a single MCP server failure."""
+
+    message: str
+    """Human-readable error message."""
+
+    code: Optional[str] = None
+    """Machine-readable error code."""
+
+    recommendation: Optional[str] = None
+    """Suggested action for the user."""
+
+
+class PendingTool(BaseModel):
+    """Client-side tool call the SDK must execute."""
+
+    id: str
+    """Unique identifier for this tool call."""
+
+    arguments: "JSONObjectInput"
+    """Input arguments for the tool call."""
+
+    name: str
+    """Name of the tool to execute."""
+
+    dependencies: Optional[List[str]] = None
+    """IDs of other pending calls that must complete first."""
 
 
 class ChatCompletion(BaseModel):
@@ -39,12 +92,17 @@ class ChatCompletion(BaseModel):
     object: Literal["chat.completion"]
     """The object type, which is always `chat.completion`."""
 
-    mcp_server_errors: Optional[Dict[str, builtins.object]] = None
-    """Information about MCP server failures, if any occurred during the request.
+    correlation_id: Optional[str] = None
+    """Stable session ID for cross-turn handoff state.
 
-    Contains details about which servers failed and why, along with recommendations
-    for the user. Only present when MCP server failures occurred.
+    Echo this on the next request to resume server-side execution.
     """
+
+    deferred: Optional[List[Deferred]] = None
+    """Server tools blocked on client results."""
+
+    mcp_server_errors: Optional[Dict[str, MCPServerErrors]] = None
+    """MCP server failures keyed by server name."""
 
     mcp_tool_results: Optional[List["MCPToolResult"]] = None
     """Detailed results of MCP tool executions including inputs, outputs, and timing.
@@ -52,6 +110,12 @@ class ChatCompletion(BaseModel):
     Provides full visibility into server-side tool execution for debugging and audit
     purposes.
     """
+
+    pending_tools: Optional[List[PendingTool]] = None
+    """Client tools to execute, with dependency ordering."""
+
+    server_results: Optional[Dict[str, Optional["JSONValueInput"]]] = None
+    """Completed server tool outputs keyed by call ID."""
 
     service_tier: Optional[Literal["auto", "default", "flex", "scale", "priority"]] = None
     """Specifies the processing type used for serving the request.
@@ -61,7 +125,7 @@ class ChatCompletion(BaseModel):
       will use 'default'.
     - If set to 'default', then the request will be processed with the standard
       pricing and performance for the selected model.
-    - If set to '[flex](https://platform.openai.com/docs/guides/flex-processing)' or
+    - If set to '[flex](/docs/guides/flex-processing)' or
       '[priority](https://openai.com/api-priority-processing/)', then the request
       will be processed with the corresponding service tier.
     - When not set, the default behavior is 'auto'.
@@ -86,8 +150,16 @@ class ChatCompletion(BaseModel):
     client-side execution.
     """
 
+    turns_consumed: Optional[int] = None
+    """Number of internal LLM calls made during this request.
+
+    SDKs can sum this across their outer loop to track total LLM calls.
+    """
+
     usage: Optional[CompletionUsage] = None
     """Usage statistics for the completion request."""
 
 
 from ..shared.mcp_tool_result import MCPToolResult
+from ..shared.json_value_input import JSONValueInput
+from ..shared.json_object_input import JSONObjectInput

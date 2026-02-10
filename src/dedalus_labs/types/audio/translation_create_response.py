@@ -14,8 +14,8 @@ __all__ = [
 
 
 class CreateTranslationResponseVerboseJSONSegment(BaseModel):
-    """
-    Fields:
+    """Fields:  # noqa: D415.
+
     - id (required): int
     - seek (required): int
     - start (required): float
@@ -70,8 +70,8 @@ class CreateTranslationResponseVerboseJSONSegment(BaseModel):
 
 
 class CreateTranslationResponseVerboseJSON(BaseModel):
-    """
-    Fields:
+    """Fields:  # noqa: D415.
+
     - language (required): str
     - duration (required): float
     - text (required): str
@@ -92,8 +92,8 @@ class CreateTranslationResponseVerboseJSON(BaseModel):
 
 
 class CreateTranslationResponseJSON(BaseModel):
-    """
-    Fields:
+    """Fields:  # noqa: D415.
+
     - text (required): str
     """
 

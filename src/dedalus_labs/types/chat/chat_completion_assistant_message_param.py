@@ -67,7 +67,7 @@ class ChatCompletionAssistantMessageParam(TypedDict, total=False):
     audio: Optional[AudioParam]
     """
     Data about a previous audio response from the model.
-    [Learn more](https://platform.openai.com/docs/guides/audio).
+    [Learn more](/docs/guides/audio).
 
     Fields:
 

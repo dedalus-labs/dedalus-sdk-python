@@ -4,17 +4,15 @@ from __future__ import annotations
 
 from typing_extensions import Required, TypedDict
 
-__all__ = ["AudioParam"]
+__all__ = ["VoiceIDsOrCustomVoice"]
 
 
-class AudioParam(TypedDict, total=False):
-    """
-    Data about a previous audio response from the model.
-    [Learn more](/docs/guides/audio).
+class VoiceIDsOrCustomVoice(TypedDict, total=False):
+    """Custom voice reference.
 
     Fields:
     - id (required): str
     """
 
     id: Required[str]
-    """Unique identifier for a previous audio response from the model."""
+    """The custom voice ID, e.g. `voice_1234`."""
