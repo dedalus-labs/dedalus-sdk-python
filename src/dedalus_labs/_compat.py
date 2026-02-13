@@ -144,7 +144,6 @@ def model_dump(
     if (not PYDANTIC_V1) or hasattr(model, "model_dump"):
         return model.model_dump(
             mode=mode,
-            by_alias=True,
             exclude=exclude,
             exclude_unset=exclude_unset,
             exclude_defaults=exclude_defaults,

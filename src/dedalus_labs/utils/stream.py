@@ -6,6 +6,6 @@
 
 """Stream utilities for printing model responses in real-time."""
 
-from ..lib.utils._stream import stream_async, stream_sync
+from ..lib.utils._stream import StreamResult, stream_async, stream_sync
 
-__all__ = ["stream_async", "stream_sync"]
+__all__ = ["StreamResult", "stream_async", "stream_sync"]
