@@ -139,7 +139,7 @@ def model_dump(
     exclude_defaults: bool = False,
     warnings: bool = True,
     mode: Literal["json", "python"] = "python",
-    by_alias: bool | None = None,
+    by_alias: bool = True,
 ) -> dict[str, Any]:
     if (not PYDANTIC_V1) or hasattr(model, "model_dump"):
         return model.model_dump(
@@ -154,7 +154,7 @@ def model_dump(
     return cast(
         "dict[str, Any]",
         model.dict(  # pyright: ignore[reportDeprecated, reportUnnecessaryCast]
-            exclude=exclude, exclude_unset=exclude_unset, exclude_defaults=exclude_defaults, by_alias=bool(by_alias)
+            exclude=exclude, exclude_unset=exclude_unset, exclude_defaults=exclude_defaults, by_alias=by_alias
         ),
     )
 
