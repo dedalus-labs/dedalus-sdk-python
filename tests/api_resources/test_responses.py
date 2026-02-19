@@ -17,13 +17,13 @@ base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 class TestResponses:
     parametrize = pytest.mark.parametrize("client", [False, True], indirect=True, ids=["loose", "strict"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_create(self, client: Dedalus) -> None:
         response = client.responses.create()
         assert_matches_type(Response, response, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_create_with_all_params(self, client: Dedalus) -> None:
         response = client.responses.create(
@@ -77,7 +77,7 @@ class TestResponses:
         )
         assert_matches_type(Response, response, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_raw_response_create(self, client: Dedalus) -> None:
         http_response = client.responses.with_raw_response.create()
@@ -87,7 +87,7 @@ class TestResponses:
         response = http_response.parse()
         assert_matches_type(Response, response, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_streaming_response_create(self, client: Dedalus) -> None:
         with client.responses.with_streaming_response.create() as http_response:
@@ -105,13 +105,13 @@ class TestAsyncResponses:
         "async_client", [False, True, {"http_client": "aiohttp"}], indirect=True, ids=["loose", "strict", "aiohttp"]
     )
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_create(self, async_client: AsyncDedalus) -> None:
         response = await async_client.responses.create()
         assert_matches_type(Response, response, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_create_with_all_params(self, async_client: AsyncDedalus) -> None:
         response = await async_client.responses.create(
@@ -165,7 +165,7 @@ class TestAsyncResponses:
         )
         assert_matches_type(Response, response, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_raw_response_create(self, async_client: AsyncDedalus) -> None:
         http_response = await async_client.responses.with_raw_response.create()
@@ -175,7 +175,7 @@ class TestAsyncResponses:
         response = await http_response.parse()
         assert_matches_type(Response, response, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_streaming_response_create(self, async_client: AsyncDedalus) -> None:
         async with async_client.responses.with_streaming_response.create() as http_response:

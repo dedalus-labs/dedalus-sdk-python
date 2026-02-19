@@ -19,7 +19,7 @@ base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 class TestCompletions:
     parametrize = pytest.mark.parametrize("client", [False, True], indirect=True, ids=["loose", "strict"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_create_overload_1(self, client: Dedalus) -> None:
         completion = client.chat.completions.create(
@@ -27,7 +27,7 @@ class TestCompletions:
         )
         assert_matches_type(ChatCompletion, completion, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_create_with_all_params_overload_1(self, client: Dedalus) -> None:
         completion = client.chat.completions.create(
@@ -145,7 +145,7 @@ class TestCompletions:
         )
         assert_matches_type(ChatCompletion, completion, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_raw_response_create_overload_1(self, client: Dedalus) -> None:
         response = client.chat.completions.with_raw_response.create(
@@ -157,7 +157,7 @@ class TestCompletions:
         completion = response.parse()
         assert_matches_type(ChatCompletion, completion, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_streaming_response_create_overload_1(self, client: Dedalus) -> None:
         with client.chat.completions.with_streaming_response.create(
@@ -171,7 +171,7 @@ class TestCompletions:
 
         assert cast(Any, response.is_closed) is True
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_create_overload_2(self, client: Dedalus) -> None:
         completion_stream = client.chat.completions.create(
@@ -180,7 +180,7 @@ class TestCompletions:
         )
         completion_stream.response.close()
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_create_with_all_params_overload_2(self, client: Dedalus) -> None:
         completion_stream = client.chat.completions.create(
@@ -298,7 +298,7 @@ class TestCompletions:
         )
         completion_stream.response.close()
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_raw_response_create_overload_2(self, client: Dedalus) -> None:
         response = client.chat.completions.with_raw_response.create(
@@ -310,7 +310,7 @@ class TestCompletions:
         stream = response.parse()
         stream.close()
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_streaming_response_create_overload_2(self, client: Dedalus) -> None:
         with client.chat.completions.with_streaming_response.create(
@@ -331,7 +331,7 @@ class TestAsyncCompletions:
         "async_client", [False, True, {"http_client": "aiohttp"}], indirect=True, ids=["loose", "strict", "aiohttp"]
     )
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_create_overload_1(self, async_client: AsyncDedalus) -> None:
         completion = await async_client.chat.completions.create(
@@ -339,7 +339,7 @@ class TestAsyncCompletions:
         )
         assert_matches_type(ChatCompletion, completion, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_create_with_all_params_overload_1(self, async_client: AsyncDedalus) -> None:
         completion = await async_client.chat.completions.create(
@@ -457,7 +457,7 @@ class TestAsyncCompletions:
         )
         assert_matches_type(ChatCompletion, completion, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_raw_response_create_overload_1(self, async_client: AsyncDedalus) -> None:
         response = await async_client.chat.completions.with_raw_response.create(
@@ -469,7 +469,7 @@ class TestAsyncCompletions:
         completion = await response.parse()
         assert_matches_type(ChatCompletion, completion, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_streaming_response_create_overload_1(self, async_client: AsyncDedalus) -> None:
         async with async_client.chat.completions.with_streaming_response.create(
@@ -483,7 +483,7 @@ class TestAsyncCompletions:
 
         assert cast(Any, response.is_closed) is True
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_create_overload_2(self, async_client: AsyncDedalus) -> None:
         completion_stream = await async_client.chat.completions.create(
@@ -492,7 +492,7 @@ class TestAsyncCompletions:
         )
         await completion_stream.response.aclose()
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_create_with_all_params_overload_2(self, async_client: AsyncDedalus) -> None:
         completion_stream = await async_client.chat.completions.create(
@@ -610,7 +610,7 @@ class TestAsyncCompletions:
         )
         await completion_stream.response.aclose()
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_raw_response_create_overload_2(self, async_client: AsyncDedalus) -> None:
         response = await async_client.chat.completions.with_raw_response.create(
@@ -622,7 +622,7 @@ class TestAsyncCompletions:
         stream = await response.parse()
         await stream.close()
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_streaming_response_create_overload_2(self, async_client: AsyncDedalus) -> None:
         async with async_client.chat.completions.with_streaming_response.create(
