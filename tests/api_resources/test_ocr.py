@@ -17,7 +17,7 @@ base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 class TestOCR:
     parametrize = pytest.mark.parametrize("client", [False, True], indirect=True, ids=["loose", "strict"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_process(self, client: Dedalus) -> None:
         ocr = client.ocr.process(
@@ -25,7 +25,7 @@ class TestOCR:
         )
         assert_matches_type(OCRResponse, ocr, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_process_with_all_params(self, client: Dedalus) -> None:
         ocr = client.ocr.process(
@@ -37,7 +37,7 @@ class TestOCR:
         )
         assert_matches_type(OCRResponse, ocr, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_raw_response_process(self, client: Dedalus) -> None:
         response = client.ocr.with_raw_response.process(
@@ -49,7 +49,7 @@ class TestOCR:
         ocr = response.parse()
         assert_matches_type(OCRResponse, ocr, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_streaming_response_process(self, client: Dedalus) -> None:
         with client.ocr.with_streaming_response.process(
@@ -69,7 +69,7 @@ class TestAsyncOCR:
         "async_client", [False, True, {"http_client": "aiohttp"}], indirect=True, ids=["loose", "strict", "aiohttp"]
     )
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_process(self, async_client: AsyncDedalus) -> None:
         ocr = await async_client.ocr.process(
@@ -77,7 +77,7 @@ class TestAsyncOCR:
         )
         assert_matches_type(OCRResponse, ocr, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_process_with_all_params(self, async_client: AsyncDedalus) -> None:
         ocr = await async_client.ocr.process(
@@ -89,7 +89,7 @@ class TestAsyncOCR:
         )
         assert_matches_type(OCRResponse, ocr, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_raw_response_process(self, async_client: AsyncDedalus) -> None:
         response = await async_client.ocr.with_raw_response.process(
@@ -101,7 +101,7 @@ class TestAsyncOCR:
         ocr = await response.parse()
         assert_matches_type(OCRResponse, ocr, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_streaming_response_process(self, async_client: AsyncDedalus) -> None:
         async with async_client.ocr.with_streaming_response.process(
