@@ -53,9 +53,7 @@ class EncryptedCredentials:
         return self.entries
 
 
-# ---------------------------------------------------------------------------
-# Request preparation
-# ---------------------------------------------------------------------------
+# --- Request Preparation ---
 
 
 async def prepare_mcp_request(
@@ -140,9 +138,7 @@ def prepare_mcp_request_sync(
     return data
 
 
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
+# --- Internal Helpers ---
 
 
 def _encrypt_credentials(
@@ -172,7 +168,7 @@ def _credentials_for_server(
     """Return the subset of *all_creds* that belongs to *name*, or None."""
     conn = slug_to_connection_name(name)
     blob = all_creds.get(conn)
-    return {conn: blob} if blob else None
+    return {conn: blob} if blob is not None else None
 
 
 def _embed_credentials(

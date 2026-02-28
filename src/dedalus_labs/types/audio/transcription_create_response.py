@@ -22,8 +22,8 @@ __all__ = [
 
 
 class CreateTranscriptionResponseVerboseJSONSegment(BaseModel):
-    """
-    Fields:
+    """Fields:  # noqa: D415.
+
     - id (required): int
     - seek (required): int
     - start (required): float
@@ -88,8 +88,8 @@ class CreateTranscriptionResponseVerboseJSONUsage(BaseModel):
 
 
 class CreateTranscriptionResponseVerboseJSONWord(BaseModel):
-    """
-    Fields:
+    """Fields:  # noqa: D415.
+
     - word (required): str
     - start (required): float
     - end (required): float
@@ -138,8 +138,8 @@ class CreateTranscriptionResponseVerboseJSON(BaseModel):
 
 
 class CreateTranscriptionResponseJSONLogprob(BaseModel):
-    """
-    Fields:
+    """Fields:  # noqa: D415.
+
     - token (optional): str
     - logprob (optional): float
     - bytes (optional): list[float]

@@ -22,12 +22,12 @@ class ImageURL(TypedDict, total=False):
     """Specifies the detail level of the image.
 
     Learn more in the
-    [Vision guide](https://platform.openai.com/docs/guides/vision#low-or-high-fidelity-image-understanding).
+    [Vision guide](/docs/guides/vision#low-or-high-fidelity-image-understanding).
     """
 
 
 class ChatCompletionContentPartImageParam(TypedDict, total=False):
-    """Learn about [image inputs](https://platform.openai.com/docs/guides/vision).
+    """Learn about [image inputs](/docs/guides/vision).
 
     Fields:
     - type (required): Literal["image_url"]

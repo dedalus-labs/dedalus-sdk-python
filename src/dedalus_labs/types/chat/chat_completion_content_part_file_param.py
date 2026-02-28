@@ -30,8 +30,7 @@ class File(TypedDict, total=False):
 
 
 class ChatCompletionContentPartFileParam(TypedDict, total=False):
-    """
-    Learn about [file inputs](https://platform.openai.com/docs/guides/text) for text generation.
+    """Learn about [file inputs](/docs/guides/text) for text generation.
 
     Fields:
     - type (required): Literal["file"]

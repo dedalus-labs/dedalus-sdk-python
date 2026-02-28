@@ -8,8 +8,7 @@ __all__ = ["ChatCompletionContentPartTextParam"]
 
 
 class ChatCompletionContentPartTextParam(TypedDict, total=False):
-    """
-    Learn about [text inputs](https://platform.openai.com/docs/guides/text-generation).
+    """Learn about [text inputs](/docs/guides/text-generation).
 
     Fields:
     - type (required): Literal["text"]

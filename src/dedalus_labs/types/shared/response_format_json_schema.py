@@ -1,8 +1,6 @@
 # File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-from __future__ import annotations
-
-from typing import Optional
+from typing import Dict, Optional
 from typing_extensions import Literal
 
 from pydantic import Field as FieldInfo
@@ -28,7 +26,7 @@ class JSONSchema(BaseModel):
     how to respond in the format.
     """
 
-    schema_: Optional["JSONObjectInput"] = FieldInfo(alias="schema", default=None)
+    schema_: Optional[Dict[str, object]] = FieldInfo(alias="schema", default=None)
     """
     The schema for the response format, described as a JSON Schema object. Learn how
     to build JSON schemas [here](https://json-schema.org/).
@@ -40,7 +38,7 @@ class JSONSchema(BaseModel):
     true, the model will always follow the exact schema defined in the `schema`
     field. Only a subset of JSON Schema is supported when `strict` is `true`. To
     learn more, read the
-    [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
+    [Structured Outputs guide](/docs/guides/structured-outputs).
     """
 
 
@@ -48,7 +46,7 @@ class ResponseFormatJSONSchema(BaseModel):
     """JSON Schema response format.
 
     Used to generate structured JSON responses.
-    Learn more about [Structured Outputs](https://platform.openai.com/docs/guides/structured-outputs).
+    Learn more about [Structured Outputs](/docs/guides/structured-outputs).
 
     Fields:
     - type (required): Literal["json_schema"]
@@ -60,6 +58,3 @@ class ResponseFormatJSONSchema(BaseModel):
 
     type: Literal["json_schema"]
     """The type of response format being defined. Always `json_schema`."""
-
-
-from .json_object_input import JSONObjectInput

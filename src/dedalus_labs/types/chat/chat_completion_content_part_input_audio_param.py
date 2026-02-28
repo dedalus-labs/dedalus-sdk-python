@@ -23,7 +23,7 @@ class InputAudio(TypedDict, total=False):
 
 
 class ChatCompletionContentPartInputAudioParam(TypedDict, total=False):
-    """Learn about [audio inputs](https://platform.openai.com/docs/guides/audio).
+    """Learn about [audio inputs](/docs/guides/audio).
 
     Fields:
     - type (required): Literal["input_audio"]

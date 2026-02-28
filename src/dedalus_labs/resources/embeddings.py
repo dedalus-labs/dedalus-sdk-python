@@ -75,10 +75,8 @@ class EmbeddingsResource(SyncAPIResource):
               request.
 
           model: ID of the model to use. You can use the
-              [List models](https://platform.openai.com/docs/api-reference/models/list) API to
-              see all of your available models, or see our
-              [Model overview](https://platform.openai.com/docs/models) for descriptions of
-              them.
+              [List models](/docs/api-reference/models/list) API to see all of your available
+              models, or see our [Model overview](/docs/models) for descriptions of them.
 
           dimensions: The number of dimensions the resulting output embeddings should have. Only
               supported in `text-embedding-3` and later models.
@@ -87,8 +85,7 @@ class EmbeddingsResource(SyncAPIResource):
               [`base64`](https://pypi.org/project/pybase64/).
 
           user: A unique identifier representing your end-user, which can help OpenAI to monitor
-              and detect abuse.
-              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#end-user-ids).
+              and detect abuse. [Learn more](/docs/guides/safety-best-practices#end-user-ids).
 
           extra_headers: Send extra headers
 
@@ -174,10 +171,8 @@ class AsyncEmbeddingsResource(AsyncAPIResource):
               request.
 
           model: ID of the model to use. You can use the
-              [List models](https://platform.openai.com/docs/api-reference/models/list) API to
-              see all of your available models, or see our
-              [Model overview](https://platform.openai.com/docs/models) for descriptions of
-              them.
+              [List models](/docs/api-reference/models/list) API to see all of your available
+              models, or see our [Model overview](/docs/models) for descriptions of them.
 
           dimensions: The number of dimensions the resulting output embeddings should have. Only
               supported in `text-embedding-3` and later models.
@@ -186,8 +181,7 @@ class AsyncEmbeddingsResource(AsyncAPIResource):
               [`base64`](https://pypi.org/project/pybase64/).
 
           user: A unique identifier representing your end-user, which can help OpenAI to monitor
-              and detect abuse.
-              [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#end-user-ids).
+              and detect abuse. [Learn more](/docs/guides/safety-best-practices#end-user-ids).
 
           extra_headers: Send extra headers
 

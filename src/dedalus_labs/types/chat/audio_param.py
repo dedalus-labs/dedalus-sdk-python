@@ -10,7 +10,7 @@ __all__ = ["AudioParam"]
 class AudioParam(TypedDict, total=False):
     """
     Data about a previous audio response from the model.
-    [Learn more](https://platform.openai.com/docs/guides/audio).
+    [Learn more](/docs/guides/audio).
 
     Fields:
     - id (required): str

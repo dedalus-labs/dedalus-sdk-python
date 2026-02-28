@@ -14,6 +14,7 @@ from .chat_completion_chunk import ChatCompletionChunk as ChatCompletionChunk
 from .prompt_tokens_details import PromptTokensDetails as PromptTokensDetails
 from .tool_choice_any_param import ToolChoiceAnyParam as ToolChoiceAnyParam
 from .choice_delta_tool_call import ChoiceDeltaToolCall as ChoiceDeltaToolCall
+from .deferred_call_response import DeferredCallResponse as DeferredCallResponse
 from .stream_choice_logprobs import StreamChoiceLogprobs as StreamChoiceLogprobs
 from .tool_choice_auto_param import ToolChoiceAutoParam as ToolChoiceAutoParam
 from .tool_choice_none_param import ToolChoiceNoneParam as ToolChoiceNoneParam
@@ -24,6 +25,7 @@ from .prediction_content_param import PredictionContentParam as PredictionConten
 from .completion_tokens_details import CompletionTokensDetails as CompletionTokensDetails
 from .chat_completion_tool_param import ChatCompletionToolParam as ChatCompletionToolParam
 from .chat_completion_audio_param import ChatCompletionAudioParam as ChatCompletionAudioParam
+from .deferred_call_response_param import DeferredCallResponseParam as DeferredCallResponseParam
 from .chat_completion_token_logprob import ChatCompletionTokenLogprob as ChatCompletionTokenLogprob
 from .thinking_config_enabled_param import ThinkingConfigEnabledParam as ThinkingConfigEnabledParam
 from .thinking_config_disabled_param import ThinkingConfigDisabledParam as ThinkingConfigDisabledParam

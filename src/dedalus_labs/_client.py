@@ -34,10 +34,12 @@ from ._base_client import (
 from .lib.mcp import prepare_mcp_request, prepare_mcp_request_sync
 
 if TYPE_CHECKING:
-    from .resources import chat, audio, images, models, embeddings
+    from .resources import ocr, chat, audio, images, models, responses, embeddings
+    from .resources.ocr import OCRResource, AsyncOCRResource
     from .resources.images import ImagesResource, AsyncImagesResource
     from .resources.models import ModelsResource, AsyncModelsResource
     from .resources.chat.chat import ChatResource, AsyncChatResource
+    from .resources.responses import ResponsesResource, AsyncResponsesResource
     from .resources.embeddings import EmbeddingsResource, AsyncEmbeddingsResource
     from .resources.audio.audio import AudioResource, AsyncAudioResource
 
@@ -121,7 +123,7 @@ class Dedalus(SyncAPIClient):
         self.x_api_key = x_api_key
 
         if as_base_url is None:
-            as_base_url = os.environ.get("DEDALUS_AS_URL")
+            as_base_url = os.environ.get("DEDALUS_AS_URL") or "https://as.dedaluslabs.ai"
         self.as_base_url = as_base_url
 
         if dedalus_org_id is None:
@@ -212,6 +214,18 @@ class Dedalus(SyncAPIClient):
         return ImagesResource(self)
 
     @cached_property
+    def ocr(self) -> OCRResource:
+        from .resources.ocr import OCRResource
+
+        return OCRResource(self)
+
+    @cached_property
+    def responses(self) -> ResponsesResource:
+        from .resources.responses import ResponsesResource
+
+        return ResponsesResource(self)
+
+    @cached_property
     def chat(self) -> ChatResource:
         from .resources.chat import ChatResource
 
@@ -259,6 +273,7 @@ class Dedalus(SyncAPIClient):
             "X-SDK-Version": "1.0.0",
             "X-Provider": self.provider if self.provider is not None else Omit(),
             "X-Provider-Key": self.provider_key if self.provider_key is not None else Omit(),
+            "X-Provider-Model": self.provider_model if self.provider_model is not None else Omit(),
             **self._custom_headers,
         }
 
@@ -435,7 +450,7 @@ class AsyncDedalus(AsyncAPIClient):
         self.x_api_key = x_api_key
 
         if as_base_url is None:
-            as_base_url = os.environ.get("DEDALUS_AS_URL")
+            as_base_url = os.environ.get("DEDALUS_AS_URL") or "https://as.dedaluslabs.ai"
         self.as_base_url = as_base_url
 
         if dedalus_org_id is None:
@@ -526,6 +541,18 @@ class AsyncDedalus(AsyncAPIClient):
         return AsyncImagesResource(self)
 
     @cached_property
+    def ocr(self) -> AsyncOCRResource:
+        from .resources.ocr import AsyncOCRResource
+
+        return AsyncOCRResource(self)
+
+    @cached_property
+    def responses(self) -> AsyncResponsesResource:
+        from .resources.responses import AsyncResponsesResource
+
+        return AsyncResponsesResource(self)
+
+    @cached_property
     def chat(self) -> AsyncChatResource:
         from .resources.chat import AsyncChatResource
 
@@ -573,6 +600,7 @@ class AsyncDedalus(AsyncAPIClient):
             "X-SDK-Version": "1.0.0",
             "X-Provider": self.provider if self.provider is not None else Omit(),
             "X-Provider-Key": self.provider_key if self.provider_key is not None else Omit(),
+            "X-Provider-Model": self.provider_model if self.provider_model is not None else Omit(),
             **self._custom_headers,
         }
 
@@ -718,6 +746,18 @@ class DedalusWithRawResponse:
         return ImagesResourceWithRawResponse(self._client.images)
 
     @cached_property
+    def ocr(self) -> ocr.OCRResourceWithRawResponse:
+        from .resources.ocr import OCRResourceWithRawResponse
+
+        return OCRResourceWithRawResponse(self._client.ocr)
+
+    @cached_property
+    def responses(self) -> responses.ResponsesResourceWithRawResponse:
+        from .resources.responses import ResponsesResourceWithRawResponse
+
+        return ResponsesResourceWithRawResponse(self._client.responses)
+
+    @cached_property
     def chat(self) -> chat.ChatResourceWithRawResponse:
         from .resources.chat import ChatResourceWithRawResponse
 
@@ -753,6 +793,18 @@ class AsyncDedalusWithRawResponse:
         from .resources.images import AsyncImagesResourceWithRawResponse
 
         return AsyncImagesResourceWithRawResponse(self._client.images)
+
+    @cached_property
+    def ocr(self) -> ocr.AsyncOCRResourceWithRawResponse:
+        from .resources.ocr import AsyncOCRResourceWithRawResponse
+
+        return AsyncOCRResourceWithRawResponse(self._client.ocr)
+
+    @cached_property
+    def responses(self) -> responses.AsyncResponsesResourceWithRawResponse:
+        from .resources.responses import AsyncResponsesResourceWithRawResponse
+
+        return AsyncResponsesResourceWithRawResponse(self._client.responses)
 
     @cached_property
     def chat(self) -> chat.AsyncChatResourceWithRawResponse:
@@ -792,6 +844,18 @@ class DedalusWithStreamedResponse:
         return ImagesResourceWithStreamingResponse(self._client.images)
 
     @cached_property
+    def ocr(self) -> ocr.OCRResourceWithStreamingResponse:
+        from .resources.ocr import OCRResourceWithStreamingResponse
+
+        return OCRResourceWithStreamingResponse(self._client.ocr)
+
+    @cached_property
+    def responses(self) -> responses.ResponsesResourceWithStreamingResponse:
+        from .resources.responses import ResponsesResourceWithStreamingResponse
+
+        return ResponsesResourceWithStreamingResponse(self._client.responses)
+
+    @cached_property
     def chat(self) -> chat.ChatResourceWithStreamingResponse:
         from .resources.chat import ChatResourceWithStreamingResponse
 
@@ -827,6 +891,18 @@ class AsyncDedalusWithStreamedResponse:
         from .resources.images import AsyncImagesResourceWithStreamingResponse
 
         return AsyncImagesResourceWithStreamingResponse(self._client.images)
+
+    @cached_property
+    def ocr(self) -> ocr.AsyncOCRResourceWithStreamingResponse:
+        from .resources.ocr import AsyncOCRResourceWithStreamingResponse
+
+        return AsyncOCRResourceWithStreamingResponse(self._client.ocr)
+
+    @cached_property
+    def responses(self) -> responses.AsyncResponsesResourceWithStreamingResponse:
+        from .resources.responses import AsyncResponsesResourceWithStreamingResponse
+
+        return AsyncResponsesResourceWithStreamingResponse(self._client.responses)
 
     @cached_property
     def chat(self) -> chat.AsyncChatResourceWithStreamingResponse:

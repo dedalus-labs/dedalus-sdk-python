@@ -11,12 +11,17 @@ Converts MCPServer objects and various input formats to the API wire format.
 
 from __future__ import annotations
 
+import re
 from typing import Any, Dict, List, Tuple, Union, Optional, Sequence, cast
 from typing_extensions import TypeAlias
 
-from pydantic import Field, BaseModel, ConfigDict, field_validator, model_validator
-
+from ... import _compat
 from .protocols import MCPServerProtocol, CredentialProtocol, is_mcp_server
+
+if _compat.PYDANTIC_V1:
+    from pydantic import Field, BaseModel, validator, root_validator
+else:
+    from pydantic import Field, BaseModel, ConfigDict, field_validator, model_validator
 
 __all__ = [
     # Core types
@@ -38,9 +43,7 @@ __all__ = [
 ]
 
 
-# ---------------------------------------------------------------------------
-# Type Aliases
-# ---------------------------------------------------------------------------
+# --- Type Aliases ---
 
 # Serialized wire output: slug string or spec dict
 MCPServerWireOutput: TypeAlias = Union[str, Dict[str, Any]]
@@ -52,9 +55,7 @@ MCPServerInput: TypeAlias = Union[str, Dict[str, Any], MCPServerProtocol]
 ConnectionCredentialPair: TypeAlias = Tuple[Any, CredentialProtocol]
 
 
-# ---------------------------------------------------------------------------
-# Wire Format Model (for validation during serialization)
-# ---------------------------------------------------------------------------
+# --- Wire Format Model (for validation during serialization) ---
 
 
 class MCPServerWireSpec(BaseModel):
@@ -63,7 +64,13 @@ class MCPServerWireSpec(BaseModel):
     Wire format: either slug or url (not both).
     """
 
-    model_config = ConfigDict(extra="forbid")
+    if _compat.PYDANTIC_V1:
+
+        class Config:
+            extra = "forbid"
+
+    else:
+        model_config = ConfigDict(extra="forbid")
 
     slug: Optional[str] = Field(
         default=None,
@@ -79,35 +86,78 @@ class MCPServerWireSpec(BaseModel):
         description="Version for MCP servers",
     )
 
-    @model_validator(mode="after")
-    def validate_slug_or_url(self) -> MCPServerWireSpec:
-        """Require exactly one of slug or url."""
-        has_slug = self.slug is not None
-        has_url = self.url is not None
+    if _compat.PYDANTIC_V1:
 
-        if not has_slug and not has_url:
-            raise ValueError("requires either 'slug' or 'url'")
-        if has_slug and has_url:
-            raise ValueError("cannot have both 'slug' and 'url'")
-        if has_slug and self.version and self.slug and "@" in self.slug:
-            raise ValueError("cannot specify both 'version' field and version in slug")
+        @root_validator(skip_on_failure=True)
+        def validate_slug_or_url(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+            """Require exactly one of slug or url."""
+            slug = values.get("slug")
+            url = values.get("url")
+            version = values.get("version")
 
-        return self
+            has_slug = slug is not None
+            has_url = url is not None
 
-    @field_validator("url")
-    @classmethod
-    def validate_url_format(cls, v: Optional[str]) -> Optional[str]:
-        """Validate URL scheme."""
-        if v is None:
-            return None
-        if not v.startswith(("http://", "https://")):
-            raise ValueError(f"URL must start with http:// or https://, got: {v}")
-        return v
+            if not has_slug and not has_url:
+                raise ValueError("requires either 'slug' or 'url'")
+            if has_slug and has_url:
+                raise ValueError("cannot have both 'slug' and 'url'")
+            if has_slug and version and isinstance(slug, str) and "@" in slug:
+                raise ValueError("cannot specify both 'version' field and version in slug")
+
+            return values
+
+        @validator("url")
+        def validate_url_format(cls, v: Optional[str]) -> Optional[str]:
+            """Validate URL scheme."""
+            if v is None:
+                return None
+            if not v.startswith(("http://", "https://")):
+                raise ValueError(f"URL must start with http:// or https://, got: {v}")
+            return v
+
+        @validator("slug")
+        def validate_slug_format(cls, v: Optional[str]) -> Optional[str]:
+            """Validate slug format."""
+            if v is None:
+                return None
+            if not re.fullmatch(r"^[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+$", v):
+                raise ValueError("slug must be in 'org/name' format")
+            return v
+
+    else:
+
+        @model_validator(mode="after")
+        def validate_slug_or_url(self) -> MCPServerWireSpec:
+            """Require exactly one of slug or url."""
+            has_slug = self.slug is not None
+            has_url = self.url is not None
+
+            if not has_slug and not has_url:
+                raise ValueError("requires either 'slug' or 'url'")
+            if has_slug and has_url:
+                raise ValueError("cannot have both 'slug' and 'url'")
+            if has_slug and self.version and self.slug and "@" in self.slug:
+                raise ValueError("cannot specify both 'version' field and version in slug")
+
+            return self
+
+        @field_validator("url")
+        @classmethod
+        def validate_url_format(cls, v: Optional[str]) -> Optional[str]:
+            """Validate URL scheme."""
+            if v is None:
+                return None
+            if not v.startswith(("http://", "https://")):
+                raise ValueError(f"URL must start with http:// or https://, got: {v}")
+            return v
 
     def to_wire(self) -> MCPServerWireOutput:
         """Convert to wire format. Simple slugs become strings."""
         if self.slug and not self.version:
             return self.slug
+        if _compat.PYDANTIC_V1:
+            return self.dict(exclude_none=True)
         return self.model_dump(exclude_none=True)
 
     @classmethod
@@ -123,9 +173,7 @@ class MCPServerWireSpec(BaseModel):
         return cls(url=url)
 
 
-# ---------------------------------------------------------------------------
-# MCP Server Serialization
-# ---------------------------------------------------------------------------
+# --- MCP Server Serialization ---
 
 
 def serialize_mcp_servers(
@@ -186,15 +234,13 @@ def _serialize_single(item: MCPServerInput) -> MCPServerWireOutput:
 
     if isinstance(item, dict):
         # Validate and convert dict
-        return MCPServerWireSpec.model_validate(item).to_wire()
+        return _compat.model_parse(MCPServerWireSpec, item).to_wire()
 
     # Fallback for unknown types
     return str(item)
 
 
-# ---------------------------------------------------------------------------
-# Credential Serialization
-# ---------------------------------------------------------------------------
+# --- Credential Serialization ---
 
 
 def serialize_credentials(creds: Optional[CredentialProtocol]) -> Optional[Dict[str, Any]]:
@@ -265,9 +311,7 @@ def serialize_mcp_server_with_creds(server: MCPServerProtocol) -> Dict[str, Any]
     return result
 
 
-# ---------------------------------------------------------------------------
-# Connection Serialization
-# ---------------------------------------------------------------------------
+# --- Connection Serialization ---
 
 
 def serialize_connection(connection: Any) -> Dict[str, Any]:
@@ -342,9 +386,7 @@ def slug_to_connection_name(slug: str) -> str:
     return slug.replace("/", "-")
 
 
-# ---------------------------------------------------------------------------
-# Credential Matching
-# ---------------------------------------------------------------------------
+# --- Credential Matching ---
 
 
 def match_credentials_to_server(

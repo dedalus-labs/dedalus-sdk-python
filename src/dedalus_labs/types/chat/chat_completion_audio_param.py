@@ -3,19 +3,27 @@
 from __future__ import annotations
 
 from typing import Union
-from typing_extensions import Literal, Required, TypedDict
+from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
-__all__ = ["ChatCompletionAudioParam"]
+from ..shared_params.voice_ids_or_custom_voice import VoiceIDsOrCustomVoice
+
+__all__ = ["ChatCompletionAudioParam", "Voice"]
+
+Voice: TypeAlias = Union[
+    str,
+    Literal["alloy", "ash", "ballad", "coral", "echo", "sage", "shimmer", "verse", "marin", "cedar"],
+    VoiceIDsOrCustomVoice,
+]
 
 
 class ChatCompletionAudioParam(TypedDict, total=False):
     """Parameters for audio output.
 
     Required when audio output is requested with
-    `modalities: ["audio"]`. [Learn more](https://platform.openai.com/docs/guides/audio).
+    `modalities: ["audio"]`. [Learn more](/docs/guides/audio).
 
     Fields:
-    - voice (required): VoiceIdsShared
+    - voice (required): VoiceIdsOrCustomVoice
     - format (required): Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]
     """
 
@@ -25,11 +33,11 @@ class ChatCompletionAudioParam(TypedDict, total=False):
     Must be one of `wav`, `mp3`, `flac`, `opus`, or `pcm16`.
     """
 
-    voice: Required[
-        Union[str, Literal["alloy", "ash", "ballad", "coral", "echo", "sage", "shimmer", "verse", "marin", "cedar"]]
-    ]
+    voice: Required[Voice]
     """The voice the model uses to respond.
 
-    Supported voices are `alloy`, `ash`, `ballad`, `coral`, `echo`, `fable`, `nova`,
-    `onyx`, `sage`, and `shimmer`.
+    Supported built-in voices are `alloy`, `ash`, `ballad`, `coral`, `echo`,
+    `fable`, `nova`, `onyx`, `sage`, `shimmer`, `marin`, and `cedar`. You may also
+    provide a custom voice object with an `id`, for example
+    `{ "id": "voice_1234" }`.
     """
