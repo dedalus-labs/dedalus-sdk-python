@@ -2,11 +2,16 @@
 
 from __future__ import annotations
 
-from typing import Dict, Optional
+from typing import Dict
 from typing_extensions import TypeAliasType
+
+from ... import _compat
 
 __all__ = ["JSONObjectInput"]
 
 from .json_value_input import JSONValueInput
 
-JSONObjectInput = TypeAliasType("JSONObjectInput", Dict[str, Optional[JSONValueInput]])
+if _compat.PYDANTIC_V1:
+    JSONObjectInput = Dict[str, JSONValueInput]
+else:
+    JSONObjectInput = TypeAliasType("JSONObjectInput", Dict[str, JSONValueInput])

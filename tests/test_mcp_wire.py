@@ -15,12 +15,11 @@ import pytest
 from pydantic import ValidationError
 
 from dedalus_labs.lib.mcp import (
-    MCPServerWireSpec,
-    serialize_mcp_servers,
     MCPServerProtocol,
+    MCPServerWireSpec,
     is_mcp_server,
+    serialize_mcp_servers,
 )
-
 
 # --- Test helpers ---
 
@@ -224,6 +223,12 @@ def test_serialize_server_without_url():
 def test_serialize_dict_input():
     result = serialize_mcp_servers([{"slug": "dedalus-labs/test"}])
     assert result == ["dedalus-labs/test"]
+
+
+def test_serialize_dict_url_input():
+    """URL dicts must not be rejected by slug validation."""
+    result = serialize_mcp_servers([{"url": "https://mcp.dedaluslabs.ai/acme/my-server/mcp"}])
+    assert result == [{"url": "https://mcp.dedaluslabs.ai/acme/my-server/mcp"}]
 
 
 # --- JSON compatibility ---

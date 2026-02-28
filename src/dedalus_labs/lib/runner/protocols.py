@@ -19,15 +19,13 @@ from typing import (
     Sequence,
     runtime_checkable,
 )
-
 from typing_extensions import TypeGuard
 
-
-# --- Type Aliases ------------------------------------------------------------
+# --- Type Aliases ---
 
 MCPServerRef = str  # Slug ("org/server") or URL
 
-# --- Protocols ---------------------------------------------------------------
+# --- Protocols ---
 
 
 @runtime_checkable
@@ -92,7 +90,7 @@ class MCPToolSpec(Protocol):
     def input_schema(self) -> Dict[str, Any]: ...
 
 
-# --- Helpers -----------------------------------------------------------------
+# --- Helpers ---
 
 
 def is_mcp_server(obj: Any) -> TypeGuard[MCPServerProtocol]:

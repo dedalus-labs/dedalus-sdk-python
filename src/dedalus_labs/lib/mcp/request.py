@@ -16,15 +16,15 @@ from __future__ import annotations
 
 import copy
 import logging
-from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Sequence
+from dataclasses import dataclass
 
-from dedalus_labs.types.shared_params.mcp_server_spec import MCPServerSpec
 from dedalus_labs.types.shared_params.mcp_servers import MCPServerItem
+from dedalus_labs.types.shared_params.mcp_server_spec import MCPServerSpec
 
+from .wire import serialize_mcp_servers
 from ..crypto import encrypt_credentials, fetch_encryption_key, fetch_encryption_key_sync
 from .protocols import CredentialProtocol
-from .wire import serialize_mcp_servers
 
 logger = logging.getLogger(__name__)
 
@@ -53,9 +53,7 @@ class EncryptedCredentials:
         return self.entries
 
 
-# ---------------------------------------------------------------------------
-# Request preparation
-# ---------------------------------------------------------------------------
+# --- Request Preparation ---
 
 
 async def prepare_mcp_request(
@@ -140,9 +138,7 @@ def prepare_mcp_request_sync(
     return data
 
 
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
+# --- Internal Helpers ---
 
 
 def _encrypt_credentials(
