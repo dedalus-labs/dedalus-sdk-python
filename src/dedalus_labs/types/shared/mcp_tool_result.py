@@ -17,22 +17,22 @@ class MCPToolResult(BaseModel):
     """
 
     arguments: "JSONObjectInput"
-    """Input arguments passed to the tool"""
+    """Input arguments passed to the tool."""
 
     is_error: bool
-    """Whether the tool execution resulted in an error"""
+    """Whether the tool execution resulted in an error."""
 
     server_name: str
-    """Name of the MCP server that handled the tool"""
+    """Name of the MCP server that handled the tool."""
 
     tool_name: str
-    """Name of the MCP tool that was executed"""
+    """Name of the MCP tool that was executed."""
 
     duration_ms: Optional[int] = None
-    """Execution time in milliseconds"""
+    """Execution time in milliseconds."""
 
     result: Optional["JSONValueInput"] = None
-    """Structured result from the tool (parsed from structuredContent or content)"""
+    """Structured result from the tool (parsed from structuredContent or content)."""
 
 
 from .json_value_input import JSONValueInput

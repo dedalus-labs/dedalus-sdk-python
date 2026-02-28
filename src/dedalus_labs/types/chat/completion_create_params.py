@@ -13,11 +13,13 @@ from .tool_choice_none_param import ToolChoiceNoneParam
 from .tool_choice_tool_param import ToolChoiceToolParam
 from .prediction_content_param import PredictionContentParam
 from ..shared_params.credential import Credential
+from .chat_completion_tool_param import ChatCompletionToolParam
 from .chat_completion_audio_param import ChatCompletionAudioParam
 from .thinking_config_enabled_param import ThinkingConfigEnabledParam
 from ..shared_params.mcp_credentials import MCPCredentials
 from ..shared_params.mcp_server_spec import MCPServerSpec
 from .thinking_config_disabled_param import ThinkingConfigDisabledParam
+from .chat_completion_functions_param import ChatCompletionFunctionsParam
 from .chat_completion_tool_message_param import ChatCompletionToolMessageParam
 from .chat_completion_user_message_param import ChatCompletionUserMessageParam
 from ..shared_params.response_format_text import ResponseFormatText
@@ -26,6 +28,7 @@ from .chat_completion_function_message_param import ChatCompletionFunctionMessag
 from .chat_completion_assistant_message_param import ChatCompletionAssistantMessageParam
 from .chat_completion_developer_message_param import ChatCompletionDeveloperMessageParam
 from ..shared_params.response_format_json_object import ResponseFormatJSONObject
+from ..shared_params.response_format_json_schema import ResponseFormatJSONSchema
 
 __all__ = [
     "CompletionCreateParamsBase",
@@ -36,14 +39,8 @@ __all__ = [
     "ResponseFormat",
     "SafetySetting",
     "Thinking",
+    "ThinkingThinkingConfigAdaptive",
     "ToolChoice",
-    "Tool",
-    "ToolCustomToolChatCompletions",
-    "ToolCustomToolChatCompletionsCustom",
-    "ToolCustomToolChatCompletionsCustomFormat",
-    "ToolCustomToolChatCompletionsCustomFormatTextFormat",
-    "ToolCustomToolChatCompletionsCustomFormatGrammarFormat",
-    "ToolCustomToolChatCompletionsCustomFormatGrammarFormatGrammar",
     "CompletionCreateParamsNonStreaming",
     "CompletionCreateParamsStreaming",
 ]
@@ -64,11 +61,11 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     """Parameters for audio output.
 
     Required when audio output is requested with `modalities: ["audio"]`.
-    [Learn more](https://platform.openai.com/docs/guides/audio).
+    [Learn more](/docs/guides/audio).
 
     Fields:
 
-    - voice (required): VoiceIdsShared
+    - voice (required): VoiceIdsOrCustomVoice
     - format (required): Literal["wav", "aac", "mp3", "flac", "opus", "pcm16"]
     """
 
@@ -86,6 +83,12 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     `cachedContents/{cachedContent}`
     """
 
+    correlation_id: Optional[str]
+    """Stable session ID for resuming a previous handoff.
+
+    Returned by the server on handoff; echo it on the next request to resume.
+    """
+
     credentials: Optional[Credentials]
     """Credentials for MCP server authentication.
 
@@ -99,6 +102,13 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     `/v1/chat/deferred-completion/{request_id}`.
     """
 
+    deferred_calls: Optional[Iterable["DeferredCallResponseParam"]]
+    """Tier 2 stateless resumption.
+
+    Deferred tool specs from a previous handoff response, sent back verbatim so the
+    server can resume without Redis.
+    """
+
     frequency_penalty: Optional[float]
     """Number between -2.0 and 2.0.
 
@@ -107,9 +117,17 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     """
 
     function_call: Optional[str]
-    """Wrapper for union variant: function call mode."""
+    """Deprecated in favor of `tool_choice`.
 
-    functions: Optional[Iterable["ChatCompletionFunctionsParam"]]
+    Controls which (if any) function is called by the model. `none` means the model
+    will not call a function and instead generates a message. `auto` means the model
+    can pick between generating a message or calling a function. Specifying a
+    particular function via `{"name": "my_function"}` forces the model to call that
+    function. `none` is the default when no functions are present. `auto` is the
+    default if functions are present.
+    """
+
+    functions: Optional[Iterable[ChatCompletionFunctionsParam]]
     """Deprecated in favor of `tools`.
 
     A list of functions the model may generate JSON inputs for.
@@ -123,6 +141,19 @@ class CompletionCreateParamsBase(TypedDict, total=False):
 
     handoff_config: Optional[Dict[str, object]]
     """Configuration for multi-model handoffs."""
+
+    handoff_mode: Optional[bool]
+    """Handoff control.
+
+    None or omitted: auto-detect. true: structured handoff (SDK). false: drop-in
+    (LLM re-run for mixed turns).
+    """
+
+    inference_geo: Optional[str]
+    """Specifies the geographic region for inference processing.
+
+    If not specified, the workspace's `default_inference_geo` is used.
+    """
 
     logit_bias: Optional[Dict[str, int]]
     """Modify the likelihood of specified tokens appearing in the completion.
@@ -175,9 +206,8 @@ class CompletionCreateParamsBase(TypedDict, total=False):
 
     Most models are capable of generating text, which is the default: `["text"]` The
     `gpt-4o-audio-preview` model can also be used to
-    [generate audio](https://platform.openai.com/docs/guides/audio). To request that
-    this model generate both text and audio responses, you can use:
-    `["text", "audio"]`
+    [generate audio](/docs/guides/audio). To request that this model generate both
+    text and audio responses, you can use: `["text", "audio"]`
     """
 
     model_attributes: Optional[Dict[str, Dict[str, float]]]
@@ -193,8 +223,10 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     of the choices. Keep `n` as `1` to minimize costs.
     """
 
+    output_config: Optional["JSONObjectInput"]
+
     parallel_tool_calls: Optional[bool]
-    """Whether to enable parallel tool calls (Anthropic uses inverted polarity)"""
+    """Whether to enable parallel tool calls (Anthropic uses inverted polarity)."""
 
     prediction: Optional[PredictionContentParam]
     """
@@ -219,8 +251,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     prompt_cache_key: Optional[str]
     """
     Used by OpenAI to cache responses for similar requests to optimize your cache
-    hit rates. Replaces the `user` field.
-    [Learn more](https://platform.openai.com/docs/guides/prompt-caching).
+    hit rates. Replaces the `user` field. [Learn more](/docs/guides/prompt-caching).
     """
 
     prompt_cache_retention: Optional[str]
@@ -228,7 +259,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
 
     Set to `24h` to enable extended prompt caching, which keeps cached prefixes
     active for longer, up to a maximum of 24 hours.
-    [Learn more](https://platform.openai.com/docs/guides/prompt-caching#prompt-cache-retention).
+    [Learn more](/docs/guides/prompt-caching#prompt-cache-retention).
     """
 
     prompt_mode: Optional[Literal["reasoning"]]
@@ -241,14 +272,15 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     """
     Constrains effort on reasoning for
     [reasoning models](https://platform.openai.com/docs/guides/reasoning). Currently
-    supported values are `none`, `minimal`, `low`, `medium`, and `high`. Reducing
-    reasoning effort can result in faster responses and fewer tokens used on
-    reasoning in a response. - `gpt-5.1` defaults to `none`, which does not perform
-    reasoning. The supported reasoning values for `gpt-5.1` are `none`, `low`,
-    `medium`, and `high`. Tool calls are supported for all reasoning values in
-    gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort, and
-    do not support `none`. - The `gpt-5-pro` model defaults to (and only supports)
-    `high` reasoning effort.
+    supported values are `none`, `minimal`, `low`, `medium`, `high`, and `xhigh`.
+    Reducing reasoning effort can result in faster responses and fewer tokens used
+    on reasoning in a response. - `gpt-5.1` defaults to `none`, which does not
+    perform reasoning. The supported reasoning values for `gpt-5.1` are `none`,
+    `low`, `medium`, and `high`. Tool calls are supported for all reasoning values
+    in gpt-5.1. - All models before `gpt-5.1` default to `medium` reasoning effort,
+    and do not support `none`. - The `gpt-5-pro` model defaults to (and only
+    supports) `high` reasoning effort. - `xhigh` is supported for all models after
+    `gpt-5.1-codex-max`.
     """
 
     response_format: Optional[ResponseFormat]
@@ -256,11 +288,10 @@ class CompletionCreateParamsBase(TypedDict, total=False):
 
     Setting to `{ "type": "json_schema", "json_schema": {...} }` enables Structured
     Outputs which ensures the model will match your supplied JSON schema. Learn more
-    in the
-    [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
-    Setting to `{ "type": "json_object" }` enables the older JSON mode, which
-    ensures the message the model generates is valid JSON. Using `json_schema` is
-    preferred for models that support it.
+    in the [Structured Outputs guide](/docs/guides/structured-outputs). Setting to
+    `{ "type": "json_object" }` enables the older JSON mode, which ensures the
+    message the model generates is valid JSON. Using `json_schema` is preferred for
+    models that support it.
     """
 
     safe_prompt: Optional[bool]
@@ -272,7 +303,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     violating OpenAI's usage policies. The IDs should be a string that uniquely
     identifies each user. We recommend hashing their username or email address, in
     order to avoid sending us any identifying information.
-    [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
+    [Learn more](/docs/guides/safety-best-practices#safety-identifiers).
     """
 
     safety_settings: Optional[Iterable[SafetySetting]]
@@ -290,15 +321,21 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     service_tier: Optional[str]
     """Service tier for request processing"""
 
+    speed: Optional[Literal["standard", "fast"]]
+    """The inference speed mode for this request.
+
+    `"fast"` enables high output-tokens-per-second inference.
+    """
+
     stop: Union[SequenceNotStr[str], str, None]
     """Sequences that stop generation"""
 
     store: Optional[bool]
     """
     Whether or not to store the output of this chat completion request for use in
-    our [model distillation](https://platform.openai.com/docs/guides/distillation)
-    or [evals](https://platform.openai.com/docs/guides/evals) products. Supports
-    text and image inputs. Note: image inputs over 8MB will be dropped.
+    our [model distillation](/docs/guides/distillation) or
+    [evals](/docs/guides/evals) products. Supports text and image inputs. Note:
+    image inputs over 8MB will be dropped.
     """
 
     stream_options: Optional["JSONObjectInput"]
@@ -327,7 +364,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     tool_config: Optional["JSONObjectInput"]
     """Tool calling configuration (Google-specific)"""
 
-    tools: Optional[Iterable[Tool]]
+    tools: Optional[Iterable[ChatCompletionToolParam]]
     """Available tools/functions for the model"""
 
     top_k: Optional[int]
@@ -349,7 +386,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     Use `prompt_cache_key` instead to maintain caching optimizations. A stable
     identifier for your end-users. Used to boost cache hit rates by better bucketing
     similar requests and to help OpenAI detect and prevent abuse.
-    [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#safety-identifiers).
+    [Learn more](/docs/guides/safety-best-practices#safety-identifiers).
     """
 
     verbosity: Optional[str]
@@ -364,7 +401,7 @@ class CompletionCreateParamsBase(TypedDict, total=False):
     """This tool searches the web for relevant results to use in a response.
 
     Learn more about the
-    [web search tool](https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat).
+    [web search tool](/docs/guides/tools-web-search?api-mode=chat).
     """
 
 
@@ -383,7 +420,7 @@ Message: TypeAlias = Union[
     ChatCompletionFunctionMessageParam,
 ]
 
-ResponseFormat: TypeAlias = Union[ResponseFormatText, "ResponseFormatJSONSchema", ResponseFormatJSONObject]
+ResponseFormat: TypeAlias = Union[ResponseFormatText, ResponseFormatJSONSchema, ResponseFormatJSONObject]
 
 
 class SafetySetting(TypedDict, total=False):
@@ -393,8 +430,8 @@ class SafetySetting(TypedDict, total=False):
     content is blocked.
 
     Fields:
-    - category (required): HarmCategory
     - threshold (required): Literal["HARM_BLOCK_THRESHOLD_UNSPECIFIED", "BLOCK_LOW_AND_ABOVE", "BLOCK_MEDIUM_AND_ABOVE", "BLOCK_ONLY_HIGH", "BLOCK_NONE", "OFF"]
+    - category (required): HarmCategory
     """
 
     category: Required[
@@ -428,92 +465,19 @@ class SafetySetting(TypedDict, total=False):
     """Required. Controls the probability threshold at which harm is blocked."""
 
 
-Thinking: TypeAlias = Union[ThinkingConfigEnabledParam, ThinkingConfigDisabledParam]
-
-ToolChoice: TypeAlias = Union[ToolChoiceAutoParam, ToolChoiceAnyParam, ToolChoiceToolParam, ToolChoiceNoneParam]
-
-
-class ToolCustomToolChatCompletionsCustomFormatTextFormat(TypedDict, total=False):
-    """Unconstrained free-form text.
+class ThinkingThinkingConfigAdaptive(TypedDict, total=False):
+    """Schema for ThinkingConfigAdaptive.
 
     Fields:
-    - type (required): Literal["text"]
+    - type (required): Literal["adaptive"]
     """
 
-    type: Required[Literal["text"]]
-    """Unconstrained text format. Always `text`."""
+    type: Required[Literal["adaptive"]]
 
 
-class ToolCustomToolChatCompletionsCustomFormatGrammarFormatGrammar(TypedDict, total=False):
-    """Your chosen grammar.
+Thinking: TypeAlias = Union[ThinkingConfigEnabledParam, ThinkingConfigDisabledParam, ThinkingThinkingConfigAdaptive]
 
-    Fields:
-    - definition (required): str
-    - syntax (required): Literal["lark", "regex"]
-    """
-
-    definition: Required[str]
-    """The grammar definition."""
-
-    syntax: Required[Literal["lark", "regex"]]
-    """The syntax of the grammar definition. One of `lark` or `regex`."""
-
-
-class ToolCustomToolChatCompletionsCustomFormatGrammarFormat(TypedDict, total=False):
-    """A grammar defined by the user.
-
-    Fields:
-    - type (required): Literal["grammar"]
-    - grammar (required): GrammarFormatGrammarFormat
-    """
-
-    grammar: Required[ToolCustomToolChatCompletionsCustomFormatGrammarFormatGrammar]
-    """Your chosen grammar.
-
-    Fields:
-
-    - definition (required): str
-    - syntax (required): Literal["lark", "regex"]
-    """
-
-    type: Required[Literal["grammar"]]
-    """Grammar format. Always `grammar`."""
-
-
-ToolCustomToolChatCompletionsCustomFormat: TypeAlias = Union[
-    ToolCustomToolChatCompletionsCustomFormatTextFormat, ToolCustomToolChatCompletionsCustomFormatGrammarFormat
-]
-
-
-class ToolCustomToolChatCompletionsCustom(TypedDict, total=False):
-    """Properties of the custom tool."""
-
-    name: Required[str]
-    """The name of the custom tool, used to identify it in tool calls."""
-
-    description: str
-    """Optional description of the custom tool, used to provide more context."""
-
-    format: ToolCustomToolChatCompletionsCustomFormat
-    """The input format for the custom tool. Default is unconstrained text."""
-
-
-class ToolCustomToolChatCompletions(TypedDict, total=False):
-    """A custom tool that processes input using a specified format.
-
-    Fields:
-    - type (required): Literal["custom"]
-    - custom (required): CustomToolProperties
-    """
-
-    custom: Required[ToolCustomToolChatCompletionsCustom]
-    """Properties of the custom tool."""
-
-    type: Required[Literal["custom"]]
-    """The type of the custom tool. Always `custom`."""
-
-
-Tool: TypeAlias = Union["ChatCompletionToolParam", ToolCustomToolChatCompletions]
+ToolChoice: TypeAlias = Union[str, ToolChoiceAutoParam, ToolChoiceAnyParam, ToolChoiceToolParam, ToolChoiceNoneParam]
 
 
 class CompletionCreateParamsNonStreaming(CompletionCreateParamsBase, total=False):
@@ -528,9 +492,7 @@ class CompletionCreateParamsStreaming(CompletionCreateParamsBase):
 
 CompletionCreateParams = Union[CompletionCreateParamsNonStreaming, CompletionCreateParamsStreaming]
 
-from .chat_completion_tool_param import ChatCompletionToolParam
 from ..shared_params.dedalus_model import DedalusModel
-from .chat_completion_functions_param import ChatCompletionFunctionsParam
+from .deferred_call_response_param import DeferredCallResponseParam
 from ..shared_params.json_object_input import JSONObjectInput
 from ..shared_params.dedalus_model_choice import DedalusModelChoice
-from ..shared_params.response_format_json_schema import ResponseFormatJSONSchema

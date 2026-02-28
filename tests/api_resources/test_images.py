@@ -17,7 +17,7 @@ base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 class TestImages:
     parametrize = pytest.mark.parametrize("client", [False, True], indirect=True, ids=["loose", "strict"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_create_variation(self, client: Dedalus) -> None:
         image = client.images.create_variation(
@@ -25,7 +25,7 @@ class TestImages:
         )
         assert_matches_type(ImagesResponse, image, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_create_variation_with_all_params(self, client: Dedalus) -> None:
         image = client.images.create_variation(
@@ -38,7 +38,7 @@ class TestImages:
         )
         assert_matches_type(ImagesResponse, image, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_raw_response_create_variation(self, client: Dedalus) -> None:
         response = client.images.with_raw_response.create_variation(
@@ -50,7 +50,7 @@ class TestImages:
         image = response.parse()
         assert_matches_type(ImagesResponse, image, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_streaming_response_create_variation(self, client: Dedalus) -> None:
         with client.images.with_streaming_response.create_variation(
@@ -64,7 +64,7 @@ class TestImages:
 
         assert cast(Any, response.is_closed) is True
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_edit(self, client: Dedalus) -> None:
         image = client.images.edit(
@@ -73,7 +73,7 @@ class TestImages:
         )
         assert_matches_type(ImagesResponse, image, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_edit_with_all_params(self, client: Dedalus) -> None:
         image = client.images.edit(
@@ -88,7 +88,7 @@ class TestImages:
         )
         assert_matches_type(ImagesResponse, image, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_raw_response_edit(self, client: Dedalus) -> None:
         response = client.images.with_raw_response.edit(
@@ -101,7 +101,7 @@ class TestImages:
         image = response.parse()
         assert_matches_type(ImagesResponse, image, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_streaming_response_edit(self, client: Dedalus) -> None:
         with client.images.with_streaming_response.edit(
@@ -116,7 +116,7 @@ class TestImages:
 
         assert cast(Any, response.is_closed) is True
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_generate(self, client: Dedalus) -> None:
         image = client.images.generate(
@@ -124,7 +124,7 @@ class TestImages:
         )
         assert_matches_type(ImagesResponse, image, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_generate_with_all_params(self, client: Dedalus) -> None:
         image = client.images.generate(
@@ -145,7 +145,7 @@ class TestImages:
         )
         assert_matches_type(ImagesResponse, image, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_raw_response_generate(self, client: Dedalus) -> None:
         response = client.images.with_raw_response.generate(
@@ -157,7 +157,7 @@ class TestImages:
         image = response.parse()
         assert_matches_type(ImagesResponse, image, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_streaming_response_generate(self, client: Dedalus) -> None:
         with client.images.with_streaming_response.generate(
@@ -177,7 +177,7 @@ class TestAsyncImages:
         "async_client", [False, True, {"http_client": "aiohttp"}], indirect=True, ids=["loose", "strict", "aiohttp"]
     )
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_create_variation(self, async_client: AsyncDedalus) -> None:
         image = await async_client.images.create_variation(
@@ -185,7 +185,7 @@ class TestAsyncImages:
         )
         assert_matches_type(ImagesResponse, image, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_create_variation_with_all_params(self, async_client: AsyncDedalus) -> None:
         image = await async_client.images.create_variation(
@@ -198,7 +198,7 @@ class TestAsyncImages:
         )
         assert_matches_type(ImagesResponse, image, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_raw_response_create_variation(self, async_client: AsyncDedalus) -> None:
         response = await async_client.images.with_raw_response.create_variation(
@@ -210,7 +210,7 @@ class TestAsyncImages:
         image = await response.parse()
         assert_matches_type(ImagesResponse, image, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_streaming_response_create_variation(self, async_client: AsyncDedalus) -> None:
         async with async_client.images.with_streaming_response.create_variation(
@@ -224,7 +224,7 @@ class TestAsyncImages:
 
         assert cast(Any, response.is_closed) is True
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_edit(self, async_client: AsyncDedalus) -> None:
         image = await async_client.images.edit(
@@ -233,7 +233,7 @@ class TestAsyncImages:
         )
         assert_matches_type(ImagesResponse, image, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_edit_with_all_params(self, async_client: AsyncDedalus) -> None:
         image = await async_client.images.edit(
@@ -248,7 +248,7 @@ class TestAsyncImages:
         )
         assert_matches_type(ImagesResponse, image, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_raw_response_edit(self, async_client: AsyncDedalus) -> None:
         response = await async_client.images.with_raw_response.edit(
@@ -261,7 +261,7 @@ class TestAsyncImages:
         image = await response.parse()
         assert_matches_type(ImagesResponse, image, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_streaming_response_edit(self, async_client: AsyncDedalus) -> None:
         async with async_client.images.with_streaming_response.edit(
@@ -276,7 +276,7 @@ class TestAsyncImages:
 
         assert cast(Any, response.is_closed) is True
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_generate(self, async_client: AsyncDedalus) -> None:
         image = await async_client.images.generate(
@@ -284,7 +284,7 @@ class TestAsyncImages:
         )
         assert_matches_type(ImagesResponse, image, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_generate_with_all_params(self, async_client: AsyncDedalus) -> None:
         image = await async_client.images.generate(
@@ -305,7 +305,7 @@ class TestAsyncImages:
         )
         assert_matches_type(ImagesResponse, image, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_raw_response_generate(self, async_client: AsyncDedalus) -> None:
         response = await async_client.images.with_raw_response.generate(
@@ -317,7 +317,7 @@ class TestAsyncImages:
         image = await response.parse()
         assert_matches_type(ImagesResponse, image, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_streaming_response_generate(self, async_client: AsyncDedalus) -> None:
         async with async_client.images.with_streaming_response.generate(

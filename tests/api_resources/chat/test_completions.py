@@ -19,7 +19,7 @@ base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 class TestCompletions:
     parametrize = pytest.mark.parametrize("client", [False, True], indirect=True, ids=["loose", "strict"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_create_overload_1(self, client: Dedalus) -> None:
         completion = client.chat.completions.create(
@@ -27,7 +27,7 @@ class TestCompletions:
         )
         assert_matches_type(ChatCompletion, completion, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_create_with_all_params_overload_1(self, client: Dedalus) -> None:
         completion = client.chat.completions.create(
@@ -42,23 +42,36 @@ class TestCompletions:
             },
             automatic_tool_execution=True,
             cached_content="cached_content",
+            correlation_id="correlation_id",
             credentials={
                 "connection_name": "external-service",
                 "values": {"api_key": "sk-..."},
             },
             deferred=True,
+            deferred_calls=[
+                {
+                    "id": "id",
+                    "name": "name",
+                    "arguments": {"foo": "string"},
+                    "blocked_by": ["string"],
+                    "dependencies": ["string"],
+                    "venue": "venue",
+                }
+            ],
             frequency_penalty=-2,
             function_call="function_call",
             functions=[
                 {
                     "name": "name",
                     "description": "description",
-                    "parameters": {"foo": "string"},
+                    "parameters": {"foo": "bar"},
                 }
             ],
             generation_config={"foo": "string"},
             guardrails=[{"foo": "bar"}],
             handoff_config={"foo": "bar"},
+            handoff_mode=True,
+            inference_geo="inference_geo",
             logit_bias={"foo": 0},
             logprobs=True,
             max_completion_tokens=0,
@@ -81,6 +94,7 @@ class TestCompletions:
                 }
             },
             n=1,
+            output_config={"foo": "string"},
             parallel_tool_calls=True,
             prediction={
                 "content": "string",
@@ -103,6 +117,7 @@ class TestCompletions:
             search_parameters={"foo": "string"},
             seed=0,
             service_tier="service_tier",
+            speed="standard",
             stop=["string"],
             store=True,
             stream=False,
@@ -113,19 +128,11 @@ class TestCompletions:
                 "budget_tokens": 1024,
                 "type": "enabled",
             },
-            tool_choice={
-                "type": "auto",
-                "disable_parallel_tool_use": True,
-            },
+            tool_choice="string",
             tool_config={"foo": "string"},
             tools=[
                 {
-                    "function": {
-                        "name": "name",
-                        "description": "description",
-                        "parameters": {"foo": "string"},
-                        "strict": True,
-                    },
+                    "function": {"name": "name"},
                     "type": "function",
                 }
             ],
@@ -138,7 +145,7 @@ class TestCompletions:
         )
         assert_matches_type(ChatCompletion, completion, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_raw_response_create_overload_1(self, client: Dedalus) -> None:
         response = client.chat.completions.with_raw_response.create(
@@ -150,7 +157,7 @@ class TestCompletions:
         completion = response.parse()
         assert_matches_type(ChatCompletion, completion, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_streaming_response_create_overload_1(self, client: Dedalus) -> None:
         with client.chat.completions.with_streaming_response.create(
@@ -164,7 +171,7 @@ class TestCompletions:
 
         assert cast(Any, response.is_closed) is True
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_create_overload_2(self, client: Dedalus) -> None:
         completion_stream = client.chat.completions.create(
@@ -173,7 +180,7 @@ class TestCompletions:
         )
         completion_stream.response.close()
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_create_with_all_params_overload_2(self, client: Dedalus) -> None:
         completion_stream = client.chat.completions.create(
@@ -189,23 +196,36 @@ class TestCompletions:
             },
             automatic_tool_execution=True,
             cached_content="cached_content",
+            correlation_id="correlation_id",
             credentials={
                 "connection_name": "external-service",
                 "values": {"api_key": "sk-..."},
             },
             deferred=True,
+            deferred_calls=[
+                {
+                    "id": "id",
+                    "name": "name",
+                    "arguments": {"foo": "string"},
+                    "blocked_by": ["string"],
+                    "dependencies": ["string"],
+                    "venue": "venue",
+                }
+            ],
             frequency_penalty=-2,
             function_call="function_call",
             functions=[
                 {
                     "name": "name",
                     "description": "description",
-                    "parameters": {"foo": "string"},
+                    "parameters": {"foo": "bar"},
                 }
             ],
             generation_config={"foo": "string"},
             guardrails=[{"foo": "bar"}],
             handoff_config={"foo": "bar"},
+            handoff_mode=True,
+            inference_geo="inference_geo",
             logit_bias={"foo": 0},
             logprobs=True,
             max_completion_tokens=0,
@@ -228,6 +248,7 @@ class TestCompletions:
                 }
             },
             n=1,
+            output_config={"foo": "string"},
             parallel_tool_calls=True,
             prediction={
                 "content": "string",
@@ -250,6 +271,7 @@ class TestCompletions:
             search_parameters={"foo": "string"},
             seed=0,
             service_tier="service_tier",
+            speed="standard",
             stop=["string"],
             store=True,
             stream_options={"foo": "string"},
@@ -259,19 +281,11 @@ class TestCompletions:
                 "budget_tokens": 1024,
                 "type": "enabled",
             },
-            tool_choice={
-                "type": "auto",
-                "disable_parallel_tool_use": True,
-            },
+            tool_choice="string",
             tool_config={"foo": "string"},
             tools=[
                 {
-                    "function": {
-                        "name": "name",
-                        "description": "description",
-                        "parameters": {"foo": "string"},
-                        "strict": True,
-                    },
+                    "function": {"name": "name"},
                     "type": "function",
                 }
             ],
@@ -284,7 +298,7 @@ class TestCompletions:
         )
         completion_stream.response.close()
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_raw_response_create_overload_2(self, client: Dedalus) -> None:
         response = client.chat.completions.with_raw_response.create(
@@ -296,7 +310,7 @@ class TestCompletions:
         stream = response.parse()
         stream.close()
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_streaming_response_create_overload_2(self, client: Dedalus) -> None:
         with client.chat.completions.with_streaming_response.create(
@@ -317,7 +331,7 @@ class TestAsyncCompletions:
         "async_client", [False, True, {"http_client": "aiohttp"}], indirect=True, ids=["loose", "strict", "aiohttp"]
     )
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_create_overload_1(self, async_client: AsyncDedalus) -> None:
         completion = await async_client.chat.completions.create(
@@ -325,7 +339,7 @@ class TestAsyncCompletions:
         )
         assert_matches_type(ChatCompletion, completion, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_create_with_all_params_overload_1(self, async_client: AsyncDedalus) -> None:
         completion = await async_client.chat.completions.create(
@@ -340,23 +354,36 @@ class TestAsyncCompletions:
             },
             automatic_tool_execution=True,
             cached_content="cached_content",
+            correlation_id="correlation_id",
             credentials={
                 "connection_name": "external-service",
                 "values": {"api_key": "sk-..."},
             },
             deferred=True,
+            deferred_calls=[
+                {
+                    "id": "id",
+                    "name": "name",
+                    "arguments": {"foo": "string"},
+                    "blocked_by": ["string"],
+                    "dependencies": ["string"],
+                    "venue": "venue",
+                }
+            ],
             frequency_penalty=-2,
             function_call="function_call",
             functions=[
                 {
                     "name": "name",
                     "description": "description",
-                    "parameters": {"foo": "string"},
+                    "parameters": {"foo": "bar"},
                 }
             ],
             generation_config={"foo": "string"},
             guardrails=[{"foo": "bar"}],
             handoff_config={"foo": "bar"},
+            handoff_mode=True,
+            inference_geo="inference_geo",
             logit_bias={"foo": 0},
             logprobs=True,
             max_completion_tokens=0,
@@ -379,6 +406,7 @@ class TestAsyncCompletions:
                 }
             },
             n=1,
+            output_config={"foo": "string"},
             parallel_tool_calls=True,
             prediction={
                 "content": "string",
@@ -401,6 +429,7 @@ class TestAsyncCompletions:
             search_parameters={"foo": "string"},
             seed=0,
             service_tier="service_tier",
+            speed="standard",
             stop=["string"],
             store=True,
             stream=False,
@@ -411,19 +440,11 @@ class TestAsyncCompletions:
                 "budget_tokens": 1024,
                 "type": "enabled",
             },
-            tool_choice={
-                "type": "auto",
-                "disable_parallel_tool_use": True,
-            },
+            tool_choice="string",
             tool_config={"foo": "string"},
             tools=[
                 {
-                    "function": {
-                        "name": "name",
-                        "description": "description",
-                        "parameters": {"foo": "string"},
-                        "strict": True,
-                    },
+                    "function": {"name": "name"},
                     "type": "function",
                 }
             ],
@@ -436,7 +457,7 @@ class TestAsyncCompletions:
         )
         assert_matches_type(ChatCompletion, completion, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_raw_response_create_overload_1(self, async_client: AsyncDedalus) -> None:
         response = await async_client.chat.completions.with_raw_response.create(
@@ -448,7 +469,7 @@ class TestAsyncCompletions:
         completion = await response.parse()
         assert_matches_type(ChatCompletion, completion, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_streaming_response_create_overload_1(self, async_client: AsyncDedalus) -> None:
         async with async_client.chat.completions.with_streaming_response.create(
@@ -462,7 +483,7 @@ class TestAsyncCompletions:
 
         assert cast(Any, response.is_closed) is True
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_create_overload_2(self, async_client: AsyncDedalus) -> None:
         completion_stream = await async_client.chat.completions.create(
@@ -471,7 +492,7 @@ class TestAsyncCompletions:
         )
         await completion_stream.response.aclose()
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_create_with_all_params_overload_2(self, async_client: AsyncDedalus) -> None:
         completion_stream = await async_client.chat.completions.create(
@@ -487,23 +508,36 @@ class TestAsyncCompletions:
             },
             automatic_tool_execution=True,
             cached_content="cached_content",
+            correlation_id="correlation_id",
             credentials={
                 "connection_name": "external-service",
                 "values": {"api_key": "sk-..."},
             },
             deferred=True,
+            deferred_calls=[
+                {
+                    "id": "id",
+                    "name": "name",
+                    "arguments": {"foo": "string"},
+                    "blocked_by": ["string"],
+                    "dependencies": ["string"],
+                    "venue": "venue",
+                }
+            ],
             frequency_penalty=-2,
             function_call="function_call",
             functions=[
                 {
                     "name": "name",
                     "description": "description",
-                    "parameters": {"foo": "string"},
+                    "parameters": {"foo": "bar"},
                 }
             ],
             generation_config={"foo": "string"},
             guardrails=[{"foo": "bar"}],
             handoff_config={"foo": "bar"},
+            handoff_mode=True,
+            inference_geo="inference_geo",
             logit_bias={"foo": 0},
             logprobs=True,
             max_completion_tokens=0,
@@ -526,6 +560,7 @@ class TestAsyncCompletions:
                 }
             },
             n=1,
+            output_config={"foo": "string"},
             parallel_tool_calls=True,
             prediction={
                 "content": "string",
@@ -548,6 +583,7 @@ class TestAsyncCompletions:
             search_parameters={"foo": "string"},
             seed=0,
             service_tier="service_tier",
+            speed="standard",
             stop=["string"],
             store=True,
             stream_options={"foo": "string"},
@@ -557,19 +593,11 @@ class TestAsyncCompletions:
                 "budget_tokens": 1024,
                 "type": "enabled",
             },
-            tool_choice={
-                "type": "auto",
-                "disable_parallel_tool_use": True,
-            },
+            tool_choice="string",
             tool_config={"foo": "string"},
             tools=[
                 {
-                    "function": {
-                        "name": "name",
-                        "description": "description",
-                        "parameters": {"foo": "string"},
-                        "strict": True,
-                    },
+                    "function": {"name": "name"},
                     "type": "function",
                 }
             ],
@@ -582,7 +610,7 @@ class TestAsyncCompletions:
         )
         await completion_stream.response.aclose()
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_raw_response_create_overload_2(self, async_client: AsyncDedalus) -> None:
         response = await async_client.chat.completions.with_raw_response.create(
@@ -594,7 +622,7 @@ class TestAsyncCompletions:
         stream = await response.parse()
         await stream.close()
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_streaming_response_create_overload_2(self, async_client: AsyncDedalus) -> None:
         async with async_client.chat.completions.with_streaming_response.create(

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Dict, Optional
 from typing_extensions import Literal, Required, TypedDict
 
 __all__ = ["ResponseFormatJSONSchema", "JSONSchema"]
@@ -24,7 +24,7 @@ class JSONSchema(TypedDict, total=False):
     how to respond in the format.
     """
 
-    schema: "JSONObjectInput"
+    schema: Dict[str, object]
     """
     The schema for the response format, described as a JSON Schema object. Learn how
     to build JSON schemas [here](https://json-schema.org/).
@@ -36,7 +36,7 @@ class JSONSchema(TypedDict, total=False):
     true, the model will always follow the exact schema defined in the `schema`
     field. Only a subset of JSON Schema is supported when `strict` is `true`. To
     learn more, read the
-    [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
+    [Structured Outputs guide](/docs/guides/structured-outputs).
     """
 
 
@@ -44,7 +44,7 @@ class ResponseFormatJSONSchema(TypedDict, total=False):
     """JSON Schema response format.
 
     Used to generate structured JSON responses.
-    Learn more about [Structured Outputs](https://platform.openai.com/docs/guides/structured-outputs).
+    Learn more about [Structured Outputs](/docs/guides/structured-outputs).
 
     Fields:
     - type (required): Literal["json_schema"]
@@ -56,6 +56,3 @@ class ResponseFormatJSONSchema(TypedDict, total=False):
 
     type: Required[Literal["json_schema"]]
     """The type of response format being defined. Always `json_schema`."""
-
-
-from .json_object_input import JSONObjectInput

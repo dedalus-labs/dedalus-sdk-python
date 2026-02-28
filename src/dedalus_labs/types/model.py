@@ -72,7 +72,9 @@ class Model(BaseModel):
     created_at: datetime
     """When the model was released (RFC 3339)"""
 
-    provider: Literal["openai", "anthropic", "google", "xai", "mistral", "groq", "fireworks", "deepseek"]
+    provider: Literal[
+        "openai", "anthropic", "google", "xai", "mistral", "groq", "fireworks", "deepseek", "moonshot", "cerebras"
+    ]
     """Provider that hosts this model"""
 
     capabilities: Optional[Capabilities] = None

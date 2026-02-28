@@ -2,12 +2,18 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Union
 from typing_extensions import TypeAliasType
+
+from ... import _compat
 
 __all__ = ["JSONValueInput"]
 
-JSONValueInput = TypeAliasType(
-    "JSONValueInput",
-    Union[str, float, bool, Dict[str, Optional["JSONValueInput"]], List[Optional["JSONValueInput"]], None],
-)
+if _compat.PYDANTIC_V1:
+    # Pydantic v1 does not support recursive TypeAliasType.
+    JSONValueInput = Union[str, float, bool, Dict[str, object], List[object], None]
+else:
+    JSONValueInput = TypeAliasType(
+        "JSONValueInput",
+        Union[str, float, bool, Dict[str, "JSONValueInput"], List["JSONValueInput"], None],
+    )

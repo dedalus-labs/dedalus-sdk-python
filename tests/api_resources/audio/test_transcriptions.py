@@ -17,7 +17,7 @@ base_url = os.environ.get("TEST_API_BASE_URL", "http://127.0.0.1:4010")
 class TestTranscriptions:
     parametrize = pytest.mark.parametrize("client", [False, True], indirect=True, ids=["loose", "strict"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_create(self, client: Dedalus) -> None:
         transcription = client.audio.transcriptions.create(
@@ -26,7 +26,7 @@ class TestTranscriptions:
         )
         assert_matches_type(TranscriptionCreateResponse, transcription, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_method_create_with_all_params(self, client: Dedalus) -> None:
         transcription = client.audio.transcriptions.create(
@@ -39,7 +39,7 @@ class TestTranscriptions:
         )
         assert_matches_type(TranscriptionCreateResponse, transcription, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_raw_response_create(self, client: Dedalus) -> None:
         response = client.audio.transcriptions.with_raw_response.create(
@@ -52,7 +52,7 @@ class TestTranscriptions:
         transcription = response.parse()
         assert_matches_type(TranscriptionCreateResponse, transcription, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     def test_streaming_response_create(self, client: Dedalus) -> None:
         with client.audio.transcriptions.with_streaming_response.create(
@@ -73,7 +73,7 @@ class TestAsyncTranscriptions:
         "async_client", [False, True, {"http_client": "aiohttp"}], indirect=True, ids=["loose", "strict", "aiohttp"]
     )
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_create(self, async_client: AsyncDedalus) -> None:
         transcription = await async_client.audio.transcriptions.create(
@@ -82,7 +82,7 @@ class TestAsyncTranscriptions:
         )
         assert_matches_type(TranscriptionCreateResponse, transcription, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_method_create_with_all_params(self, async_client: AsyncDedalus) -> None:
         transcription = await async_client.audio.transcriptions.create(
@@ -95,7 +95,7 @@ class TestAsyncTranscriptions:
         )
         assert_matches_type(TranscriptionCreateResponse, transcription, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_raw_response_create(self, async_client: AsyncDedalus) -> None:
         response = await async_client.audio.transcriptions.with_raw_response.create(
@@ -108,7 +108,7 @@ class TestAsyncTranscriptions:
         transcription = await response.parse()
         assert_matches_type(TranscriptionCreateResponse, transcription, path=["response"])
 
-    @pytest.mark.skip(reason="Prism tests are disabled")
+    @pytest.mark.skip(reason="Mock server tests are disabled")
     @parametrize
     async def test_streaming_response_create(self, async_client: AsyncDedalus) -> None:
         async with async_client.audio.transcriptions.with_streaming_response.create(
