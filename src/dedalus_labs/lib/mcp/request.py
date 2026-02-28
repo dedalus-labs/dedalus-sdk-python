@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from dedalus_labs.types.shared_params.mcp_servers import MCPServerItem
 from dedalus_labs.types.shared_params.mcp_server_spec import MCPServerSpec
 
-from .wire import serialize_mcp_servers
+from .wire import serialize_mcp_servers, slug_to_connection_name
 from ..crypto import encrypt_credentials, fetch_encryption_key, fetch_encryption_key_sync
 from .protocols import CredentialProtocol
 
@@ -161,35 +161,46 @@ def _encrypt_credentials(
     return EncryptedCredentials(**encrypted)
 
 
+def _credentials_for_server(
+    name: str,
+    all_creds: Dict[str, str],
+) -> Optional[Dict[str, str]]:
+    """Return the subset of *all_creds* that belongs to *name*, or None."""
+    conn = slug_to_connection_name(name)
+    blob = all_creds.get(conn)
+    return {conn: blob} if blob is not None else None
+
+
 def _embed_credentials(
     servers: List[MCPServerItem],
     encrypted: EncryptedCredentials,
 ) -> List[MCPServerSpec]:
     """Embed encrypted credentials into each server spec.
 
-    Converts slug strings to full specs and adds credentials to all servers.
+    Each server receives only its own credentials, matched by connection name
+    via :func:`~dedalus_labs.lib.mcp.wire.slug_to_connection_name`.
 
     Args:
         servers: Serialized MCP servers (slug strings or spec dicts).
         encrypted: EncryptedCredentials instance.
 
     Returns:
-        List of MCPServerSpec dicts with credentials embedded.
+        List of MCPServerSpec dicts with per-server credentials embedded.
 
     """
-    creds_dict = encrypted.to_dict()
+    all_creds = encrypted.to_dict()
     result: List[MCPServerSpec] = []
 
     for server in servers:
         if isinstance(server, str):
+            creds = _credentials_for_server(server, all_creds)
             if server.startswith(("http://", "https://")):
-                result.append({"url": server, "name": server, "credentials": creds_dict})
+                result.append({"url": server, "name": server, "credentials": creds})
             else:
-                result.append({"slug": server, "name": server, "credentials": creds_dict})
+                result.append({"slug": server, "name": server, "credentials": creds})
         elif isinstance(server, dict):
-            # Existing spec -> add name (if missing) and credentials
             name = server.get("name") or server.get("slug") or server.get("url") or ""
-            spec: MCPServerSpec = {**server, "name": name, "credentials": creds_dict}
-            result.append(spec)
+            creds = _credentials_for_server(name, all_creds)
+            result.append({**server, "name": name, "credentials": creds})
 
     return result
