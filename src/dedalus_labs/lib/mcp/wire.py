@@ -11,10 +11,10 @@ Converts MCPServer objects and various input formats to the API wire format.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union, cast
-
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from typing import Any, Dict, List, Tuple, Union, Optional, Sequence, cast
 from typing_extensions import TypeAlias
+
+from pydantic import Field, BaseModel, ConfigDict, field_validator, model_validator
 
 from .protocols import MCPServerProtocol, CredentialProtocol, is_mcp_server
 
