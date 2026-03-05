@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Dict, Union, Optional
-from typing_extensions import Literal, TypeAlias, TypedDict
+from typing import Optional
+from typing_extensions import Literal, TypedDict
 
 __all__ = ["Reasoning"]
 
 
-class ReasoningTyped(TypedDict, total=False):
+class Reasoning(TypedDict, total=False, extra_items=object):  # type: ignore[call-arg]
     """**gpt-5 and o-series models only**
 
     Configuration options for
@@ -20,6 +20,3 @@ class ReasoningTyped(TypedDict, total=False):
     generate_summary: Optional[Literal["auto", "concise", "detailed"]]
 
     summary: Optional[Literal["auto", "concise", "detailed"]]
-
-
-Reasoning: TypeAlias = Union[ReasoningTyped, Dict[str, object]]
