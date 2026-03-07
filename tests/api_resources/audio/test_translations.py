@@ -21,7 +21,7 @@ class TestTranslations:
     @parametrize
     def test_method_create(self, client: Dedalus) -> None:
         translation = client.audio.translations.create(
-            file=b"raw file contents",
+            file=b"Example data",
             model="model",
         )
         assert_matches_type(TranslationCreateResponse, translation, path=["response"])
@@ -30,7 +30,7 @@ class TestTranslations:
     @parametrize
     def test_method_create_with_all_params(self, client: Dedalus) -> None:
         translation = client.audio.translations.create(
-            file=b"raw file contents",
+            file=b"Example data",
             model="model",
             prompt="prompt",
             response_format="response_format",
@@ -42,7 +42,7 @@ class TestTranslations:
     @parametrize
     def test_raw_response_create(self, client: Dedalus) -> None:
         response = client.audio.translations.with_raw_response.create(
-            file=b"raw file contents",
+            file=b"Example data",
             model="model",
         )
 
@@ -55,7 +55,7 @@ class TestTranslations:
     @parametrize
     def test_streaming_response_create(self, client: Dedalus) -> None:
         with client.audio.translations.with_streaming_response.create(
-            file=b"raw file contents",
+            file=b"Example data",
             model="model",
         ) as response:
             assert not response.is_closed
@@ -76,7 +76,7 @@ class TestAsyncTranslations:
     @parametrize
     async def test_method_create(self, async_client: AsyncDedalus) -> None:
         translation = await async_client.audio.translations.create(
-            file=b"raw file contents",
+            file=b"Example data",
             model="model",
         )
         assert_matches_type(TranslationCreateResponse, translation, path=["response"])
@@ -85,7 +85,7 @@ class TestAsyncTranslations:
     @parametrize
     async def test_method_create_with_all_params(self, async_client: AsyncDedalus) -> None:
         translation = await async_client.audio.translations.create(
-            file=b"raw file contents",
+            file=b"Example data",
             model="model",
             prompt="prompt",
             response_format="response_format",
@@ -97,7 +97,7 @@ class TestAsyncTranslations:
     @parametrize
     async def test_raw_response_create(self, async_client: AsyncDedalus) -> None:
         response = await async_client.audio.translations.with_raw_response.create(
-            file=b"raw file contents",
+            file=b"Example data",
             model="model",
         )
 
@@ -110,7 +110,7 @@ class TestAsyncTranslations:
     @parametrize
     async def test_streaming_response_create(self, async_client: AsyncDedalus) -> None:
         async with async_client.audio.translations.with_streaming_response.create(
-            file=b"raw file contents",
+            file=b"Example data",
             model="model",
         ) as response:
             assert not response.is_closed
