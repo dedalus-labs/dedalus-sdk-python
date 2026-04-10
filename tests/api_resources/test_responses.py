@@ -56,9 +56,9 @@ class TestResponses:
             service_tier="auto",
             store=True,
             stream=True,
-            stream_options={"foo": "string"},
+            stream_options={"include_usage": True},
             temperature=0,
-            text={"foo": "string"},
+            text={"type": "text"},
             tool_choice="auto",
             tools=[
                 {
@@ -144,9 +144,9 @@ class TestAsyncResponses:
             service_tier="auto",
             store=True,
             stream=True,
-            stream_options={"foo": "string"},
+            stream_options={"include_usage": True},
             temperature=0,
-            text={"foo": "string"},
+            text={"type": "text"},
             tool_choice="auto",
             tools=[
                 {
