@@ -22,7 +22,7 @@ class TestEmbeddings:
     def test_method_create(self, client: Dedalus) -> None:
         embedding = client.embeddings.create(
             input="string",
-            model="string",
+            model="text-embedding-ada-002",
         )
         assert_matches_type(CreateEmbeddingResponse, embedding, path=["response"])
 
@@ -31,7 +31,7 @@ class TestEmbeddings:
     def test_method_create_with_all_params(self, client: Dedalus) -> None:
         embedding = client.embeddings.create(
             input="string",
-            model="string",
+            model="text-embedding-ada-002",
             dimensions=1,
             encoding_format="float",
             user="user",
@@ -43,7 +43,7 @@ class TestEmbeddings:
     def test_raw_response_create(self, client: Dedalus) -> None:
         response = client.embeddings.with_raw_response.create(
             input="string",
-            model="string",
+            model="text-embedding-ada-002",
         )
 
         assert response.is_closed is True
@@ -56,7 +56,7 @@ class TestEmbeddings:
     def test_streaming_response_create(self, client: Dedalus) -> None:
         with client.embeddings.with_streaming_response.create(
             input="string",
-            model="string",
+            model="text-embedding-ada-002",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
@@ -77,7 +77,7 @@ class TestAsyncEmbeddings:
     async def test_method_create(self, async_client: AsyncDedalus) -> None:
         embedding = await async_client.embeddings.create(
             input="string",
-            model="string",
+            model="text-embedding-ada-002",
         )
         assert_matches_type(CreateEmbeddingResponse, embedding, path=["response"])
 
@@ -86,7 +86,7 @@ class TestAsyncEmbeddings:
     async def test_method_create_with_all_params(self, async_client: AsyncDedalus) -> None:
         embedding = await async_client.embeddings.create(
             input="string",
-            model="string",
+            model="text-embedding-ada-002",
             dimensions=1,
             encoding_format="float",
             user="user",
@@ -98,7 +98,7 @@ class TestAsyncEmbeddings:
     async def test_raw_response_create(self, async_client: AsyncDedalus) -> None:
         response = await async_client.embeddings.with_raw_response.create(
             input="string",
-            model="string",
+            model="text-embedding-ada-002",
         )
 
         assert response.is_closed is True
@@ -111,7 +111,7 @@ class TestAsyncEmbeddings:
     async def test_streaming_response_create(self, async_client: AsyncDedalus) -> None:
         async with async_client.embeddings.with_streaming_response.create(
             input="string",
-            model="string",
+            model="text-embedding-ada-002",
         ) as response:
             assert not response.is_closed
             assert response.http_request.headers.get("X-Stainless-Lang") == "python"
