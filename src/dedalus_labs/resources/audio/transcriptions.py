@@ -6,8 +6,9 @@ from typing import Any, Mapping, Optional, cast
 
 import httpx
 
+from ..._files import deepcopy_with_paths
 from ..._types import Body, Omit, Query, Headers, NotGiven, FileTypes, omit, not_given
-from ..._utils import extract_files, maybe_transform, deepcopy_minimal, async_maybe_transform
+from ..._utils import extract_files, maybe_transform, async_maybe_transform
 from ..._compat import cached_property
 from ..._resource import SyncAPIResource, AsyncAPIResource
 from ..._response import (
@@ -86,7 +87,7 @@ class TranscriptionsResource(SyncAPIResource):
 
           idempotency_key: Specify a custom idempotency key for this request
         """
-        body = deepcopy_minimal(
+        body = deepcopy_with_paths(
             {
                 "file": file,
                 "model": model,
@@ -94,7 +95,8 @@ class TranscriptionsResource(SyncAPIResource):
                 "prompt": prompt,
                 "response_format": response_format,
                 "temperature": temperature,
-            }
+            },
+            [["file"]],
         )
         files = extract_files(cast(Mapping[str, object], body), paths=[["file"]])
         # It should be noted that the actual Content-Type header that will be
@@ -184,7 +186,7 @@ class AsyncTranscriptionsResource(AsyncAPIResource):
 
           idempotency_key: Specify a custom idempotency key for this request
         """
-        body = deepcopy_minimal(
+        body = deepcopy_with_paths(
             {
                 "file": file,
                 "model": model,
@@ -192,7 +194,8 @@ class AsyncTranscriptionsResource(AsyncAPIResource):
                 "prompt": prompt,
                 "response_format": response_format,
                 "temperature": temperature,
-            }
+            },
+            [["file"]],
         )
         files = extract_files(cast(Mapping[str, object], body), paths=[["file"]])
         # It should be noted that the actual Content-Type header that will be

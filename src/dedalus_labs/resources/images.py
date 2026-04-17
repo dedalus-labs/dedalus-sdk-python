@@ -8,8 +8,9 @@ from typing_extensions import Literal
 import httpx
 
 from ..types import image_edit_params, image_generate_params, image_create_variation_params
+from .._files import deepcopy_with_paths
 from .._types import Body, Omit, Query, Headers, NotGiven, FileTypes, omit, not_given
-from .._utils import extract_files, maybe_transform, deepcopy_minimal, async_maybe_transform
+from .._utils import extract_files, maybe_transform, async_maybe_transform
 from .._compat import cached_property
 from .._resource import SyncAPIResource, AsyncAPIResource
 from .._response import (
@@ -78,7 +79,7 @@ class ImagesResource(SyncAPIResource):
 
           idempotency_key: Specify a custom idempotency key for this request
         """
-        body = deepcopy_minimal(
+        body = deepcopy_with_paths(
             {
                 "image": image,
                 "model": model,
@@ -86,7 +87,8 @@ class ImagesResource(SyncAPIResource):
                 "response_format": response_format,
                 "size": size,
                 "user": user,
-            }
+            },
+            [["image"]],
         )
         files = extract_files(cast(Mapping[str, object], body), paths=[["image"]])
         # It should be noted that the actual Content-Type header that will be
@@ -144,7 +146,7 @@ class ImagesResource(SyncAPIResource):
 
           idempotency_key: Specify a custom idempotency key for this request
         """
-        body = deepcopy_minimal(
+        body = deepcopy_with_paths(
             {
                 "image": image,
                 "prompt": prompt,
@@ -154,7 +156,8 @@ class ImagesResource(SyncAPIResource):
                 "response_format": response_format,
                 "size": size,
                 "user": user,
-            }
+            },
+            [["image"], ["mask"]],
         )
         files = extract_files(cast(Mapping[str, object], body), paths=[["image"], ["mask"]])
         # It should be noted that the actual Content-Type header that will be
@@ -373,7 +376,7 @@ class AsyncImagesResource(AsyncAPIResource):
 
           idempotency_key: Specify a custom idempotency key for this request
         """
-        body = deepcopy_minimal(
+        body = deepcopy_with_paths(
             {
                 "image": image,
                 "model": model,
@@ -381,7 +384,8 @@ class AsyncImagesResource(AsyncAPIResource):
                 "response_format": response_format,
                 "size": size,
                 "user": user,
-            }
+            },
+            [["image"]],
         )
         files = extract_files(cast(Mapping[str, object], body), paths=[["image"]])
         # It should be noted that the actual Content-Type header that will be
@@ -439,7 +443,7 @@ class AsyncImagesResource(AsyncAPIResource):
 
           idempotency_key: Specify a custom idempotency key for this request
         """
-        body = deepcopy_minimal(
+        body = deepcopy_with_paths(
             {
                 "image": image,
                 "prompt": prompt,
@@ -449,7 +453,8 @@ class AsyncImagesResource(AsyncAPIResource):
                 "response_format": response_format,
                 "size": size,
                 "user": user,
-            }
+            },
+            [["image"], ["mask"]],
         )
         files = extract_files(cast(Mapping[str, object], body), paths=[["image"], ["mask"]])
         # It should be noted that the actual Content-Type header that will be
