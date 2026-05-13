@@ -47,9 +47,6 @@ class Replayer:
     def from_dict(cls, trace: dict[str, Any]) -> "Replayer":
         return cls(trace)
 
-    # ------------------------------------------------------------------
-    # Internal
-
     def _validate(self) -> None:
         v = self._trace.get("format_version")
         if v != FORMAT_VERSION:
@@ -59,9 +56,6 @@ class Replayer:
             )
         if not isinstance(self._trace.get("events"), list):
             raise ValueError("trace is missing an `events` list")
-
-    # ------------------------------------------------------------------
-    # Public
 
     def run(
         self,
@@ -96,14 +90,12 @@ class Replayer:
             if e["kind"] == "model_response"
         ]
 
-        # Build per-tool queues from recorded tool_end events (in order)
         recorded_tool_ends: dict[str, list[dict[str, Any]]] = {}
         for e in events:
             if e["kind"] == "tool_end":
                 recorded_tool_ends.setdefault(e["name"], []).append(e)
 
-        # Collect all tool names from both the tool_end events and the
-        # schema list in the first request, so MCP-only tools are included
+        # Union both sources so MCP-only tools (no tool_end events) are still surfaced
         tool_names = set(recorded_tool_ends) | {
             t["function"]["name"]
             for t in (req.get("tools") or [])
@@ -126,11 +118,8 @@ class Replayer:
         client = swap_client or _FakeClient(responses)
         runner = DedalusRunner(client)
 
-        # The first user message is always messages[0]
         messages = req.get("messages") or []
-        initial_input: str | list[Any] = (
-            messages[0]["content"] if messages else ""
-        )
+        initial_input = messages[0]["content"] if messages else ""
 
         return runner.run(
             model=req["model"],
