@@ -205,14 +205,67 @@ def redact(event):
 
 ---
 
+## Replaying a trace
+
+`Replayer` reads a `trace.json` and re-runs the recorded conversation
+through the production `DedalusRunner` - no API calls, no MCP traffic.
+
+```python
+from dedalus_labs.lib.replay import Replayer
+
+result = Replayer.from_file("trace.json").run()
+print(result.final_output)
+```
+
+Internally, `Replayer` injects a fake client whose `chat.completions.create()`
+serves the recorded `ChatCompletion` objects in order, and substitutes each
+local tool with a stub that returns the recorded result. The runner walks
+its normal step loop; nothing is mocked except the two outward seams.
+
+### `Replayer.run(...)` parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `swap_tool` | `dict[str, Callable] \| None` | Map of tool name to callable. Named tools run your function instead of the recorded stub. Useful for A/B-testing a fix. |
+| `swap_client` | `Dedalus \| None` | A live client. Routes model calls to the real API using the recorded messages and tools as context. |
+
+```python
+# A/B-test a tool fix against the same recorded conversation
+def better_add(a: int, b: int) -> int:
+    return a + b
+
+Replayer.from_file("trace.json").run(swap_tool={"add": better_add})
+
+# Run the recorded conversation against a real model
+from dedalus_labs import Dedalus
+Replayer.from_file("trace.json").run(swap_client=Dedalus())
+```
+
+### Drift detection
+
+Replay fails loudly when the recorded behavior and current code paths
+diverge:
+
+- **More model calls than recorded** - the fake client raises a `RuntimeError`
+  pointing at `swap_client=` as the bridge.
+- **More tool calls for a name than recorded** - the synthetic tool raises
+  pointing at `swap_tool={name: ...}`.
+- **Unknown `format_version`** - `from_file` / `from_dict` raises `ValueError`
+  during construction.
+
+A drift error usually means the customer's recorded run hits a code path
+that no longer exists locally. That is exactly the bug an FDE wants to
+surface, not silently swallow.
+
+---
+
 ## Out of scope (follow-up issues)
 
 The following are intentional non-goals for v1. File a new issue if you need one:
 
-- **Streaming recording** — `_execute_streaming_*` paths are not instrumented.
+- **Streaming recording / replay** — `_execute_streaming_*` paths are not instrumented.
 - **Per-tool start events** — `tool_start` events with timing inside parallel batches.
 - **Cloud upload / hosted viewer** — traces are local-only.
 - **OpenTelemetry export** — the event format is not OTel-compatible today.
 - **Trace diffing** — comparing two trace files for regression testing.
 - **Schema migration** — tooling to upgrade `format_version` 1.0 traces to future versions.
-- **Replayer** — `Replayer.from_file(path).run(...)` for deterministic re-execution. Tracked separately.
