@@ -71,6 +71,68 @@ def _extract_mcp_results(response: Any) -> list[MCPToolResult]:
     return [item if isinstance(item, MCPToolResult) else MCPToolResult.model_validate(item) for item in mcp_results]
 
 
+def _emit(callback: Callable[[Dict[str, JsonValue]], None] | None, event: Dict[str, Any]) -> None:
+    """Fire a runner observation callback, swallowing any callback-side error.
+
+    Callbacks are observation hooks; they must never break the agent loop.
+    """
+    if callback is None:
+        return
+    try:
+        callback(event)
+    except Exception:
+        pass
+
+
+def _to_jsonable(obj: Any) -> Any:
+    """Convert Pydantic models and nested containers to plain JSON-friendly form.
+
+    Used before handing event payloads to user-supplied callbacks so that
+    redactors and JSON serializers see plain dicts/lists/strings, not opaque
+    SDK types.
+    """
+    dump = getattr(obj, "model_dump", None)
+    if callable(dump):
+        try:
+            return dump(mode="json", exclude_unset=True, by_alias=True)
+        except Exception:
+            pass
+    if isinstance(obj, dict):
+        return {k: _to_jsonable(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_to_jsonable(v) for v in obj]
+    return obj
+
+
+def _emit_tool_ends(
+    callback: Callable[[Dict[str, JsonValue]], None] | None,
+    tool_calls: list,
+    tool_results: list,
+    prev_count: int,
+    step: int,
+) -> None:
+    """Emit one `tool_end` event per newly-appended tool result.
+
+    Correlates each result with its originating tool call by name (FIFO),
+    so the event carries `tool_call_id` and `arguments` when available.
+    """
+    if callback is None:
+        return
+    remaining = list(tool_calls)
+    for tr in tool_results[prev_count:]:
+        name = tr.get("name") if isinstance(tr, dict) else None
+        matched = next((c for c in remaining if c.get("function", {}).get("name") == name), None)
+        if matched is not None:
+            remaining.remove(matched)
+        event: Dict[str, Any] = {"kind": "tool_end", "step": step, "name": name, "result": tr.get("result")}
+        if isinstance(tr, dict) and tr.get("error") is not None:
+            event["error"] = tr["error"]
+        if matched is not None:
+            event["tool_call_id"] = matched.get("id")
+            event["arguments"] = matched.get("function", {}).get("arguments")
+        _emit(callback, event)
+
+
 class _ToolHandler(Protocol):
     def schemas(self) -> list[Dict]: ...
     async def exec(self, name: str, args: Dict[str, JsonValue]) -> JsonValue: ...
@@ -145,6 +207,7 @@ class _ExecutionConfig:
     verbose: bool = False
     debug: bool = False
     on_tool_event: Callable[[Dict[str, JsonValue]], None] | None = None
+    on_model_event: Callable[[Dict[str, JsonValue]], None] | None = None
     return_intent: bool = False
     policy: PolicyInput = None
     available_models: list[str] = field(default_factory=list)
@@ -293,6 +356,7 @@ class DedalusRunner:
         verbose: bool | None = None,
         debug: bool | None = None,
         on_tool_event: Callable[[Dict[str, JsonValue]], None] | None = None,
+        on_model_event: Callable[[Dict[str, JsonValue]], None] | None = None,
         return_intent: bool = False,
         policy: PolicyInput = None,
         available_models: list[str] | None = None,
@@ -440,6 +504,7 @@ class DedalusRunner:
             verbose=verbose if verbose is not None else self.verbose,
             debug=debug or False,
             on_tool_event=on_tool_event,
+            on_model_event=on_model_event,
             return_intent=return_intent,
             policy=policy,
             available_models=available_models or [],
@@ -539,14 +604,17 @@ class DedalusRunner:
             # Make model call
             current_messages = self._build_messages(messages, policy_result["prepend"], policy_result["append"])
 
-            response = await self.client.chat.completions.create(
-                model=policy_result["model"],
-                messages=current_messages,
-                tools=tool_handler.schemas() or None,
-                mcp_servers=policy_result["mcp_servers"],
-                credentials=exec_config.credentials,
+            request_kwargs = {
+                "model": policy_result["model"],
+                "messages": current_messages,
+                "tools": tool_handler.schemas() or None,
+                "mcp_servers": policy_result["mcp_servers"],
+                "credentials": exec_config.credentials,
                 **{**self._mk_kwargs(model_config), **policy_result["model_kwargs"]},
-            )
+            }
+            _emit(exec_config.on_model_event, {"kind": "model_request", "step": steps, "request": _to_jsonable(request_kwargs)})
+            response = await self.client.chat.completions.create(**request_kwargs)
+            _emit(exec_config.on_model_event, {"kind": "model_response", "step": steps, "response": _to_jsonable(response)})
 
             if exec_config.verbose:
                 actual_model = policy_result["model"]
@@ -602,6 +670,7 @@ class DedalusRunner:
                 print(f" Extracted {len(tool_calls)} tool calls")
                 for tc in tool_calls:
                     print(f"  - {tc.get('function', {}).get('name', '?')} (id: {tc.get('id', '?')})")
+            prev_tool_count = len(tool_results)
             await self._execute_tool_calls(
                 tool_calls,
                 tool_handler,
@@ -611,6 +680,7 @@ class DedalusRunner:
                 steps,
                 verbose=exec_config.verbose,
             )
+            _emit_tool_ends(exec_config.on_tool_event, tool_calls, tool_results, prev_tool_count, steps)
 
         # Extract MCP tool executions from the last response
         mcp_results = _extract_mcp_results(response)
@@ -847,14 +917,17 @@ class DedalusRunner:
                 else:
                     print(f"  API called with single model: {actual_model}")
 
-            response = self.client.chat.completions.create(
-                model=policy_result["model"],
-                messages=current_messages,
-                tools=tool_handler.schemas() or None,
-                mcp_servers=policy_result["mcp_servers"],
-                credentials=exec_config.credentials,
+            request_kwargs = {
+                "model": policy_result["model"],
+                "messages": current_messages,
+                "tools": tool_handler.schemas() or None,
+                "mcp_servers": policy_result["mcp_servers"],
+                "credentials": exec_config.credentials,
                 **{**self._mk_kwargs(model_config), **policy_result["model_kwargs"]},
-            )
+            }
+            _emit(exec_config.on_model_event, {"kind": "model_request", "step": steps, "request": _to_jsonable(request_kwargs)})
+            response = self.client.chat.completions.create(**request_kwargs)
+            _emit(exec_config.on_model_event, {"kind": "model_response", "step": steps, "response": _to_jsonable(response)})
 
             if exec_config.verbose:
                 print(f"  Response received (server says model: {getattr(response, 'model', 'unknown')})")
@@ -885,7 +958,9 @@ class DedalusRunner:
 
             # Execute tools
             tool_calls = self._extract_tool_calls(response.choices[0])
+            prev_tool_count = len(tool_results)
             self._execute_tool_calls_sync(tool_calls, tool_handler, messages, tool_results, tools_called, steps)
+            _emit_tool_ends(exec_config.on_tool_event, tool_calls, tool_results, prev_tool_count, steps)
 
         # Extract MCP tool executions from the last response
         mcp_results = _extract_mcp_results(response)
