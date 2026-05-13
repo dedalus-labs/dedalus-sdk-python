@@ -18,14 +18,14 @@ the trace format, and how to compose redactors.
 """
 
 from ._events import (
-    FORMAT_VERSION,
-    MODEL_REQUEST,
-    MODEL_RESPONSE,
     TOOL_END,
+    MODEL_REQUEST,
+    FORMAT_VERSION,
+    MODEL_RESPONSE,
     build_envelope,
 )
+from ._redact import redact_emails, redact_api_keys, redact_bearer_tokens
 from ._recorder import Recorder
-from ._redact import redact_api_keys, redact_bearer_tokens, redact_emails
 
 __all__ = [
     "FORMAT_VERSION",

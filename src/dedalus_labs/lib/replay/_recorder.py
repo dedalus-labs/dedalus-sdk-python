@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import json
 import time
+from typing import Any, Dict, List, Union, Callable, Optional
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
 
-from ..._utils._json import _CustomEncoder
 from ._events import build_envelope
+from ..._utils._json import _CustomEncoder
 
 EventDict = Dict[str, Any]
 RedactFn = Callable[[EventDict], EventDict]
