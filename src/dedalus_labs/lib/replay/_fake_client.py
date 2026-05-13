@@ -9,7 +9,7 @@ class _FakeCompletions:
     def __init__(self, responses: list[ChatCompletion]) -> None:
         self._queue = list(responses)
 
-    def create(self, **kwargs: Any) -> ChatCompletion:
+    def create(self, **kwargs: Any) -> ChatCompletion:  # noqa: ARG002
         if not self._queue:
             raise RuntimeError(
                 "replay drift: runner requested more model responses than the trace "

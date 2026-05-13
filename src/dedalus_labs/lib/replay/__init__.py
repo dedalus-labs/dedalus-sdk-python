@@ -1,6 +1,6 @@
-"""Record agent runs to a JSON trace file.
+"""Record and replay agent runs via a local JSON trace file.
 
-Quick start::
+Record::
 
     from dedalus_labs.lib.replay import Recorder
 
@@ -12,6 +12,12 @@ Quick start::
             on_tool_event=rec.on_tool,
             on_model_event=rec.on_model,
         )
+
+Replay::
+
+    from dedalus_labs.lib.replay import Replayer
+
+    result = Replayer.from_file("trace.json").run()
 
 The trace file is local-only. See ``docs/replay.md`` for the privacy model,
 the trace format, and how to compose redactors.
@@ -26,6 +32,7 @@ from ._events import (
 )
 from ._redact import redact_emails, redact_api_keys, redact_bearer_tokens
 from ._recorder import Recorder
+from ._replayer import Replayer
 
 __all__ = [
     "FORMAT_VERSION",
@@ -33,6 +40,7 @@ __all__ = [
     "MODEL_RESPONSE",
     "TOOL_END",
     "Recorder",
+    "Replayer",
     "build_envelope",
     "redact_api_keys",
     "redact_bearer_tokens",
