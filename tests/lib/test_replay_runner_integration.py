@@ -130,6 +130,53 @@ def test_runner_does_not_break_when_callback_raises(client: Dedalus, respx_mock:
 
 
 @pytest.mark.respx(base_url=base_url)
+def test_tool_end_events_correlate_by_id_under_concurrency(
+    client: Dedalus, respx_mock: MockRouter
+) -> None:
+    """Two concurrent calls to the same tool must map each tool_end to the right tool_call_id."""
+    import asyncio
+
+    # Two parallel calls to the same tool, distinguishable only by their arguments
+    tc_fast = {
+        "id": "call_fast",
+        "type": "function",
+        "function": {"name": "_slow_add", "arguments": json.dumps({"a": 1, "b": 1, "delay": 0.0})},
+    }
+    tc_slow = {
+        "id": "call_slow",
+        "type": "function",
+        "function": {"name": "_slow_add", "arguments": json.dumps({"a": 10, "b": 10, "delay": 0.05})},
+    }
+    respx_mock.post("/v1/chat/completions").mock(
+        side_effect=[
+            httpx.Response(200, json=_completion(tool_calls=[tc_slow, tc_fast], finish_reason="tool_calls")),
+            httpx.Response(200, json=_completion(content="done")),
+        ]
+    )
+
+    async def _slow_add(a: int, b: int, delay: float = 0.0) -> int:
+        await asyncio.sleep(delay)
+        return a + b
+
+    tool_events: List[Dict[str, Any]] = []
+    runner = DedalusRunner(client)
+    runner.run(
+        model="openai/gpt-5-nano",
+        input="parallel add",
+        tools=[_slow_add],
+        on_tool_event=tool_events.append,
+    )
+
+    assert len(tool_events) == 2
+    # Each event must carry the ARGUMENTS that match its tool_call_id, not a swap caused by completion ordering
+    by_id = {e["tool_call_id"]: e for e in tool_events}
+    assert json.loads(by_id["call_fast"]["arguments"]) == {"a": 1, "b": 1, "delay": 0.0}
+    assert json.loads(by_id["call_slow"]["arguments"]) == {"a": 10, "b": 10, "delay": 0.05}
+    assert by_id["call_fast"]["result"] == 2
+    assert by_id["call_slow"]["result"] == 20
+
+
+@pytest.mark.respx(base_url=base_url)
 def test_model_request_event_omits_credentials(client: Dedalus, respx_mock: MockRouter) -> None:
     """`credentials` must never reach the model_request event payload."""
     respx_mock.post("/v1/chat/completions").mock(

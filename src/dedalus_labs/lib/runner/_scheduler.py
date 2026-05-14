@@ -210,13 +210,13 @@ async def _run_one_async(
 
     try:
         result = await tool_handler.exec(fn_name, fn_args)
-        tool_results.append({"name": fn_name, "result": result, "step": step})
+        tool_results.append({"name": fn_name, "result": result, "step": step, "tool_call_id": call_id})
         tools_called.append(fn_name)
         messages.append({"role": "tool", "tool_call_id": call_id, "content": str(result)})
         if verbose:
             print(f"  Tool {fn_name}: {str(result)[:50]}...")  # noqa: T201
     except Exception as e:
-        tool_results.append({"error": str(e), "name": fn_name, "step": step})
+        tool_results.append({"error": str(e), "name": fn_name, "step": step, "tool_call_id": call_id})
         messages.append({"role": "tool", "tool_call_id": call_id, "content": f"Error: {e}"})
         if verbose:
             print(f"  Tool {fn_name} failed: {e}")  # noqa: T201
@@ -237,11 +237,11 @@ def _run_one_sync(
 
     try:
         result = tool_handler.exec_sync(fn_name, fn_args)
-        tool_results.append({"name": fn_name, "result": result, "step": step})
+        tool_results.append({"name": fn_name, "result": result, "step": step, "tool_call_id": call_id})
         tools_called.append(fn_name)
         messages.append({"role": "tool", "tool_call_id": call_id, "content": str(result)})
     except Exception as e:
-        tool_results.append({"error": str(e), "name": fn_name, "step": step})
+        tool_results.append({"error": str(e), "name": fn_name, "step": step, "tool_call_id": call_id})
         messages.append({"role": "tool", "tool_call_id": call_id, "content": f"Error: {e}"})
 
 

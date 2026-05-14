@@ -124,17 +124,23 @@ def _emit_tool_ends(
 ) -> None:
     """Emit one `tool_end` event per newly-appended tool result.
 
-    Correlates each result with its originating tool call by name (FIFO),
-    so the event carries `tool_call_id` and `arguments` when available.
+    Correlates each result with its originating tool call by the
+    `tool_call_id` the scheduler stamps on every result entry. Falls back
+    to FIFO-by-name only if `tool_call_id` is missing (older code paths).
     """
     if callback is None:
         return
+    calls_by_id = {c.get("id"): c for c in tool_calls if c.get("id")}
     remaining = list(tool_calls)
     for tr in tool_results[prev_count:]:
         name = tr.get("name") if isinstance(tr, dict) else None
-        matched = next((c for c in remaining if c.get("function", {}).get("name") == name), None)
-        if matched is not None:
-            remaining.remove(matched)
+        tr_id = tr.get("tool_call_id") if isinstance(tr, dict) else None
+        matched = calls_by_id.get(tr_id) if tr_id else None
+        if matched is None:
+            # Defensive fallback for any path that hasn't stamped tool_call_id.
+            matched = next((c for c in remaining if c.get("function", {}).get("name") == name), None)
+            if matched is not None:
+                remaining.remove(matched)
         event: Dict[str, Any] = {"kind": "tool_end", "step": step, "name": name, "result": tr.get("result")}
         if isinstance(tr, dict) and tr.get("error") is not None:
             event["error"] = tr["error"]
