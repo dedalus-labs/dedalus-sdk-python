@@ -104,6 +104,17 @@ def _to_jsonable(obj: Any) -> Any:
     return obj
 
 
+def _redact_request_for_event(request_kwargs: Dict[str, Any]) -> Dict[str, Any]:
+    """Drop the credentials field before exposing request kwargs to event callbacks.
+
+    Credentials are an out-of-band channel (API keys, tokens, signed bearer
+    objects). They must never appear in trace files or be passed to
+    user-supplied event callbacks, even if the underlying client accepts
+    them on the model-call payload.
+    """
+    return {k: v for k, v in request_kwargs.items() if k != "credentials"}
+
+
 def _emit_tool_ends(
     callback: Callable[[Dict[str, JsonValue]], None] | None,
     tool_calls: list,
@@ -612,7 +623,7 @@ class DedalusRunner:
                 "credentials": exec_config.credentials,
                 **{**self._mk_kwargs(model_config), **policy_result["model_kwargs"]},
             }
-            _emit(exec_config.on_model_event, {"kind": "model_request", "step": steps, "request": _to_jsonable(request_kwargs)})
+            _emit(exec_config.on_model_event, {"kind": "model_request", "step": steps, "request": _to_jsonable(_redact_request_for_event(request_kwargs))})
             response = await self.client.chat.completions.create(**request_kwargs)
             _emit(exec_config.on_model_event, {"kind": "model_response", "step": steps, "response": _to_jsonable(response)})
 
@@ -925,7 +936,7 @@ class DedalusRunner:
                 "credentials": exec_config.credentials,
                 **{**self._mk_kwargs(model_config), **policy_result["model_kwargs"]},
             }
-            _emit(exec_config.on_model_event, {"kind": "model_request", "step": steps, "request": _to_jsonable(request_kwargs)})
+            _emit(exec_config.on_model_event, {"kind": "model_request", "step": steps, "request": _to_jsonable(_redact_request_for_event(request_kwargs))})
             response = self.client.chat.completions.create(**request_kwargs)
             _emit(exec_config.on_model_event, {"kind": "model_response", "step": steps, "response": _to_jsonable(response)})
 

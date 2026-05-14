@@ -130,6 +130,32 @@ def test_runner_does_not_break_when_callback_raises(client: Dedalus, respx_mock:
 
 
 @pytest.mark.respx(base_url=base_url)
+def test_model_request_event_omits_credentials(client: Dedalus, respx_mock: MockRouter) -> None:
+    """`credentials` must never reach the model_request event payload."""
+    respx_mock.post("/v1/chat/completions").mock(
+        return_value=httpx.Response(200, json=_completion(content="ok"))
+    )
+
+    events: List[Dict[str, Any]] = []
+    runner = DedalusRunner(client)
+    runner.run(
+        model="openai/gpt-5-nano",
+        input="hi",
+        credentials=[{"provider": "openai", "api_key": "sk-secret-do-not-leak"}],
+        on_model_event=events.append,
+    )
+
+    request_events = [e for e in events if e["kind"] == MODEL_REQUEST]
+    assert request_events, "expected at least one model_request event"
+    for ev in request_events:
+        assert "credentials" not in ev["request"], (
+            f"credentials field leaked into trace event: {ev['request']!r}"
+        )
+        # Defense in depth: the secret value must not appear anywhere serialized
+        assert "sk-secret-do-not-leak" not in json.dumps(ev)
+
+
+@pytest.mark.respx(base_url=base_url)
 def test_record_then_load_produces_valid_trace_format(
     client: Dedalus, respx_mock: MockRouter, tmp_path: Path
 ) -> None:
