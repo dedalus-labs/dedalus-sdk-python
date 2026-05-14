@@ -119,11 +119,12 @@ class Replayer:
         runner = DedalusRunner(client)
 
         messages = req.get("messages") or []
-        initial_input = messages[0]["content"] if messages else ""
+        if not messages:
+            raise ValueError("trace first model_request has no messages")
 
         return runner.run(
             model=req["model"],
-            input=initial_input,
+            messages=messages,
             tools=tools or None,
             mcp_servers=req.get("mcp_servers") or None,
         )

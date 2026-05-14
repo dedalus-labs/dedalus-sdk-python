@@ -163,6 +163,37 @@ class TestReplayer:
         Replayer.from_dict(trace).run(swap_tool={"add": real_add})
         assert called_with, "real_add should have been called"
 
+    def test_swap_client_receives_full_recorded_messages(self) -> None:
+        """swap_client must see all recorded messages (system + user), not just messages[0]."""
+        captured: list[list[Dict[str, Any]]] = []
+
+        class CapturingCompletions:
+            def create(self, **kwargs: Any) -> ChatCompletion:
+                captured.append(kwargs.get("messages") or [])
+                return _make_completion("ok")
+
+        class CapturingChat:
+            completions = CapturingCompletions()
+
+        class CapturingClient:
+            chat = CapturingChat()
+
+        trace = _minimal_trace([_req_event(), _resp_event(content="ok")])
+        # Override the default single-user-message setup with a richer history
+        trace["events"][0]["request"]["messages"] = [
+            {"role": "system", "content": "you are a math tutor"},
+            {"role": "user", "content": "What is 3 + 4?"},
+        ]
+
+        Replayer.from_dict(trace).run(swap_client=CapturingClient())
+
+        assert captured, "expected swap_client.create to be called"
+        first_call_messages = captured[0]
+        # Both the system and user messages from the trace must be present
+        roles = [m.get("role") for m in first_call_messages]
+        assert "system" in roles, f"system message lost during replay: {roles}"
+        assert "user" in roles, f"user message lost during replay: {roles}"
+
     def test_swap_client_bypasses_fake_client(self) -> None:
         """swap_client routes model calls to the provided object instead."""
         call_count = 0
