@@ -21,7 +21,7 @@ class TestTranscriptions:
     @parametrize
     def test_method_create(self, client: Dedalus) -> None:
         transcription = client.audio.transcriptions.create(
-            file=b"raw file contents",
+            file=b"Example data",
             model="model",
         )
         assert_matches_type(TranscriptionCreateResponse, transcription, path=["response"])
@@ -30,7 +30,7 @@ class TestTranscriptions:
     @parametrize
     def test_method_create_with_all_params(self, client: Dedalus) -> None:
         transcription = client.audio.transcriptions.create(
-            file=b"raw file contents",
+            file=b"Example data",
             model="model",
             language="language",
             prompt="prompt",
@@ -43,7 +43,7 @@ class TestTranscriptions:
     @parametrize
     def test_raw_response_create(self, client: Dedalus) -> None:
         response = client.audio.transcriptions.with_raw_response.create(
-            file=b"raw file contents",
+            file=b"Example data",
             model="model",
         )
 
@@ -56,7 +56,7 @@ class TestTranscriptions:
     @parametrize
     def test_streaming_response_create(self, client: Dedalus) -> None:
         with client.audio.transcriptions.with_streaming_response.create(
-            file=b"raw file contents",
+            file=b"Example data",
             model="model",
         ) as response:
             assert not response.is_closed
@@ -77,7 +77,7 @@ class TestAsyncTranscriptions:
     @parametrize
     async def test_method_create(self, async_client: AsyncDedalus) -> None:
         transcription = await async_client.audio.transcriptions.create(
-            file=b"raw file contents",
+            file=b"Example data",
             model="model",
         )
         assert_matches_type(TranscriptionCreateResponse, transcription, path=["response"])
@@ -86,7 +86,7 @@ class TestAsyncTranscriptions:
     @parametrize
     async def test_method_create_with_all_params(self, async_client: AsyncDedalus) -> None:
         transcription = await async_client.audio.transcriptions.create(
-            file=b"raw file contents",
+            file=b"Example data",
             model="model",
             language="language",
             prompt="prompt",
@@ -99,7 +99,7 @@ class TestAsyncTranscriptions:
     @parametrize
     async def test_raw_response_create(self, async_client: AsyncDedalus) -> None:
         response = await async_client.audio.transcriptions.with_raw_response.create(
-            file=b"raw file contents",
+            file=b"Example data",
             model="model",
         )
 
@@ -112,7 +112,7 @@ class TestAsyncTranscriptions:
     @parametrize
     async def test_streaming_response_create(self, async_client: AsyncDedalus) -> None:
         async with async_client.audio.transcriptions.with_streaming_response.create(
-            file=b"raw file contents",
+            file=b"Example data",
             model="model",
         ) as response:
             assert not response.is_closed

@@ -37,8 +37,8 @@ class TestCompletions:
                 "complexity": 0.8,
             },
             audio={
-                "format": "wav",
-                "voice": "string",
+                "format": "mp3",
+                "voice": "alloy",
             },
             automatic_tool_execution=True,
             cached_content="cached_content",
@@ -191,8 +191,8 @@ class TestCompletions:
                 "complexity": 0.8,
             },
             audio={
-                "format": "wav",
-                "voice": "string",
+                "format": "mp3",
+                "voice": "alloy",
             },
             automatic_tool_execution=True,
             cached_content="cached_content",
@@ -349,8 +349,8 @@ class TestAsyncCompletions:
                 "complexity": 0.8,
             },
             audio={
-                "format": "wav",
-                "voice": "string",
+                "format": "mp3",
+                "voice": "alloy",
             },
             automatic_tool_execution=True,
             cached_content="cached_content",
@@ -503,8 +503,8 @@ class TestAsyncCompletions:
                 "complexity": 0.8,
             },
             audio={
-                "format": "wav",
-                "voice": "string",
+                "format": "mp3",
+                "voice": "alloy",
             },
             automatic_tool_execution=True,
             cached_content="cached_content",

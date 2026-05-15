@@ -219,8 +219,8 @@ client = Dedalus()
 chat_completion = client.chat.completions.create(
     model="openai/gpt-5",
     audio={
-        "format": "wav",
-        "voice": "string",
+        "format": "mp3",
+        "voice": "alloy",
     },
 )
 print(chat_completion.audio)

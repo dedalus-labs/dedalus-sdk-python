@@ -1,5 +1,54 @@
 # Changelog
 
+## 0.4.0 (2026-05-15)
+
+Full Changelog: [v0.3.0...v0.4.0](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.3.0...v0.4.0)
+
+### Features
+
+* **internal/types:** support eagerly validating pydantic iterators ([f45ede4](https://github.com/dedalus-labs/dedalus-sdk-python/commit/f45ede4697017f737896549f4089fc85b8806d90))
+* **internal:** implement indices array format for query and form serialization ([04ba964](https://github.com/dedalus-labs/dedalus-sdk-python/commit/04ba9644e8c73b3eff7b8ad01211d90e354a889d))
+* support setting headers via env ([e773bb2](https://github.com/dedalus-labs/dedalus-sdk-python/commit/e773bb29d5221a76cdc2b8a38f430920dd821b13))
+
+
+### Bug Fixes
+
+* **client:** add missing f-string prefix in file type error message ([f5ef3ca](https://github.com/dedalus-labs/dedalus-sdk-python/commit/f5ef3ca00047b2854d15f4d44563f4de5bba7f78))
+* **client:** preserve hardcoded query params when merging with user params ([80f3981](https://github.com/dedalus-labs/dedalus-sdk-python/commit/80f3981cb6e10bd7a9dbe39412abbd6277b0ab64))
+* **deps:** bump minimum typing-extensions version ([23ea212](https://github.com/dedalus-labs/dedalus-sdk-python/commit/23ea21291b2cf443c594661acfc6e19e95077162))
+* ensure file data are only sent as 1 parameter ([721e574](https://github.com/dedalus-labs/dedalus-sdk-python/commit/721e5748d4843fe0f6dbf07c34766550d09ab05e))
+* **pydantic:** do not pass `by_alias` unless set ([b098b05](https://github.com/dedalus-labs/dedalus-sdk-python/commit/b098b05e30ec6487a6467bd928ce3c725d3f2aa0))
+* sanitize endpoint path params ([e385e21](https://github.com/dedalus-labs/dedalus-sdk-python/commit/e385e215a38c3141ff675a58799511a306d2c879))
+* use correct field name format for multipart file arrays ([a6664c3](https://github.com/dedalus-labs/dedalus-sdk-python/commit/a6664c3564abb8c0e50bd11b36477875f328a88b))
+
+
+### Performance Improvements
+
+* **client:** optimize file structure copying in multipart requests ([43970d6](https://github.com/dedalus-labs/dedalus-sdk-python/commit/43970d6a440ff547be0c90130b75b7483ad7711e))
+
+
+### Chores
+
+* **ci:** remove release-doctor workflow ([5903593](https://github.com/dedalus-labs/dedalus-sdk-python/commit/5903593748f7cf140310fb0fe057879323e12d67))
+* **ci:** skip lint on metadata-only changes ([e11e58f](https://github.com/dedalus-labs/dedalus-sdk-python/commit/e11e58faac2c22be4f6e642b7313d09286b4a651))
+* **ci:** skip uploading artifacts on stainless-internal branches ([e3ed836](https://github.com/dedalus-labs/dedalus-sdk-python/commit/e3ed83614aa445a6af6d48fbab67edd96d651123))
+* **internal:** more robust bootstrap script ([a84687b](https://github.com/dedalus-labs/dedalus-sdk-python/commit/a84687b42b2b794198e05bb48f61d163fa3ed2c2))
+* **internal:** reformat pyproject.toml ([84db3a8](https://github.com/dedalus-labs/dedalus-sdk-python/commit/84db3a8481a68a4e26b7694578e5c77f76d21972))
+* **internal:** tweak CI branches ([1fc1ee4](https://github.com/dedalus-labs/dedalus-sdk-python/commit/1fc1ee460877941fb648448a415b37f868093058))
+* **internal:** update gitignore ([97672af](https://github.com/dedalus-labs/dedalus-sdk-python/commit/97672afab610a2fa4dcc7224dbad013b10553089))
+* update placeholder string ([3a623d4](https://github.com/dedalus-labs/dedalus-sdk-python/commit/3a623d4779430378efe9ceb6540ba6fddbc70041))
+
+
+### Documentation
+
+* improve examples ([5207295](https://github.com/dedalus-labs/dedalus-sdk-python/commit/5207295286986023ba1afbf6219a88dab046b439))
+* update examples ([62a7347](https://github.com/dedalus-labs/dedalus-sdk-python/commit/62a7347483733a1cdf57454a38af1f521f13ef4d))
+
+
+### Refactors
+
+* **types:** use `extra_items` from PEP 728 ([de6e4e4](https://github.com/dedalus-labs/dedalus-sdk-python/commit/de6e4e466ad9e9f40be8d8d4f7ea6208c076267e))
+
 ## 0.3.0 (2026-02-28)
 
 Full Changelog: [v0.2.0...v0.3.0](https://github.com/dedalus-labs/dedalus-sdk-python/compare/v0.2.0...v0.3.0)
