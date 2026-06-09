@@ -589,15 +589,7 @@ class DedalusRunner:
             if exec_config.verbose:
                 print(f" Response content: {content[:100] if content else '(none)'}...")
                 if tool_calls:
-                    call_names = []
-                    for tc in tool_calls:
-                        try:
-                            if isinstance(tc, dict):
-                                call_names.append(tc.get("function", {}).get("name", "?"))
-                            else:
-                                call_names.append(getattr(getattr(tc, "function", None), "name", "?"))
-                        except Exception:
-                            call_names.append("?")
+                    call_names = [_tool_call_name(tc) for tc in tool_calls]
                     print(f" Tool calls in response: {call_names}")
 
             if not tool_calls:
@@ -612,8 +604,7 @@ class DedalusRunner:
             if exec_config.verbose:
                 print(f" Extracted {len(tool_calls)} tool calls")
                 for tc in tool_calls:
-                    tc_id = tc.get("id", "?") if isinstance(tc, dict) else getattr(tc, "id", "?")
-                    print(f"  - {_tool_call_name(tc)} (id: {tc_id})")
+                    print(f"  - {_tool_call_name(tc)} (id: {tc.get('id', '?')})")
             await self._execute_tool_calls(
                 tool_calls,
                 tool_handler,
