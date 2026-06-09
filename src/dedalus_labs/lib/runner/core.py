@@ -71,6 +71,17 @@ def _extract_mcp_results(response: Any) -> list[MCPToolResult]:
     return [item if isinstance(item, MCPToolResult) else MCPToolResult.model_validate(item) for item in mcp_results]
 
 
+def _tool_call_name(tc: Any) -> str:
+    """Return a tool call's function name, accepting either dicts or SDK model objects."""
+    try:
+        if isinstance(tc, dict):
+            fn = tc.get("function", {})
+            return (fn.get("name", "?") if isinstance(fn, dict) else getattr(fn, "name", "?")) or "?"
+        return getattr(getattr(tc, "function", None), "name", "?") or "?"
+    except Exception:
+        return "?"
+
+
 class _ToolHandler(Protocol):
     def schemas(self) -> list[Dict]: ...
     async def exec(self, name: str, args: Dict[str, JsonValue]) -> JsonValue: ...
@@ -578,15 +589,7 @@ class DedalusRunner:
             if exec_config.verbose:
                 print(f" Response content: {content[:100] if content else '(none)'}...")
                 if tool_calls:
-                    call_names = []
-                    for tc in tool_calls:
-                        try:
-                            if isinstance(tc, dict):
-                                call_names.append(tc.get("function", {}).get("name", "?"))
-                            else:
-                                call_names.append(getattr(getattr(tc, "function", None), "name", "?"))
-                        except Exception:
-                            call_names.append("?")
+                    call_names = [_tool_call_name(tc) for tc in tool_calls]
                     print(f" Tool calls in response: {call_names}")
 
             if not tool_calls:
@@ -601,7 +604,7 @@ class DedalusRunner:
             if exec_config.verbose:
                 print(f" Extracted {len(tool_calls)} tool calls")
                 for tc in tool_calls:
-                    print(f"  - {tc.get('function', {}).get('name', '?')} (id: {tc.get('id', '?')})")
+                    print(f"  - {_tool_call_name(tc)} (id: {tc.get('id', '?')})")
             await self._execute_tool_calls(
                 tool_calls,
                 tool_handler,
@@ -646,7 +649,7 @@ class DedalusRunner:
                     content = str(msg.get("content", ""))[:50] + "..." if msg.get("content") else ""
                     tool_info = ""
                     if msg.get("tool_calls"):
-                        tool_names = [tc.get("function", {}).get("name", "?") for tc in msg.get("tool_calls", [])]
+                        tool_names = [_tool_call_name(tc) for tc in msg.get("tool_calls", [])]
                         tool_info = f" [calling: {', '.join(tool_names)}]"
                     elif msg.get("tool_call_id"):
                         tool_info = f" [response to: {msg.get('tool_call_id')[:8]}...]"
@@ -731,7 +734,7 @@ class DedalusRunner:
 
             if exec_config.verbose:
                 # Keep a compact end-of-stream summary
-                names = [tc.get("function", {}).get("name", "unknown") for tc in tool_calls]
+                names = [_tool_call_name(tc) for tc in tool_calls]
                 print(f" Stream summary: chunks={chunk_count} content={content_chunks} tool_calls={tool_call_chunks}")
                 if names:
                     print(f" Tools called this turn: {names}")
@@ -873,7 +876,7 @@ class DedalusRunner:
             if exec_config.verbose:
                 print(f"  Response content: {content[:100] if content else '(none)'}...")
                 if tool_calls:
-                    tool_names = [tc.get("function", {}).get("name", "?") for tc in tool_calls]
+                    tool_names = [_tool_call_name(tc) for tc in tool_calls]
                     print(f" 🔧 Tool calls in response: {tool_names}")
 
             if not tool_calls:
@@ -921,7 +924,7 @@ class DedalusRunner:
                     content = str(msg.get("content", ""))[:50] + "..." if msg.get("content") else ""
                     tool_info = ""
                     if msg.get("tool_calls"):
-                        tool_names = [tc.get("function", {}).get("name", "?") for tc in msg.get("tool_calls", [])]
+                        tool_names = [_tool_call_name(tc) for tc in msg.get("tool_calls", [])]
                         tool_info = f" [calling: {', '.join(tool_names)}]"
                     elif msg.get("tool_call_id"):
                         tool_info = f" [response to: {msg.get('tool_call_id')[:8]}...]"
@@ -951,7 +954,7 @@ class DedalusRunner:
                     content_preview = str(msg.get("content", ""))[:100]
                     tool_call_info = ""
                     if msg.get("tool_calls"):
-                        tool_names = [tc.get("function", {}).get("name", "unknown") for tc in msg.get("tool_calls", [])]
+                        tool_names = [_tool_call_name(tc) for tc in msg.get("tool_calls", [])]
                         tool_call_info = f" tool_calls=[{', '.join(tool_names)}]"
                     print(f"  [{i}] {msg.get('role')}: {content_preview}...{tool_call_info}")
                 print(f" MCP servers: {policy_result['mcp_servers']}")
@@ -1018,7 +1021,7 @@ class DedalusRunner:
                 if tool_calls:
                     print(f"\nReceived {len(tool_calls)} tool call(s)")
                     for i, tc in enumerate(tool_calls, 1):
-                        tool_name = tc.get("function", {}).get("name", "unknown")
+                        tool_name = _tool_call_name(tc)
                         # Clean up the tool name for display
                         display_name = tool_name.replace("transfer_to_", "").replace("_", " ").title()
                         print(f"   {i}. {display_name}")
